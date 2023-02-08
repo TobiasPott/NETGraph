@@ -12,14 +12,12 @@ namespace Core
         public bool directed { get; set; }
 
 
-        #region Ctors
         public UnweightedEdge(int u, int v, bool directed)
         {
             this.u = u;
             this.v = v;
             this.directed = directed;
         }
-        #endregion
 
 
         public bool Equals(UnweightedEdge other)
@@ -32,9 +30,14 @@ namespace Core
             return new UnweightedEdge(v, u, directed);
         }
 
+
         public override string ToString()
         {
             return $"{u} -> {v}";
         }
+
+        public static bool operator ==(UnweightedEdge lh, UnweightedEdge rh) => (lh.u == rh.u && lh.v == rh.v);
+        public static bool operator !=(UnweightedEdge lh, UnweightedEdge rh) => (lh.u != rh.u || lh.v != rh.v);
+
     }
 }
