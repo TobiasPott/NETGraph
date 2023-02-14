@@ -23,6 +23,7 @@ namespace Core
         public abstract List<V> vertices { get; set; }
         public abstract Dictionary<int, List<E>> edges { get; set; }
 
+        protected Graph() { }
         public Graph(IEnumerable<V> vertices)
         {
             if (vertices != null)
@@ -227,6 +228,7 @@ namespace Core
     // Base class implementation providing interface properties and constructor
     public class GenericGraph<V, E> : Graph<V, E> where V : IEquatable<V> where E : IEdge<E>, IEquatable<E>
     {
+        protected GenericGraph() : base() { }
         public GenericGraph(IEnumerable<V> vertices) : base(vertices)
         { }
 
