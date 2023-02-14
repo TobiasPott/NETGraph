@@ -5,12 +5,12 @@ using System.Text;
 namespace Core
 {
 
-    public interface IEdge {
+    public interface IEdge<E> where E: IEdge<E> {
         int u { get; set; }
         int v { get; set; }
         bool directed { get; set; }
 
-        IEdge reversed();
+        E reversed();
     }
 
 }

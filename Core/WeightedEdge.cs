@@ -14,7 +14,7 @@ namespace Core
     }
 
 
-    public struct WeightedEdge<W> : IEdge, IWeightedEdge<W> where W : IEquatable<W>, IEquatable<WeightedEdge<W>>
+    public struct WeightedEdge<W> : IEdge<WeightedEdge<W>>, IWeightedEdge<W>, IEquatable<WeightedEdge<W>> where W : IEquatable<W>, IEquatable<WeightedEdge<W>>
     {
         public int u { get; set; }
         public int v { get; set; }
@@ -32,7 +32,7 @@ namespace Core
             this.weight = weight;
         }
 
-        public IEdge reversed()
+        public WeightedEdge<W> reversed()
         {
             return new WeightedEdge<W>(v, u, directed, weight);
         }
@@ -40,6 +40,24 @@ namespace Core
         public override string ToString()
         {
             return $"{u} {weight}> {v}";
+        }
+
+        public override bool Equals(object obj)
+        {
+            return obj is WeightedEdge<W> edge && Equals(edge);
+        }
+
+        public bool Equals(WeightedEdge<W> other)
+        {
+            return u == other.u &&
+                   v == other.v &&
+                   directed == other.directed &&
+                   EqualityComparer<W>.Default.Equals(weight, other.weight);
+        }
+
+        public override int GetHashCode()
+        {
+            return HashCode.Combine(u, v, directed, weight);
         }
 
         public static bool operator ==(WeightedEdge<W> lh, WeightedEdge<W> rh) => (lh.u == rh.u && lh.v == rh.v && lh.weight.Equals(rh.weight));

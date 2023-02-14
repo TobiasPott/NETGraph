@@ -5,7 +5,7 @@ using System.Text;
 namespace Core
 {
 
-    public struct UnweightedEdge : IEdge, IEquatable<UnweightedEdge>
+    public struct UnweightedEdge : IEdge<UnweightedEdge>, IEquatable<UnweightedEdge>
     {
         public int u { get; set; }
         public int v { get; set; }
@@ -25,7 +25,7 @@ namespace Core
             return this.u == other.u && this.v == other.v;
         }
 
-        public IEdge reversed()
+        public UnweightedEdge reversed()
         {
             return new UnweightedEdge(v, u, directed);
         }
@@ -34,6 +34,16 @@ namespace Core
         public override string ToString()
         {
             return $"{u} -> {v}";
+        }
+
+        public override int GetHashCode()
+        {
+            return HashCode.Combine(u, v, directed);
+        }
+
+        public override bool Equals(object obj)
+        {
+            return obj is UnweightedEdge edge && Equals(edge);
         }
 
         public static bool operator ==(UnweightedEdge lh, UnweightedEdge rh) => (lh.u == rh.u && lh.v == rh.v);
