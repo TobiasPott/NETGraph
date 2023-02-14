@@ -29,7 +29,7 @@ namespace Core
             if (vertices != null)
                 this.vertices.AddRange(vertices.Distinct());
             // add edge lists for each vertex
-            for(int i = 0; i < this.vertices.Count; i++)
+            for (int i = 0; i < this.vertices.Count; i++)
                 this.edges.Add(i, new List<E>());
         }
 
@@ -98,26 +98,43 @@ namespace Core
         /// ToDo: Check for distinct add to vertex list as it may result in orphaned data and inconsistencies without cleanup
         public virtual int addVertex(V vertex)
         {
-            if (vertex != null)
-            {
-                vertices.Add(vertex);
-
-                int index = vertexCount - 1;
-                edges.Add(index, new List<E>());
-                return index;
-            }
-            return -1;
+            vertices.Add(vertex);
+            int index = vertexCount - 1;
+            edges.Add(index, new List<E>());
+            return index;
         }
-
         /// Add an edge to the graph.
         /// ToDo: check for distinct add to edge list
         public virtual void addEdge(E edge, bool directed = false)
         {
             edges[edge.u].Add(edge);
-            if (!directed || edge.u != edge.v)
-                edges[edge.v].Add((E)edge.reversed());
+            if (!directed && edge.u != edge.v)
+                edges[edge.v].Add(edge.reversed());
 
         }
+        /// This is a convenience method that adds an unweighted edge.
+        public void addEdge(int fromIndex, int toIndex, bool directed = false)
+        {
+            E edge = default(E);
+            if (edge != null)
+            {
+                edge.u = fromIndex;
+                edge.v = toIndex;
+                addEdge(edge, directed);
+            }
+        }
+        /// This is a convenience method that adds an unweighted, undirected edge between the first occurence of two vertices. It takes O(n) time.
+        public void addEdge(V from, V to, bool directed = false)
+        {
+            int fromIndex = indexOfVertex(from);
+            if (fromIndex >= 0)
+            {
+                int toIndex = indexOfVertex(to);
+                if (toIndex >= 0)
+                    addEdge(fromIndex, toIndex, directed);
+            }
+        }
+
 
         /// Removes all edges in both directions between vertices at indexes from & to.
         /// ToDo: Check for index bound or key existence to prevent errors and exceptions
@@ -157,6 +174,32 @@ namespace Core
 
         /// Check whether an edge is in the graph or not.
         public bool edgeExists(E edge) => edges[edge.u].Contains(edge);
+
+
+        /// Check whether there is an edge from one vertex to another vertex.
+        public bool edgeExists(int fromIndex, int toIndex)
+        {
+            E edge = default(E);
+            if(edge != null)
+            {
+                edge.u = fromIndex;
+                edge.v = toIndex;
+                return edgeExists(edge);
+            }
+            return false;
+        }
+        /// Check whether there is an edge from one vertex to another vertex.
+        public bool edgeExists(V from, V to)
+        {
+            int fromIndex = indexOfVertex(from);
+            if (fromIndex >= 0)
+            {
+                int toIndex = indexOfVertex(to);
+                if (toIndex >= 0)
+                    return edgeExists(fromIndex, toIndex);
+            }
+            return false;
+        }
 
         /// Removes a vertex at a specified index, all of the edges attached to it, and renumbers the indexes of the rest of the edges.
         /// ToDo: Check if this works properly, unsure if I messed up code transcription
