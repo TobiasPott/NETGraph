@@ -23,10 +23,13 @@ namespace Core
         public abstract List<V> vertices { get; set; }
         public abstract Dictionary<int, List<E>> edges { get; set; }
 
-        public Graph(ICollection<V> vertices)
+        public Graph(IEnumerable<V> vertices)
         {
             if (vertices != null)
                 this.vertices.AddRange(vertices.Distinct());
+            // add edge lists for each vertex
+            for(int i = 0; i < this.vertices.Count; i++)
+                this.edges.Add(i, new List<E>());
         }
 
 
@@ -92,7 +95,7 @@ namespace Core
 
         /// Add a vertex to the graph.
         /// ToDo: Check for distinct add to vertex list as it may result in orphaned data and inconsistencies without cleanup
-        public int addVertex(V vertex)
+        public virtual int addVertex(V vertex)
         {
             if (vertex != null)
             {
@@ -107,7 +110,7 @@ namespace Core
 
         /// Add an edge to the graph.
         /// ToDo: check for distinct add to edge list
-        public void addEdge(E edge, bool directed = false)
+        public virtual void addEdge(E edge, bool directed = false)
         {
             edges[edge.u].Add(edge);
             if (!directed || edge.u != edge.v)
@@ -224,7 +227,7 @@ namespace Core
     // Base class implementation providing interface properties and constructor
     public class GenericGraph<V, E> : Graph<V, E> where V : IEquatable<V> where E : IEdge<E>, IEquatable<E>
     {
-        public GenericGraph(ICollection<V> vertices) : base(vertices)
+        public GenericGraph(IEnumerable<V> vertices) : base(vertices)
         { }
 
         public override List<V> vertices { get; set; } = new List<V>();
