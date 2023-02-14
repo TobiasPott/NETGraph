@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Xml.Linq;
 
 namespace Core
 {
@@ -14,10 +15,7 @@ namespace Core
         // init is replaced by abstract class constructor enforcing parameter requirement and distinct creation of vertices list
         //void init(ICollection<V> vertices);
         void addEdge(E edge, bool directed);
-
     }
-
-
 
 
     public abstract class Graph<V, E> : IGraph<V, E> where V : IEquatable<V> where E : IEdge<E>, IEquatable<E>
@@ -27,7 +25,8 @@ namespace Core
 
         public Graph(ICollection<V> vertices)
         {
-            this.vertices.AddRange(vertices.Distinct());
+            if (vertices != null)
+                this.vertices.AddRange(vertices.Distinct());
         }
 
 
@@ -214,10 +213,23 @@ namespace Core
             StringBuilder sb = new StringBuilder();
             for (int i = 0; i < vertices.Count; i++)
             {
-                sb.AppendLine($"{vertices[i]} -> {neighborsForIndex(i)}");
+                sb.AppendLine($"{vertices[i]} -> {string.Join(", ", neighborsForIndex(i))}");
             }
             return sb.ToString();
         }
     }
+
+
+
+    // Base class implementation providing interface properties and constructor
+    public class GenericGraph<V, E> : Graph<V, E> where V : IEquatable<V> where E : IEdge<E>, IEquatable<E>
+    {
+        public GenericGraph(ICollection<V> vertices) : base(vertices)
+        { }
+
+        public override List<V> vertices { get; set; } = new List<V>();
+        public override Dictionary<int, List<E>> edges { get; set; } = new Dictionary<int, List<E>>();
+    }
+
 
 }
