@@ -25,11 +25,6 @@ public class Node : IEquatable<Node>
     }
 }
 
-public class MyGraph : GenericGraph<Node, UnweightedEdge>
-{
-    public MyGraph(IEnumerable<Node> vertices) : base(vertices)
-    { }
-}
 
 public class Program
 {
@@ -42,9 +37,10 @@ public class Program
     {
         Node[] vertices = { new Node(VStart),
                             new Node(VMid),
+                            new Node(VEnd),
                             new Node(VEnd)
                         };
-        MyGraph g = new MyGraph(null);
+        UnweightedGraph<Node> g = new UnweightedGraph<Node>();
         int iStart = g.addVertex(new Node(VStart));
         int iMid = g.addVertex(new Node(VMid));
         int iEnd = g.addVertex(new Node(VEnd));
@@ -53,10 +49,6 @@ public class Program
         g.addEdge(new UnweightedEdge(iMid, iEnd, true));
 
         Console.WriteLine(g.ToString());
-
-
-        UnweightedGraph<Node> u = new UnweightedGraph<Node>(vertices, true, true);
-        Console.WriteLine(u.ToString());
 
     }
 
