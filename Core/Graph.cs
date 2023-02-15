@@ -2,36 +2,22 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using System.Xml.Linq;
 
 namespace Core
 {
 
     public interface IGraph<V, E> where V : IEquatable<V> where E : IEdge<E>, IEquatable<E>
     {
-        List<V> vertices { get; set; }
-        Dictionary<int, List<E>> edges { get; set; }
-
-        // init is replaced by abstract class constructor enforcing parameter requirement and distinct creation of vertices list
-        //void init(ICollection<V> vertices);
-        void addEdge(E edge, bool directed);
+        List<V> vertices { get; }
+        Dictionary<int, List<E>> edges { get; }
+        void addEdge(E edge);
     }
 
 
-    public abstract class Graph<V, E> : IGraph<V, E> where V : IEquatable<V> where E : IEdge<E>, IEquatable<E>
+    public abstract class Graph<V, E> : IGraph<V, E> where V : IEquatable<V> where E : IEdge<E>, IEquatable<E>, new()
     {
-        public abstract List<V> vertices { get; set; }
-        public abstract Dictionary<int, List<E>> edges { get; set; }
-
-        protected Graph() { }
-        public Graph(IEnumerable<V> vertices)
-        {
-            if (vertices != null)
-                this.vertices.AddRange(vertices.Distinct());
-            // add edge lists for each vertex
-            for (int i = 0; i < this.vertices.Count; i++)
-                this.edges.Add(i, new List<E>());
-        }
+        public abstract List<V> vertices { get; protected set; }
+        public abstract Dictionary<int, List<E>> edges { get; protected set; }
 
 
         public int vertexCount => vertices.Count;
@@ -42,6 +28,30 @@ namespace Core
             get => vertices[index];
             private set => vertices[index] = value;
         }
+
+
+
+        protected Graph() { }
+        /// Initialize an Graph with the given vertices without any edges.
+        protected Graph(IEnumerable<V> vertices)
+        {
+            if (vertices != null)
+                this.vertices.AddRange(vertices.Distinct());
+        }
+        /// Initialize an Graph consisting of a given path which can be a cycle optionally.
+        protected Graph(IEnumerable<V> path, bool isCycle, bool directed = false) : this(path)
+        {
+            if (vertices.Count >= 2)
+            {
+                for (int i = 0; i < vertices.Count - 1; i++)
+                    this.addEdge(i, i + 1, directed);
+
+                // add cycle edge if path is considered one
+                if (isCycle)
+                    this.addEdge(vertices.Count - 1, 0, directed);
+            }
+        }
+
 
 
         public V vertexAtIndex(int index) => vertices[index];
@@ -104,27 +114,25 @@ namespace Core
             return index;
         }
         /// Add an edge to the graph.
-        /// ToDo: check for distinct add to edge list
-        public virtual void addEdge(E edge, bool directed = false)
+        public virtual void addEdge(E edge)
         {
+            // add edge to first vertex
             edges[edge.u].Add(edge);
-            if (!directed && edge.u != edge.v)
+            // check if undirected and different vertices and add edge to second vertex
+            if (!edge.directed && edge.u != edge.v)
                 edges[edge.v].Add(edge.reversed());
-
         }
         /// This is a convenience method that adds an unweighted edge.
-        public void addEdge(int fromIndex, int toIndex, bool directed = false)
+        public virtual void addEdge(int fromIndex, int toIndex, bool directed = false)
         {
-            E edge = default(E);
-            if (edge != null)
-            {
-                edge.u = fromIndex;
-                edge.v = toIndex;
-                addEdge(edge, directed);
-            }
+            E edge = new E();
+            edge.u = fromIndex;
+            edge.v = toIndex;
+            edge.directed = directed;
+            addEdge(edge);
         }
         /// This is a convenience method that adds an unweighted, undirected edge between the first occurence of two vertices. It takes O(n) time.
-        public void addEdge(V from, V to, bool directed = false)
+        public virtual void addEdge(V from, V to, bool directed = false)
         {
             int fromIndex = indexOfVertex(from);
             if (fromIndex >= 0)
@@ -136,12 +144,13 @@ namespace Core
         }
 
 
+
         /// Removes all edges in both directions between vertices at indexes from & to.
-        /// ToDo: Check for index bound or key existence to prevent errors and exceptions
         public void removeAllEdges(int from, int to, bool bidirectional = true)
         {
-            edges[from].RemoveAll(x => x.v == to);
-            if (bidirectional)
+            if (edges.ContainsKey(from))
+                edges[from].RemoveAll(x => x.v == to);
+            if (bidirectional && edges.ContainsKey(to))
                 edges[to].RemoveAll(x => x.v == from);
         }
 
@@ -174,19 +183,13 @@ namespace Core
 
         /// Check whether an edge is in the graph or not.
         public bool edgeExists(E edge) => edges[edge.u].Contains(edge);
-
-
         /// Check whether there is an edge from one vertex to another vertex.
         public bool edgeExists(int fromIndex, int toIndex)
         {
-            E edge = default(E);
-            if(edge != null)
-            {
-                edge.u = fromIndex;
-                edge.v = toIndex;
-                return edgeExists(edge);
-            }
-            return false;
+            E edge = new E();
+            edge.u = fromIndex;
+            edge.v = toIndex;
+            return edgeExists(edge);
         }
         /// Check whether there is an edge from one vertex to another vertex.
         public bool edgeExists(V from, V to)
@@ -200,6 +203,7 @@ namespace Core
             }
             return false;
         }
+
 
         /// Removes a vertex at a specified index, all of the edges attached to it, and renumbers the indexes of the rest of the edges.
         /// ToDo: Check if this works properly, unsure if I messed up code transcription
@@ -264,19 +268,6 @@ namespace Core
             }
             return sb.ToString();
         }
-    }
-
-
-
-    // Base class implementation providing interface properties and constructor
-    public class GenericGraph<V, E> : Graph<V, E> where V : IEquatable<V> where E : IEdge<E>, IEquatable<E>
-    {
-        protected GenericGraph() : base() { }
-        public GenericGraph(IEnumerable<V> vertices) : base(vertices)
-        { }
-
-        public override List<V> vertices { get; set; } = new List<V>();
-        public override Dictionary<int, List<E>> edges { get; set; } = new Dictionary<int, List<E>>();
     }
 
 

@@ -1,19 +1,21 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 
 namespace Core
 {
-    // ToDo: add interface with default constructor (or parametered constructor/new()) constraint
-    public class UnweightedGraph<V> : GenericGraph<V, UnweightedEdge> where V : IEquatable<V>
+
+    /// An implementation of Graph with some convenience methods for adding and removing UnweightedEdges.
+    public class UnweightedGraph<V> : Graph<V, UnweightedEdge> where V : IEquatable<V>
     {
+        public override List<V> vertices { get; protected set; } = new List<V>();
+        public override Dictionary<int, List<UnweightedEdge>> edges { get; protected set; } = new Dictionary<int, List<UnweightedEdge>>();
+
+
         public UnweightedGraph() : base() { }
         public UnweightedGraph(IEnumerable<V> vertices) : base(vertices)
         { }
-
         /// Initialize an UnweightedGraph consisting of a path which can be a cycle optionally.
-        public UnweightedGraph(IEnumerable<V> path, bool directed = false, bool isCycle = false) : base(path)
+        public UnweightedGraph(IEnumerable<V> path, bool isCycle, bool directed = false) : base(path)
         {
             if (vertices.Count >= 2)
             {
@@ -27,38 +29,20 @@ namespace Core
             }
         }
 
-        ///// This is a convenience method that adds an unweighted edge.
-        //public void addEdge(int fromIndex, int toIndex, bool directed = false) => addEdge(new UnweightedEdge(fromIndex, toIndex, directed), directed);
-
-        ///// This is a convenience method that adds an unweighted, undirected edge between the first occurence of two vertices. It takes O(n) time.
-        //public void addEdge(V from, V to, bool directed = false)
-        //{
-        //    int fromIndex = indexOfVertex(from);
-        //    if(fromIndex >= 0)
-        //    {
-        //        int toIndex = indexOfVertex(to);
-        //        if (toIndex >= 0)
-        //            addEdge(new UnweightedEdge(fromIndex, toIndex, directed), directed);
-        //    }
-        //}
-
-        ///// Check whether there is an edge from one vertex to another vertex.
-        //public bool edgeExists(int fromIndex, int toIndex) => edgeExists(new UnweightedEdge(fromIndex, toIndex, true));
-
-        ///// Check whether there is an edge from one vertex to another vertex.
-        //public bool edgeExists(V from, V to)
-        //{
-        //    int fromIndex = indexOfVertex(from);
-        //    if(fromIndex >= 0)
-        //    {
-        //        int toIndex = indexOfVertex(to);
-        //        if (toIndex >= 0)
-        //            return edgeExists(fromIndex, toIndex);
-        //    }
-        //    return false;
-        //}
+        /// This is a convenience method that adds an unweighted edge.
+        public override void addEdge(int fromIndex, int toIndex, bool directed = false) => addEdge(new UnweightedEdge(fromIndex, toIndex, directed));
+        /// This is a convenience method that adds an unweighted, undirected edge between the first occurence of two vertices. It takes O(n) time.
+        public override void addEdge(V from, V to, bool directed = false)
+        {
+            int fromIndex = indexOfVertex(from);
+            if (fromIndex >= 0)
+            {
+                int toIndex = indexOfVertex(to);
+                if (toIndex >= 0)
+                    addEdge(new UnweightedEdge(fromIndex, toIndex, directed));
+            }
+        }
 
     }
-
 
 }

@@ -1,13 +1,17 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Text;
 
 namespace Core
 {
-    public class UniqueElementsGraph<V, E> : GenericGraph<V, E> where V : IEquatable<V> where E : IEdge<E>, IEquatable<E>
+
+    /// An implementation Graph that ensures there are no pairs of equal vertices and no repeated edges.
+    public class DistinctGraph<V, E> : Graph<V, E> where V : IEquatable<V> where E : IEdge<E>, IEquatable<E>, new()
     {
-        // ToDo: check if base constructor uses derived addVertex method
-        public UniqueElementsGraph(IEnumerable<V> vertices) : base()
+        public override List<V> vertices { get; protected set; } = new List<V>();
+        public override Dictionary<int, List<E>> edges { get; protected set; } = new Dictionary<int, List<E>>();
+
+
+        public DistinctGraph(IEnumerable<V> vertices) : base()
         {
             foreach (V vertex in vertices)
                 this.addVertex(vertex);
@@ -23,11 +27,11 @@ namespace Core
             return index;
         }
         /// Add an edge to the graph. Only allow the edge to be added once
-        public override void addEdge(E edge, bool directed = false)
+        public override void addEdge(E edge)
         {
             if (!edgeExists(edge))
                 edges[edge.u].Add(edge);
-            if (!directed)
+            if (!edge.directed)
             {
                 E reversedEdge = edge.reversed();
                 if (!edgeExists(reversedEdge))
