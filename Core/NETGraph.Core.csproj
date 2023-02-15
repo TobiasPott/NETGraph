@@ -5,4 +5,7 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <AssemblyName>NETGraph</AssemblyName>
+  </PropertyGroup>
 </Project>
