@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using Core;
+using NETGraph;
 
 public class Node : IEquatable<Node>
 {
@@ -45,18 +45,18 @@ public class Program
         int iMid = g.addVertex(new Node(VMid));
         int iEnd = g.addVertex(new Node(VEnd));
 
-        g.addEdge(new UnweightedEdge(iStart, iMid, true));
-        g.addEdge(new UnweightedEdge(iMid, iEnd, true));
-        g.addEdge(new UnweightedEdge(iMid, iEnd, true));
-        g.addEdge(new UnweightedEdge(iMid, iEnd, true));
+        g.addEdge(new Edge(iStart, iMid, true));
+        g.addEdge(new Edge(iMid, iEnd, true));
+        g.addEdge(new Edge(iMid, iEnd, true));
+        g.addEdge(new Edge(iMid, iEnd, true));
         Console.WriteLine($"{g} {g.edgeCount}");
 
 
-        DistinctGraph<Node, UnweightedEdge> u = new DistinctGraph<Node, UnweightedEdge>(vertices);
-        u.addEdge(new UnweightedEdge(iStart, iMid, true));
-        u.addEdge(new UnweightedEdge(iMid, iEnd, true));
-        u.addEdge(new UnweightedEdge(iMid, iEnd, true));
-        u.addEdge(new UnweightedEdge(iMid, iEnd, true));
+        DistinctGraph<Node, Edge> u = new DistinctGraph<Node, Edge>(vertices);
+        u.addEdge(new Edge(iStart, iMid, true));
+        u.addEdge(new Edge(iMid, iEnd, true));
+        u.addEdge(new Edge(iMid, iEnd, true));
+        u.addEdge(new Edge(iMid, iEnd, true));
         Console.WriteLine($"{u} {u.edgeCount}");
     }
 

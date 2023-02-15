@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace Core
+namespace NETGraph
 {
 
     /// An implementation Graph that ensures there are no pairs of equal vertices and no repeated edges.
@@ -33,7 +33,7 @@ namespace Core
                 edges[edge.u].Add(edge);
             if (!edge.directed)
             {
-                E reversedEdge = edge.reversed();
+                E reversedEdge = edge.reversed;
                 if (!edgeExists(reversedEdge))
                     edges[edge.v].Add(reversedEdge);
             }

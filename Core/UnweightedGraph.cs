@@ -1,14 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace Core
+namespace NETGraph
 {
 
     /// An implementation of Graph with some convenience methods for adding and removing UnweightedEdges.
-    public class UnweightedGraph<V> : Graph<V, UnweightedEdge> where V : IEquatable<V>
+    public class UnweightedGraph<V> : Graph<V, Edge> where V : IEquatable<V>
     {
         public override List<V> vertices { get; protected set; } = new List<V>();
-        public override Dictionary<int, List<UnweightedEdge>> edges { get; protected set; } = new Dictionary<int, List<UnweightedEdge>>();
+        public override Dictionary<int, List<Edge>> edges { get; protected set; } = new Dictionary<int, List<Edge>>();
 
 
         public UnweightedGraph() : base() { }
@@ -30,7 +30,7 @@ namespace Core
         }
 
         /// This is a convenience method that adds an unweighted edge.
-        public override void addEdge(int fromIndex, int toIndex, bool directed = false) => addEdge(new UnweightedEdge(fromIndex, toIndex, directed));
+        public override void addEdge(int fromIndex, int toIndex, bool directed = false) => addEdge(new Edge(fromIndex, toIndex, directed));
         /// This is a convenience method that adds an unweighted, undirected edge between the first occurence of two vertices. It takes O(n) time.
         public override void addEdge(V from, V to, bool directed = false)
         {
@@ -39,7 +39,7 @@ namespace Core
             {
                 int toIndex = indexOfVertex(to);
                 if (toIndex >= 0)
-                    addEdge(new UnweightedEdge(fromIndex, toIndex, directed));
+                    addEdge(new Edge(fromIndex, toIndex, directed));
             }
         }
 

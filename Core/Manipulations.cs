@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace Core
+namespace NETGraph
 {
 
     // ToDo: Continue working on left out utilities

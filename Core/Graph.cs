@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace Core
+namespace NETGraph
 {
 
     public interface IGraph<V, E> where V : IEquatable<V> where E : IEdge<E>, IEquatable<E>
@@ -120,7 +120,7 @@ namespace Core
             edges[edge.u].Add(edge);
             // check if undirected and different vertices and add edge to second vertex
             if (!edge.directed && edge.u != edge.v)
-                edges[edge.v].Add(edge.reversed());
+                edges[edge.v].Add(edge.reversed);
         }
         /// This is a convenience method that adds an unweighted edge.
         public virtual void addEdge(int fromIndex, int toIndex, bool directed = false)
