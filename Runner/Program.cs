@@ -47,9 +47,17 @@ public class Program
 
         g.addEdge(new UnweightedEdge(iStart, iMid, true));
         g.addEdge(new UnweightedEdge(iMid, iEnd, true));
+        g.addEdge(new UnweightedEdge(iMid, iEnd, true));
+        g.addEdge(new UnweightedEdge(iMid, iEnd, true));
+        Console.WriteLine($"{g} {g.edgeCount}");
 
-        Console.WriteLine(g.ToString());
 
+        DistinctGraph<Node, UnweightedEdge> u = new DistinctGraph<Node, UnweightedEdge>(vertices);
+        u.addEdge(new UnweightedEdge(iStart, iMid, true));
+        u.addEdge(new UnweightedEdge(iMid, iEnd, true));
+        u.addEdge(new UnweightedEdge(iMid, iEnd, true));
+        u.addEdge(new UnweightedEdge(iMid, iEnd, true));
+        Console.WriteLine($"{u} {u.edgeCount}");
     }
 
 }
