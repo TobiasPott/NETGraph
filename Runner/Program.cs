@@ -28,7 +28,8 @@ public class Node : IEquatable<Node>
 
 public class Program
 {
-
+    public const string NInput = "input";
+    public const string NOutput = "output";
     public const string VStart = "Start";
     public const string VMid = "Mitte";
     public const string VEnd = "Ende";
@@ -45,19 +46,21 @@ public class Program
         int iMid = g.addVertex(new Node(VMid));
         int iEnd = g.addVertex(new Node(VEnd));
 
+
         g.addEdge(new Edge(iStart, iMid, true));
         g.addEdge(new Edge(iMid, iEnd, true));
         g.addEdge(new Edge(iMid, iEnd, true));
         g.addEdge(new Edge(iMid, iEnd, true));
-        Console.WriteLine($"{g} {g.edgeCount}");
+        Console.WriteLine($"{g}{g.edgeCount}");
 
 
-        DistinctGraph<Node, Edge> u = new DistinctGraph<Node, Edge>(vertices);
-        u.addEdge(new Edge(iStart, iMid, true));
-        u.addEdge(new Edge(iMid, iEnd, true));
-        u.addEdge(new Edge(iMid, iEnd, true));
-        u.addEdge(new Edge(iMid, iEnd, true));
-        Console.WriteLine($"{u} {u.edgeCount}");
+        DistinctGraph<Node, NamedEdge<string>> u = new DistinctGraph<Node, NamedEdge<string>>(vertices);
+        u.addEdge(new NamedEdge<string>(iStart, iMid, NOutput, NInput));
+        u.addEdge(new NamedEdge<string>(iStart, iMid, NInput, NOutput));
+        u.addEdge(new NamedEdge<string>(iMid, iEnd, NOutput, NInput));
+        Console.WriteLine($"{u}{u.edgeCount}");
+
+        Console.WriteLine($"{string.Join(Environment.NewLine, u.edgesForIndex(0))}");
     }
 
 }
