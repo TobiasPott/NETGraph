@@ -61,6 +61,12 @@ public class Program
         Console.WriteLine($"{u}{u.edgeCount}");
 
         Console.WriteLine($"{string.Join(Environment.NewLine, u.edgesForIndex(0))}");
+
+        int searchStart = 0;
+        int searchTarget = 2;
+        Node targetNode = u.vertexAtIndex(1);
+        Console.WriteLine($"DFS: {u.dfs(searchStart, (x) => x == searchTarget, x => x, _ => true)}");
+        Console.WriteLine($"BFS: {u.bfs(searchStart, (x) => x == searchTarget, x => x, _ => true)}");
     }
 
 }
