@@ -12,7 +12,6 @@ namespace NETGraph
         Dictionary<int, List<E>> edges { get; }
         void addEdge(E edge);
         void buildWith(IEnumerable<V> vertices);
-        IEnumerable<E> edgeList();
     }
 
 
@@ -293,6 +292,7 @@ namespace NETGraph
             vertices.RemoveAt(index);
         }
 
+
         public override string ToString()
         {
             StringBuilder sb = new StringBuilder();
@@ -312,7 +312,7 @@ namespace NETGraph
         /// Returns a graph of the same type with all edges reversed.
         ///
         /// - returns: Graph of the same type with all edges reversed.
-        public static G reversed<G, GV, GE>(this G graph) where G : IGraph<GV, GE>, new() where GV : IEquatable<GV> where GE : IEdge<GE>, IEquatable<GE>, new()
+        public static G reversed<G, GV, GE>(this G graph) where G : Graph<GV, GE>, new() where GV : IEquatable<GV> where GE : IEdge<GE>, IEquatable<GE>, new()
         {
             G reversed = new G();
             reversed.buildWith(graph.vertices);

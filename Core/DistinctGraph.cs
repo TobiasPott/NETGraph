@@ -37,6 +37,12 @@ namespace NETGraph
                     edges[edge.v].Add(reversedEdge);
             }
         }
+
+        /// Returns a graph of the same type with all edges reversed.
+        ///
+        /// - returns: Graph of the same type with all edges reversed.
+        public DistinctGraph<V, E> reversed() => this.reversed<DistinctGraph<V, E>, V, E>();
+
     }
 }
 

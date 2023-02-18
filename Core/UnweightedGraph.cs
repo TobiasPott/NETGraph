@@ -29,6 +29,11 @@ namespace NETGraph
             }
         }
 
+
+        /// Returns a graph of the same type with all edges reversed.
+        ///
+        /// - returns: Graph of the same type with all edges reversed.
+        public UnweightedGraph<V> reversed() => this.reversed<UnweightedGraph<V>, V, Edge>();
     }
 
 }
