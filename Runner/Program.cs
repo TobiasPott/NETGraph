@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using NETGraph;
 
 public class Node : IEquatable<Node>
@@ -56,8 +57,9 @@ public class Program
 
         DistinctGraph<Node, NamedEdge<string>> u = new DistinctGraph<Node, NamedEdge<string>>(vertices);
         u.addEdge(new NamedEdge<string>(0, 1, NOutput, NInput));
-        u.addEdge(new NamedEdge<string>(0, 1, NInput, NOutput));
+        //u.addEdge(new NamedEdge<string>(0, 1, NInput, NOutput));
         u.addEdge(new NamedEdge<string>(1, 2, NOutput, NInput));
+        u.addEdge(new NamedEdge<string>(2, 0, NOutput, NInput));
         Console.WriteLine($"{u}{u.edgeCount}");
 
         Console.WriteLine($"{string.Join(Environment.NewLine, u.edgesForIndex(0))}");
@@ -76,6 +78,13 @@ public class Program
         DistinctGraph<Node, NamedEdge<string>> rU = u.reversed();
         Console.WriteLine($"DFS: {rU.dfs(searchTarget, (x) => x == searchStart, x => x, _ => true)}");
         Console.WriteLine($"BFS: {rU.bfs(searchTarget, (x) => x == searchStart, x => x, _ => true)}");
+
+
+        List<List<Node>> cycles = u.detectCycles();
+        Console.WriteLine($"Detected Cycles: {cycles.Count} {string.Join(", ", cycles.Select(x => x.Count))}");
+
+        List<List<NamedEdge<string>>> cyclesEdges = u.detectCyclesAsEdges();
+        Console.WriteLine($"Detected Cycles: {cyclesEdges.Count} {string.Join(", ", cyclesEdges.Select(x => x.Count))}");
     }
 
 }

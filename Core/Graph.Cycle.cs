@@ -7,75 +7,79 @@ using System.Text;
 namespace NETGraph
 {
 
-    // ToDo: Continue working on left out utilities
-
-    // Stub class for missing helper and utility methods for different graph types and situations
-    //  *   [+] Cycle
-
-    public static class Cycle
+    public abstract partial class Graph<V, E> where V : IEquatable<V> where E : IEdge<E>, IEquatable<E>, new()
     {
-        /*
-        /// Functions for finding cycles in a `Graph`
-        // MARK: Extension to `Graph` for detecting cycles
-        public extension Graph {
-            // Based on an algorithm developed by Hongbo Liu and Jiaxin Wang
-            // Liu, Hongbo, and Jiaxin Wang. "A new way to enumerate cycles in graph."
-            // In Telecommunications, 2006. AICT-ICIW'06. International Conference on Internet and
-            // Web Applications and Services/Advanced International Conference on, pp. 57-57. IEEE, 2006.
-    
-            /// Find all of the cycles in a `Graph`, expressed as vertices.
-            ///
-            /// - parameter upToLength: Does the caller only want to detect cycles up to a certain length?
-            /// - returns: a list of lists of vertices in cycles
-            func detectCycles(upToLength maxK: Int = Int.max) -> [[V]] {
-                var cycles = [[V]]() // store of all found cycles
-                var openPaths: [[V]] = vertices.map{ [$0] } // initial open paths are single vertex lists
-        
-                while openPaths.count > 0 {
-                    let openPath = openPaths.removeFirst() // queue pop()
-                    if openPath.count > maxK { return cycles } // do we want to stop at a certain length k
-                    if let tail = openPath.last, let head = openPath.first, let neighbors = neighborsForVertex(tail) {
-                        for neighbor in neighbors {
-                            if neighbor == head {
-                                cycles.append(openPath + [neighbor]) // found a cycle
-                            } else if !openPath.contains(neighbor) && indexOfVertex(neighbor)! > indexOfVertex(head)! {
-                                openPaths.append(openPath + [neighbor]) // another open path to explore
-                            }
-                        }
-                    }
-                }
-        
-                return cycles
-            }
 
-            typealias Path = [E]
-            typealias PathTuple = (start: Int, path: Path)
-            /// Find all of the cycles in a `Graph`, expressed as edges.
-            ///
-            /// - parameter upToLength: Does the caller only want to detect cycles up to a certain length?
-            /// - returns: a list of lists of edges in cycles
-            func detectCyclesAsEdges(upToLength maxK: Int = Int.max) -> [[E]] {
+        /// Find all of the cycles in a `Graph`, expressed as edges.
+        ///
+        /// - parameter upToLength: Does the caller only want to detect cycles up to a certain length?
+        /// - returns: a list of lists of edges in cycles
+        public List<List<V>> detectCycles(int upToLength = int.MaxValue)
+        {
+            List<List<V>> cycles = new List<List<V>>();
+            Queue<List<V>> openPaths = new Queue<List<V>>(this.vertices.Select(v => new List<V>() { v }));
 
-                var cycles = [[E]]() // store of all found cycles
-                var openPaths: [PathTuple] = (0..<vertices.count).map{ ($0, []) } // initial open paths start at a vertex, and are empty
-                while openPaths.count > 0 {
-                    let openPath = openPaths.removeFirst() // queue pop()
-                    if openPath.path.count > maxK { return cycles } // do we want to stop at a certain length k
-                    let tail = openPath.path.last?.v ?? openPath.start
-                    let head = openPath.start
-                    let neighborEdges = edgesForIndex(tail)
-                    for neighborEdge in neighborEdges {
-                        if neighborEdge.v == head {
-                            cycles.append(openPath.path + [neighborEdge]) // found a cycle
-                        } else if !openPath.path.contains(where: { $0.u == neighborEdge.v || $0.v == neighborEdge.v }) && neighborEdge.v > head {
-                            openPaths.append((openPath.start, openPath.path + [neighborEdge])) // another open path to explore
-                        }
+            while (openPaths.Count > 0)
+            {
+                List<V> openPath = openPaths.Dequeue();
+                if (openPath.Count > upToLength)
+                    return cycles;
+
+                if (openPath.Count > 0)
+                {
+                    V tail = openPath[openPath.Count - 1];
+                    V head = openPath[0];
+                    IEnumerable<V> neighbours = neighborsForVertex(tail);
+                    foreach (V neighbour in neighbours)
+                    {
+                        if (neighbour.Equals(head))
+                            cycles.Add(openPath.Append(neighbour).ToList());
+                        else if (!openPath.Contains(neighbour) && indexOfVertex(neighbour) > indexOfVertex(head))
+                            openPaths.Enqueue(openPath.Append(neighbour).ToList());
                     }
+
                 }
 
-                return cycles
             }
+
+            return cycles;
         }
-        */
+
+        /// Find all of the cycles in a `Graph`, expressed as edges.
+        ///
+        /// - parameter upToLength: Does the caller only want to detect cycles up to a certain length?
+        /// - returns: a list of lists of edges in cycles
+        public List<List<E>> detectCyclesAsEdges(int upToLength = int.MaxValue)
+        {
+
+            List<List<E>> cycles = new List<List<E>>();
+            Queue<(int start, List<E> path)> openPaths = new Queue<(int, List<E>)>(Enumerable.Range(0, this.vertices.Count).Select(x => (x, new List<E>())));
+
+            while (openPaths.Count > 0)
+            {
+                (int start, List<E> path) openPath = openPaths.Dequeue();
+                List<E> path = openPath.path;
+
+                if (path.Count > upToLength)
+                    return cycles;
+
+                int tail = path.Count > 0 ? path.Last().v : openPath.start;
+                int head = openPath.start;
+
+                IEnumerable<E> neighbourEdges = edgesForIndex(tail);
+                foreach (E neighbourEdge in neighbourEdges)
+                {
+                    if (neighbourEdge.v == head)
+                        cycles.Add(path.Append(neighbourEdge).ToList());
+                    else if (!path.Any(e => e.u == neighbourEdge.v || e.v == neighbourEdge.v || neighbourEdge.v > head))
+                        openPaths.Enqueue((openPath.start, path.Append(neighbourEdge).ToList()));
+
+                }
+
+            }
+
+            return cycles;
+        }
+
     }
 }
