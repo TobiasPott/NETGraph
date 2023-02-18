@@ -16,8 +16,8 @@ namespace NETGraph
 
     public abstract class Graph<V, E> : IGraph<V, E> where V : IEquatable<V> where E : IEdge<E>, IEquatable<E>, new()
     {
-        public abstract List<V> vertices { get; protected set; }
-        public abstract Dictionary<int, List<E>> edges { get; protected set; }
+        public List<V> vertices { get; protected set; } = new List<V>();
+        public Dictionary<int, List<E>> edges { get; protected set; } = new Dictionary<int, List<E>>();
 
 
         public int vertexCount => vertices.Count;
@@ -32,28 +32,80 @@ namespace NETGraph
 
 
         protected Graph() { }
+
         /// Initialize an Graph with the given vertices without any edges.
-        protected Graph(IEnumerable<V> vertices)
+        public void buildWith(IEnumerable<V> vertices, bool complete = false)
         {
+            // graph gets cleared upon build
+            this.vertices.Clear();
+            this.edges.Clear();
+
             if (vertices != null)
                 this.vertices.AddRange(vertices.Distinct());
+
+            /// Constructs an undirected UnweightedGraph isomorphic to a complete graph.
+            if (complete)
+                for (int i = 0; i < this.vertices.Count; i++)
+                    for (int j = 0; j < i; j++)
+                        this.addEdge(i, j);
         }
         /// Initialize an Graph consisting of a given path which can be a cycle optionally.
-        protected Graph(IEnumerable<V> path, bool isCycle, bool directed = false) : this(path)
+        public void buildWith(IEnumerable<V> path, bool isCycle, bool directed = false)
         {
-            if (vertices.Count >= 2)
+            // graph gets cleared upon build
+            this.vertices.Clear();
+            this.edges.Clear();
+
+            if (this.vertices != null)
+                this.vertices.AddRange(path.Distinct());
+
+            if (this.vertices.Count >= 2)
             {
-                for (int i = 0; i < vertices.Count - 1; i++)
+                for (int i = 0; i < this.vertices.Count - 1; i++)
                     this.addEdge(i, i + 1, directed);
 
                 // add cycle edge if path is considered one
                 if (isCycle)
-                    this.addEdge(vertices.Count - 1, 0, directed);
+                    this.addEdge(this.vertices.Count - 1, 0, directed);
+            }
+        }
+
+        /// Constructs an undirected UnweightedGraph isomorphic to a star graph.
+        public void buildWith(V center, IEnumerable<V> leafs)
+        {
+            this.buildWith(leafs.Prepend(center));
+            int leafCount = leafs.Count();
+            if (leafCount > 0)
+            {
+                for (int i = 1; i < leafCount; i++)
+                    addEdge(0, i);
             }
         }
 
 
+        /*
+/// A type used to construct UnweightedGraph with vertices of type V that is isomorphic to a complete graph.
+/// https://en.wikipedia.org/wiki/Complete_graph
+public enum CompleteGraph<V: Equatable & Codable> {
 
+    /// Constructs an undirected UnweightedGraph isomorphic to a complete graph.
+    ///
+    /// - Parameter vertices: The set of vertices of the graph.
+    /// - Returns: An UnweightedGraph complete graph, a graph with each vertex connected to all the vertices except itself.
+    public static func build(withVertices vertices: [V]) -> UnweightedGraph<V> {
+        let g = UnweightedGraph<V>(vertices: vertices)
+
+        for i in 0..<vertices.count {
+            for j in 0..<i {
+                g.addEdge(fromIndex: i, toIndex: j)
+            }
+        }
+        return g
+    }
+}
+        
+
+        */
         public V vertexAtIndex(int index) => vertices[index];
         public int indexOfVertex(V vertex) => vertices.IndexOf(vertex);
 

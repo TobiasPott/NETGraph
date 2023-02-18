@@ -21,7 +21,6 @@ namespace NETGraph
         }
 
 
-
         public NamedEdge<N> reversed => new NamedEdge<N>(v, u, vName, uName);
 
         public override string ToString()

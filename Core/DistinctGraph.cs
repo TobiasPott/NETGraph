@@ -7,10 +7,9 @@ namespace NETGraph
     /// An implementation Graph that ensures there are no pairs of equal vertices and no repeated edges.
     public class DistinctGraph<V, E> : Graph<V, E> where V : IEquatable<V> where E : IEdge<E>, IEquatable<E>, new()
     {
-        public override List<V> vertices { get; protected set; } = new List<V>();
-        public override Dictionary<int, List<E>> edges { get; protected set; } = new Dictionary<int, List<E>>();
 
-
+        public DistinctGraph() : base()
+        { }
         public DistinctGraph(IEnumerable<V> vertices) : base()
         {
             foreach (V vertex in vertices)

@@ -7,26 +7,12 @@ namespace NETGraph
     /// An implementation of Graph with some convenience methods for adding and removing UnweightedEdges.
     public class UnweightedGraph<V> : Graph<V, Edge> where V : IEquatable<V>
     {
-        public override List<V> vertices { get; protected set; } = new List<V>();
-        public override Dictionary<int, List<Edge>> edges { get; protected set; } = new Dictionary<int, List<Edge>>();
-
 
         public UnweightedGraph() : base() { }
-        public UnweightedGraph(IEnumerable<V> vertices) : base(vertices)
-        { }
         /// Initialize an UnweightedGraph consisting of a path which can be a cycle optionally.
-        public UnweightedGraph(IEnumerable<V> path, bool isCycle, bool directed = false) : base(path)
+        public UnweightedGraph(IEnumerable<V> path, bool isCycle, bool directed = false) : base()
         {
-            if (vertices.Count >= 2)
-            {
-                for (int i = 0; i < vertices.Count - 1; i++)
-                    this.addEdge(i, i + 1, directed);
-
-                // add cycle edge if path is considered one
-                if (isCycle)
-                    this.addEdge(vertices.Count - 1, 0, directed);
-
-            }
+            buildWith(path, isCycle, directed);
         }
 
         /// This is a convenience method that adds an unweighted edge.
