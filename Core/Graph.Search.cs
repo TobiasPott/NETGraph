@@ -7,6 +7,7 @@ namespace NETGraph
 
     public abstract partial class Graph<V, E> where V : IEquatable<V> where E : IEdge<E>, IEquatable<E>, new()
     {
+
         public enum SearchAlgorithm
         {
             DepthFirst,

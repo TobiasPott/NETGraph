@@ -6,7 +6,7 @@ namespace NETGraph
     // Stub class for missing helper and utility methods for different graph types and situations
     //  *   [ ] Sort
 
-    public static class Sort
+    public abstract partial class Graph<V, E> where V : IEquatable<V> where E : IEdge<E>, IEquatable<E>, new()
     {
     }
 }

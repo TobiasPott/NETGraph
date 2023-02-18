@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace NETGraph
+namespace NETGraph.Graphs
 {
 
     /// An implementation of Graph with some convenience methods for adding and removing UnweightedEdges.

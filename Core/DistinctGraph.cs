@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace NETGraph
+namespace NETGraph.Graphs
 {
 
     /// An implementation Graph that ensures there are no pairs of equal vertices and no repeated edges.
