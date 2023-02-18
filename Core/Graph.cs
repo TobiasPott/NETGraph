@@ -15,7 +15,7 @@ namespace NETGraph
     }
 
 
-    public abstract class Graph<V, E> : IGraph<V, E> where V : IEquatable<V> where E : IEdge<E>, IEquatable<E>, new()
+    public abstract partial class Graph<V, E> : IGraph<V, E> where V : IEquatable<V> where E : IEdge<E>, IEquatable<E>, new()
     {
         public List<V> vertices { get; protected set; } = new List<V>();
         public Dictionary<int, List<E>> edges { get; protected set; } = new Dictionary<int, List<E>>();

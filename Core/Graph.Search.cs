@@ -5,72 +5,67 @@ using System.Linq;
 namespace NETGraph
 {
 
-    public static class Search
+    public abstract partial class Graph<V, E> where V : IEquatable<V> where E : IEdge<E>, IEquatable<E>, new()
     {
-        public enum Algorithm
+        public enum SearchAlgorithm
         {
             DepthFirst,
             BreadthFirst
         }
 
-        public static int search<V, E>(this Graph<V, E> graph, int fromIndex, Func<int, bool> goalTest, Func<IEnumerable<E>, IEnumerable<E>> visitOrder, Func<E, bool> reducer, Algorithm algorithm)
-            where V : IEquatable<V> where E : IEdge<E>, IEquatable<E>, new()
+        public int search(int fromIndex, Func<int, bool> goalTest, Func<IEnumerable<E>, IEnumerable<E>> visitOrder, Func<E, bool> reducer, SearchAlgorithm algorithm)
         {
             switch (algorithm)
             {
-                case Algorithm.DepthFirst:
-                    return dfs(graph, fromIndex, goalTest, visitOrder, reducer);
-                case Algorithm.BreadthFirst:
-                    return bfs(graph, fromIndex, goalTest, visitOrder, reducer);
+                case SearchAlgorithm.DepthFirst:
+                    return this.dfs(fromIndex, goalTest, visitOrder, reducer);
+                case SearchAlgorithm.BreadthFirst:
+                    return this.bfs(fromIndex, goalTest, visitOrder, reducer);
             }
             return -1;
         }
-        public static IEnumerable<E> search<V, E>(this Graph<V, E> graph, int fromIndex, Func<V, bool> goalTest, Algorithm algorithm)
-            where V : IEquatable<V> where E : IEdge<E>, IEquatable<E>, new()
+        public IEnumerable<E> search(int fromIndex, Func<V, bool> goalTest, SearchAlgorithm algorithm)
         {
 
             switch (algorithm)
             {
-                case Algorithm.DepthFirst:
-                    return dfs(graph, fromIndex, goalTest);
-                case Algorithm.BreadthFirst:
-                    return bfs(graph, fromIndex, goalTest);
+                case SearchAlgorithm.DepthFirst:
+                    return this.dfs(fromIndex, goalTest);
+                case SearchAlgorithm.BreadthFirst:
+                    return this.bfs(fromIndex, goalTest);
             }
             return Enumerable.Empty<E>();
         }
-        public static IEnumerable<E> search<V, E>(this Graph<V, E> graph, V from, Func<V, bool> goalTest, Algorithm algorithm)
-            where V : IEquatable<V> where E : IEdge<E>, IEquatable<E>, new()
+        public IEnumerable<E> search(V from, Func<V, bool> goalTest, SearchAlgorithm algorithm)
         {
             switch (algorithm)
             {
-                case Algorithm.DepthFirst:
-                    return dfs(graph, from, goalTest);
-                case Algorithm.BreadthFirst:
-                    return bfs(graph, from, goalTest);
+                case SearchAlgorithm.DepthFirst:
+                    return this.dfs(from, goalTest);
+                case SearchAlgorithm.BreadthFirst:
+                    return this.bfs(from, goalTest);
             }
             return Enumerable.Empty<E>();
         }
-        public static IEnumerable<E> search<V, E>(this Graph<V, E> graph, int fromIndex, int toIndex, Algorithm algorithm)
-            where V : IEquatable<V> where E : IEdge<E>, IEquatable<E>, new()
+        public IEnumerable<E> search(int fromIndex, int toIndex, SearchAlgorithm algorithm)
         {
             switch (algorithm)
             {
-                case Algorithm.DepthFirst:
-                    return dfs(graph, fromIndex, toIndex);
-                case Algorithm.BreadthFirst:
-                    return bfs(graph, fromIndex, toIndex);
+                case SearchAlgorithm.DepthFirst:
+                    return this.dfs(fromIndex, toIndex);
+                case SearchAlgorithm.BreadthFirst:
+                    return this.bfs(fromIndex, toIndex);
             }
             return Enumerable.Empty<E>();
         }
-        public static IEnumerable<E> search<V, E>(this Graph<V, E> graph, V from, V to, Algorithm algorithm)
-            where V : IEquatable<V> where E : IEdge<E>, IEquatable<E>, new()
+        public IEnumerable<E> search(V from, V to, SearchAlgorithm algorithm)
         {
             switch (algorithm)
             {
-                case Algorithm.DepthFirst:
-                    return dfs(graph, from, to);
-                case Algorithm.BreadthFirst:
-                    return bfs(graph, from, to);
+                case SearchAlgorithm.DepthFirst:
+                    return this.dfs(from, to);
+                case SearchAlgorithm.BreadthFirst:
+                    return this.bfs(from, to);
             }
             return Enumerable.Empty<E>();
         }
@@ -89,20 +84,16 @@ namespace NETGraph
         ///              is the edge from the previously visited vertex to the currently visited vertex.
         ///              If the return value is false, the neighbours of the currently visited vertex won't be visited.
         /// - Returns: The index of the first vertex found to satisfy goalTest or nil if no vertex is found.
-        public static int dfs<V, E>(this Graph<V, E> graph, int fromIndex,
-                            Func<int, bool> goalTest,
-                            Func<IEnumerable<E>, IEnumerable<E>> visitOrder,
-                            Func<E, bool> reducer)
-        where V : IEquatable<V> where E : IEdge<E>, IEquatable<E>, new()
+        public int dfs(int fromIndex, Func<int, bool> goalTest, Func<IEnumerable<E>, IEnumerable<E>> visitOrder, Func<E, bool> reducer)
         {
             if (goalTest(fromIndex))
                 return fromIndex;
 
-            bool[] visited = Enumerable.Repeat(false, graph.vertexCount).ToArray();
+            bool[] visited = Enumerable.Repeat(false, this.vertexCount).ToArray();
             Stack<E> stack = new Stack<E>();
 
             visited[fromIndex] = true;
-            IEnumerable<E> neighbours = graph.edgesForIndex(fromIndex);
+            IEnumerable<E> neighbours = this.edgesForIndex(fromIndex);
             // iterate over all neighbour edges and push them onto stack
             foreach (E edge in (visitOrder?.Invoke(neighbours) ?? neighbours))
             {
@@ -124,7 +115,7 @@ namespace NETGraph
                 if (shouldVisitNeighbours)
                 {
                     visited[v] = true;
-                    IEnumerable<E> edgeNeighbours = graph.edgesForIndex(v);
+                    IEnumerable<E> edgeNeighbours = this.edgesForIndex(v);
                     foreach (E e in (visitOrder?.Invoke(edgeNeighbours) ?? edgeNeighbours))
                         if (!visited[e.v])
                             stack.Push(e);
@@ -140,10 +131,9 @@ namespace NETGraph
         /// - parameter fromIndex: The index of the starting vertex.
         /// - parameter goalTest: Returns true if a given vertex is a goal.
         /// - returns: An array of Edges containing the entire route, or an empty array if no route could be found
-        public static IEnumerable<E> dfs<V, E>(this Graph<V, E> graph, int fromIndex, Func<V, bool> goalTest)
-            where V : IEquatable<V> where E : IEdge<E>, IEquatable<E>, new()
+        public IEnumerable<E> dfs(int fromIndex, Func<V, bool> goalTest)
         {
-            bool[] visited = Enumerable.Repeat(false, graph.vertexCount).ToArray();
+            bool[] visited = Enumerable.Repeat(false, this.vertexCount).ToArray();
             Stack<int> stack = new Stack<int>();
             Dictionary<int, E> pathDict = new Dictionary<int, E>();
             stack.Push(fromIndex);
@@ -156,10 +146,10 @@ namespace NETGraph
 
                 visited[v] = true;
                 // return path if index fullfills goalTest delegate
-                if (goalTest(graph.vertexAtIndex(v)))
+                if (goalTest(this.vertexAtIndex(v)))
                     return pathDictToPath(fromIndex, v, pathDict);
 
-                foreach (E edge in graph.edgesForIndex(v))
+                foreach (E edge in this.edgesForIndex(v))
                 {
                     if (!visited[edge.v])
                     {
@@ -177,12 +167,11 @@ namespace NETGraph
         /// - parameter from: The index of the starting vertex.
         /// - parameter goalTest: Returns true if a given vertex is a goal.
         /// - returns: An array of Edges containing the entire route, or an empty array if no route could be found
-        public static IEnumerable<E> dfs<V, E>(this Graph<V, E> graph, V from, Func<V, bool> goalTest)
-            where V : IEquatable<V> where E : IEdge<E>, IEquatable<E>, new()
+        public IEnumerable<E> dfs(V from, Func<V, bool> goalTest)
         {
-            int u = graph.indexOfVertex(from);
+            int u = this.indexOfVertex(from);
             if (u != -1)
-                return graph.dfs(u, goalTest);
+                return this.dfs(u, goalTest);
             return Enumerable.Empty<E>();
         }
 
@@ -191,10 +180,9 @@ namespace NETGraph
         /// - parameter fromIndex: The index of the starting vertex.
         /// - parameter toIndex: The index of the ending vertex.
         /// - returns: An array of Edges containing the entire route, or an empty array if no route could be found
-        public static IEnumerable<E> dfs<V, E>(this Graph<V, E> graph, int fromIndex, int toIndex)
-            where V : IEquatable<V> where E : IEdge<E>, IEquatable<E>, new()
+        public IEnumerable<E> dfs(int fromIndex, int toIndex)
         {
-            bool[] visited = Enumerable.Repeat(false, graph.vertexCount).ToArray();
+            bool[] visited = Enumerable.Repeat(false, this.vertexCount).ToArray();
             Stack<int> stack = new Stack<int>();
             Dictionary<int, E> pathDict = new Dictionary<int, E>();
             stack.Push(fromIndex);
@@ -210,7 +198,7 @@ namespace NETGraph
                 if (v == toIndex)
                     return pathDictToPath(fromIndex, toIndex, pathDict);
 
-                foreach (E edge in graph.edgesForIndex(v))
+                foreach (E edge in this.edgesForIndex(v))
                 {
                     if (!visited[edge.v])
                     {
@@ -227,15 +215,14 @@ namespace NETGraph
         /// - parameter from: The starting vertex.
         /// - parameter to: The ending vertex.
         /// - returns: An array of Edges containing the entire route, or an empty array if no route could be found
-        public static IEnumerable<E> dfs<V, E>(this Graph<V, E> graph, V from, V to)
-            where V : IEquatable<V> where E : IEdge<E>, IEquatable<E>, new()
+        public IEnumerable<E> dfs(V from, V to)
         {
-            int u = graph.indexOfVertex(from);
+            int u = this.indexOfVertex(from);
             if (u != -1)
             {
-                int v = graph.indexOfVertex(to);
+                int v = this.indexOfVertex(to);
                 if (v != -1)
-                    return graph.dfs(u, v);
+                    return this.dfs(u, v);
             }
             return Enumerable.Empty<E>();
         }
@@ -291,6 +278,7 @@ namespace NETGraph
     }
         */
 
+
         #region Breadth-First Algorithm
         /// Perform a computation over the graph visiting the vertices using a breadth-first algorithm.
         /// - Parameters:
@@ -303,20 +291,16 @@ namespace NETGraph
         ///              is the edge from the previously visited vertex to the currently visited vertex.
         ///              If the return value is false, the neighbours of the currently visited vertex won't be visited.
         /// - Returns: The index of the first vertex found to satisfy goalTest or nil if no vertex is found.
-        public static int bfs<V, E>(this Graph<V, E> graph, int fromIndex,
-                        Func<int, bool> goalTest,
-                        Func<IEnumerable<E>, IEnumerable<E>> visitOrder,
-                        Func<E, bool> reducer)
-            where V : IEquatable<V> where E : IEdge<E>, IEquatable<E>, new()
+        public int bfs(int fromIndex, Func<int, bool> goalTest, Func<IEnumerable<E>, IEnumerable<E>> visitOrder, Func<E, bool> reducer)
         {
             if (goalTest(fromIndex))
                 return fromIndex;
 
-            bool[] visited = Enumerable.Repeat(false, graph.vertexCount).ToArray();
+            bool[] visited = Enumerable.Repeat(false, this.vertexCount).ToArray();
             Queue<E> queue = new Queue<E>();
 
             visited[fromIndex] = true;
-            IEnumerable<E> neighbours = graph.edgesForIndex(fromIndex);
+            IEnumerable<E> neighbours = this.edgesForIndex(fromIndex);
             // iterate over all neighbour edges and push them onto stack
             foreach (E edge in (visitOrder?.Invoke(neighbours) ?? neighbours))
             {
@@ -338,7 +322,7 @@ namespace NETGraph
                 bool shouldVisitNeighbours = reducer?.Invoke(edge) ?? true;
                 if (shouldVisitNeighbours)
                 {
-                    IEnumerable<E> edgeNeighbours = graph.edgesForIndex(v);
+                    IEnumerable<E> edgeNeighbours = this.edgesForIndex(v);
                     foreach (E e in (visitOrder?.Invoke(edgeNeighbours) ?? edgeNeighbours))
                     {
                         if (!visited[e.v])
@@ -358,10 +342,9 @@ namespace NETGraph
         /// - parameter fromIndex: The index of the starting vertex.
         /// - parameter goalTest: Returns true if a given vertex is a goal.
         /// - returns: An array of Edges containing the entire route, or an empty array if no route could be found
-        public static IEnumerable<E> bfs<V, E>(this Graph<V, E> graph, int fromIndex, Func<V, bool> goalTest)
-            where V : IEquatable<V> where E : IEdge<E>, IEquatable<E>, new()
+        public IEnumerable<E> bfs(int fromIndex, Func<V, bool> goalTest)
         {
-            bool[] visited = Enumerable.Repeat(false, graph.vertexCount).ToArray();
+            bool[] visited = Enumerable.Repeat(false, this.vertexCount).ToArray();
             Queue<int> queue = new Queue<int>();
             Dictionary<int, E> pathDict = new Dictionary<int, E>();
             queue.Enqueue(fromIndex);
@@ -370,16 +353,16 @@ namespace NETGraph
             {
                 int v = queue.Dequeue();
 
-                if (goalTest.Invoke(graph.vertexAtIndex(v)))
+                if (goalTest.Invoke(this.vertexAtIndex(v)))
                     return pathDictToPath(fromIndex, v, pathDict);
 
 
                 visited[v] = true;
                 // return path if index fullfills goalTest delegate
-                if (goalTest(graph.vertexAtIndex(v)))
+                if (goalTest(this.vertexAtIndex(v)))
                     return pathDictToPath(fromIndex, v, pathDict);
 
-                foreach (E edge in graph.edgesForIndex(v))
+                foreach (E edge in this.edgesForIndex(v))
                 {
                     if (!visited[edge.v])
                     {
@@ -397,12 +380,11 @@ namespace NETGraph
         /// - parameter from: The index of the starting vertex.
         /// - parameter goalTest: Returns true if a given vertex is a goal.
         /// - returns: An array of Edges containing the entire route, or an empty array if no route could be found
-        public static IEnumerable<E> bfs<V, E>(this Graph<V, E> graph, V from, Func<V, bool> goalTest)
-            where V : IEquatable<V> where E : IEdge<E>, IEquatable<E>, new()
+        public IEnumerable<E> bfs(V from, Func<V, bool> goalTest)
         {
-            int u = graph.indexOfVertex(from);
+            int u = this.indexOfVertex(from);
             if (u != -1)
-                return graph.bfs(u, goalTest);
+                return this.bfs(u, goalTest);
             return Enumerable.Empty<E>();
         }
 
@@ -411,10 +393,9 @@ namespace NETGraph
         /// - parameter fromIndex: The index of the starting vertex.
         /// - parameter toIndex: The index of the ending vertex.
         /// - returns: An array of Edges containing the entire route, or an empty array if no route could be found
-        public static IEnumerable<E> bfs<V, E>(this Graph<V, E> graph, int fromIndex, int toIndex)
-            where V : IEquatable<V> where E : IEdge<E>, IEquatable<E>, new()
+        public IEnumerable<E> bfs( int fromIndex, int toIndex)
         {
-            bool[] visited = Enumerable.Repeat(false, graph.vertexCount).ToArray();
+            bool[] visited = Enumerable.Repeat(false, this.vertexCount).ToArray();
             Queue<int> queue = new Queue<int>();
             Dictionary<int, E> pathDict = new Dictionary<int, E>();
             queue.Enqueue(fromIndex);
@@ -425,7 +406,7 @@ namespace NETGraph
                 if (v == toIndex)
                     return pathDictToPath(fromIndex, toIndex, pathDict);
 
-                foreach (E edge in graph.edgesForIndex(v))
+                foreach (E edge in this.edgesForIndex(v))
                 {
                     if (!visited[edge.v])
                     {
@@ -443,15 +424,14 @@ namespace NETGraph
         /// - parameter from: The starting vertex.
         /// - parameter to: The ending vertex.
         /// - returns: An array of Edges containing the entire route, or an empty array if no route could be found
-        public static IEnumerable<E> bfs<V, E>(this Graph<V, E> graph, V from, V to)
-            where V : IEquatable<V> where E : IEdge<E>, IEquatable<E>, new()
+        public IEnumerable<E> bfs(V from, V to)
         {
-            int u = graph.indexOfVertex(from);
+            int u = this.indexOfVertex(from);
             if (u != -1)
             {
-                int v = graph.indexOfVertex(to);
+                int v = this.indexOfVertex(to);
                 if (v != -1)
-                    return graph.bfs(u, v);
+                    return this.bfs(u, v);
             }
             return Enumerable.Empty<E>();
         }
@@ -505,9 +485,11 @@ namespace NETGraph
     }
         */
 
+
+
         /// Takes a dictionary of edges to reach each node and returns an array of edges
         /// that goes from `from` to `to`
-        public static List<E> pathDictToPath<E>(int from, int to, Dictionary<int, E> pathDict) where E : IEdge<E>, IEquatable<E>, new()
+        public static List<E> pathDictToPath(int from, int to, Dictionary<int, E> pathDict)
         {
             if (pathDict.Count == 0)
                 return null;
@@ -531,5 +513,6 @@ namespace NETGraph
         }
 
     }
+
 }
 
