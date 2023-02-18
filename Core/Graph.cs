@@ -304,10 +304,15 @@ namespace NETGraph
         }
 
 
+
+    }
+
+    public static class GraphExtensions
+    {
         /// Returns a graph of the same type with all edges reversed.
         ///
         /// - returns: Graph of the same type with all edges reversed.
-        public static G reversed<G, GV, GE>(G graph) where G : IGraph<GV, GE>, new() where GV : IEquatable<GV> where GE : IEdge<GE>, IEquatable<GE>, new()
+        public static G reversed<G, GV, GE>(this G graph) where G : IGraph<GV, GE>, new() where GV : IEquatable<GV> where GE : IEdge<GE>, IEquatable<GE>, new()
         {
             G reversed = new G();
             reversed.buildWith(graph.vertices);
@@ -315,8 +320,6 @@ namespace NETGraph
                 reversed.addEdge(edge.reversed);
             return reversed;
         }
-
     }
-
 
 }
