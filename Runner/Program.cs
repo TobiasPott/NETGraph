@@ -73,7 +73,7 @@ public class Program
 
         Console.WriteLine();
         Console.WriteLine("Search Reversed:");
-        DistinctGraph<Node, NamedEdge<string>> rU = u.reversed<DistinctGraph<Node, NamedEdge<string>>, Node, NamedEdge<string>>();
+        DistinctGraph<Node, NamedEdge<string>> rU = u.reversed();
         Console.WriteLine($"DFS: {rU.dfs(searchTarget, (x) => x == searchStart, x => x, _ => true)}");
         Console.WriteLine($"BFS: {rU.bfs(searchTarget, (x) => x == searchStart, x => x, _ => true)}");
     }
