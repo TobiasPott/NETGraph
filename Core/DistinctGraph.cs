@@ -42,18 +42,6 @@ namespace NETGraph
 
 /*
 
-
-/// An implementation Graph that ensures there are no pairs of equal vertices and no repeated edges.
-open class UniqueElementsGraph<V: Equatable & Codable, E: Edge & Equatable>: Graph {
-
-    /// Init the Graph with vertices, but removes duplicates. O(n^2)
-    required public init(vertices: [V]) {
-        for vertex in vertices {
-            _ = self.addVertex(vertex) // make sure to call our version
-        }
-    }
-}
-
 extension UniqueElementsGraph where E == UnweightedEdge {
 
     private func addEdgesForPath(withIndices indices: [Int], directed: Bool) {

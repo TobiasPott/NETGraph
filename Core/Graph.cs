@@ -11,6 +11,8 @@ namespace NETGraph
         List<V> vertices { get; }
         Dictionary<int, List<E>> edges { get; }
         void addEdge(E edge);
+        void buildWith(IEnumerable<V> vertices);
+        IEnumerable<E> edgeList();
     }
 
 
@@ -33,6 +35,8 @@ namespace NETGraph
 
         protected Graph() { }
 
+        /// Constructs an undirected UnweightedGraph isomorphic to a complete graph.
+        public void buildWith(IEnumerable<V> vertices) => buildWith(vertices, false);
         /// Initialize an Graph with the given vertices without any edges.
         public void buildWith(IEnumerable<V> vertices, bool complete = false)
         {
@@ -41,7 +45,8 @@ namespace NETGraph
             this.edges.Clear();
 
             if (vertices != null)
-                this.vertices.AddRange(vertices.Distinct());
+                foreach (V vertex in vertices)
+                    this.addVertex(vertex);
 
             /// Constructs an undirected UnweightedGraph isomorphic to a complete graph.
             if (complete)
@@ -56,10 +61,11 @@ namespace NETGraph
             this.vertices.Clear();
             this.edges.Clear();
 
-            if (this.vertices != null)
-                this.vertices.AddRange(path.Distinct());
+            if (path != null)
+                foreach (V vertex in path)
+                    this.addVertex(vertex);
 
-            if (this.vertices.Count >= 2)
+            if (path.Count() >= 2)
             {
                 for (int i = 0; i < this.vertices.Count - 1; i++)
                     this.addEdge(i, i + 1, directed);
@@ -82,35 +88,11 @@ namespace NETGraph
             }
         }
 
-
-        /*
-/// A type used to construct UnweightedGraph with vertices of type V that is isomorphic to a complete graph.
-/// https://en.wikipedia.org/wiki/Complete_graph
-public enum CompleteGraph<V: Equatable & Codable> {
-
-    /// Constructs an undirected UnweightedGraph isomorphic to a complete graph.
-    ///
-    /// - Parameter vertices: The set of vertices of the graph.
-    /// - Returns: An UnweightedGraph complete graph, a graph with each vertex connected to all the vertices except itself.
-    public static func build(withVertices vertices: [V]) -> UnweightedGraph<V> {
-        let g = UnweightedGraph<V>(vertices: vertices)
-
-        for i in 0..<vertices.count {
-            for j in 0..<i {
-                g.addEdge(fromIndex: i, toIndex: j)
-            }
-        }
-        return g
-    }
-}
-        
-
-        */
         public V vertexAtIndex(int index) => vertices[index];
         public int indexOfVertex(V vertex) => vertices.IndexOf(vertex);
 
         /// Returns a list of all the edges, undirected edges are only appended once.
-        public List<E> edgeList()
+        public IEnumerable<E> edgeList()
         {
             List<E> results = new List<E>(this.edgeCount);
             foreach (int index in edges.Keys)
@@ -320,6 +302,20 @@ public enum CompleteGraph<V: Equatable & Codable> {
             }
             return sb.ToString();
         }
+
+
+        /// Returns a graph of the same type with all edges reversed.
+        ///
+        /// - returns: Graph of the same type with all edges reversed.
+        public static G reversed<G, GV, GE>(G graph) where G : IGraph<GV, GE>, new() where GV : IEquatable<GV> where GE : IEdge<GE>, IEquatable<GE>, new()
+        {
+            G reversed = new G();
+            reversed.buildWith(graph.vertices);
+            foreach (GE edge in graph.edgeList())
+                reversed.addEdge(edge.reversed);
+            return reversed;
+        }
+
     }
 
 
