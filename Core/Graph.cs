@@ -5,6 +5,9 @@ using System.Text;
 
 namespace NETGraph
 {
+    // ToDo: Implement a Vertex interface which can be marked while in a graph
+    //      The markable vertex will then be marked by an Invalidator process traversing the graph's node for changes
+    //      The marked vertices will then be sweeoed by an Evaluator process which updates the nodes internal state (and marking)
 
     public interface IGraph<V, E> where V : IEquatable<V> where E : IEdge<E>, IEquatable<E>
     {
@@ -107,7 +110,6 @@ namespace NETGraph
         }
 
         /// Find all of the neighbors of a vertex at a given index.
-        /// ToDo: Check actual functionality to get connected vertices list
         public IEnumerable<V> neighborsForIndex(int index)
         {
             IEnumerable<int> neighbourIndicesForIndex = edges[index].Select(x => x.v);
@@ -138,7 +140,6 @@ namespace NETGraph
         public bool vertexInGraph(V vertex) => indexOfVertex(vertex) >= 0;
 
         /// Add a vertex to the graph.
-        /// ToDo: Check for distinct add to vertex list as it may result in orphaned data and inconsistencies without cleanup
         public virtual int addVertex(V vertex)
         {
             vertices.Add(vertex);
@@ -239,7 +240,6 @@ namespace NETGraph
 
 
         /// Removes a vertex at a specified index, all of the edges attached to it, and renumbers the indexes of the rest of the edges.
-        /// ToDo: Check if this works properly, unsure if I messed up code transcription
         public void removeVertexAtIndex(int index)
         {
             //remove all edges ending at the vertex, first doing the ones below it

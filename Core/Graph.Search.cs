@@ -71,6 +71,29 @@ namespace NETGraph
             return Enumerable.Empty<E>();
         }
 
+        public List<List<E>> findAll(int fromIndex, Func<V, bool> goalTest, SearchAlgorithm algorithm)
+        {
+            switch (algorithm)
+            {
+                case SearchAlgorithm.DepthFirst:
+                    return this.findAllDfs(fromIndex, goalTest);
+                case SearchAlgorithm.BreadthFirst:
+                    return this.findAllBfs(fromIndex, goalTest);
+            }
+            return new List<List<E>>();
+        }
+        public List<List<E>> findAll(V from, Func<V, bool> goalTest, SearchAlgorithm algorithm)
+        {
+            switch (algorithm)
+            {
+                case SearchAlgorithm.DepthFirst:
+                    return this.findAllDfs(from, goalTest);
+                case SearchAlgorithm.BreadthFirst:
+                    return this.findAllBfs(from, goalTest);
+            }
+            return new List<List<E>>();
+        }
+
 
         #region Depth-First Algorithm
         /// Perform a computation over the graph visiting the vertices using a
@@ -170,9 +193,9 @@ namespace NETGraph
         /// - returns: An array of Edges containing the entire route, or an empty array if no route could be found
         public IEnumerable<E> dfs(V from, Func<V, bool> goalTest)
         {
-            int u = this.indexOfVertex(from);
-            if (u != -1)
-                return this.dfs(u, goalTest);
+            int fromIndex = this.indexOfVertex(from);
+            if (fromIndex != -1)
+                return this.dfs(fromIndex, goalTest);
             return Enumerable.Empty<E>();
         }
 
@@ -218,67 +241,66 @@ namespace NETGraph
         /// - returns: An array of Edges containing the entire route, or an empty array if no route could be found
         public IEnumerable<E> dfs(V from, V to)
         {
-            int u = this.indexOfVertex(from);
-            if (u != -1)
+            int fromIndex = this.indexOfVertex(from);
+            if (fromIndex != -1)
             {
-                int v = this.indexOfVertex(to);
-                if (v != -1)
-                    return this.dfs(u, v);
+                int toIndex = this.indexOfVertex(to);
+                if (toIndex != -1)
+                    return this.dfs(fromIndex, toIndex);
             }
             return Enumerable.Empty<E>();
         }
 
-        #endregion
-        // ToDo: Implement findAllDfs methods
-        /*
+        /// Find path routes from a vertex to all others the function goalTest() returns true for using a depth-first search.
+        /// - Parameters:
+        /// - parameter fromIndex: The index of the starting vertex.
+        /// - parameter goalTest: Returns true if a given vertex is a goal.
+        /// - returns: An array of arrays of Edges containing routes to every vertex connected and passing goalTest(), or an empty array if no routes could be found
+        public List<List<E>> findAllDfs(int fromIndex, Func<V, bool> goalTest)
+        {
+            bool[] visited = Enumerable.Repeat(false, this.vertexCount).ToArray();
+            Stack<int> stack = new Stack<int>();
+            Dictionary<int, E> pathDict = new Dictionary<int, E>();
+            List<List<E>> paths = new List<List<E>>();
+            stack.Push(fromIndex);
 
-    /// Find path routes from a vertex to all others the
-    /// function goalTest() returns true for using a depth-first search.
-    ///
-    /// - parameter fromIndex: The index of the starting vertex.
-    /// - parameter goalTest: Returns true if a given vertex is a goal.
-    /// - returns: An array of arrays of Edges containing routes to every vertex connected and passing goalTest(), or an empty array if no routes could be found
-    func findAllDfs(fromIndex: Int, goalTest: (V) -> Bool) -> [[E]] {
-        // pretty standard bfs that doesn't visit anywhere twice; pathDict tracks route
-        var visited: [Bool] = [Bool](repeating: false, count: vertexCount)
-        let stack: Stack<Int> = Stack<Int>()
-        var pathDict: [Int: Edge] = [Int: Edge]()
-        var paths: [[Edge]] = [[Edge]]()
-        stack.push(fromIndex)
-        while !stack.isEmpty {
-            let v: Int = stack.pop()
-            if (visited[v]) {
-                continue
-            }
-            visited[v] = true
-            if goalTest(vertexAtIndex(v)) {
-                // figure out route of edges based on pathDict
-                paths.append(pathDictToPath(from: fromIndex, to: v, pathDict: pathDict))
-            }
-            for e in edgesForIndex(v) {
-                if !visited[e.v] {
-                    stack.push(e.v)
-                    pathDict[e.v] = e
+            while (stack.Count > 0)
+            {
+                int v = stack.Pop();
+                if (visited[v])
+                    continue;
+
+                visited[v] = true;
+                // return path if index fullfills goalTest delegate
+                if (goalTest(this.vertexAtIndex(v)))
+                    paths.Add(pathDictToPath(fromIndex, v, pathDict));
+
+                foreach (E edge in this.edgesForIndex(v))
+                {
+                    if (!visited[edge.v])
+                    {
+                        stack.Push(edge.v);
+                        pathDict.TryAdd(edge.v, edge);
+                    }
                 }
             }
+            return paths;
         }
-        return paths as! [[Self.E]]
-    }
 
-    /// Find path routes from a vertex to all others the
-    /// function goalTest() returns true for using a depth-first search.
-    ///
-    /// - parameter from: The index of the starting vertex.
-    /// - parameter goalTest: Returns true if a given vertex is a goal.
-    /// - returns: An array of arrays of Edges containing routes to every vertex connected and passing goalTest(), or an empty array if no routes could be founding the entire route, or an empty array if no route could be found
-    func findAllDfs(from: V, goalTest: (V) -> Bool) -> [[E]] {
-        if let u = indexOfVertex(from) {
-            return findAllDfs(fromIndex: u, goalTest: goalTest)
+        /// Find path routes from a vertex to all others the function goalTest() returns true for using a depth-first search.
+        /// - Parameters:
+        /// - parameter from: The index of the starting vertex.
+        /// - parameter goalTest: Returns true if a given vertex is a goal.
+        /// - returns: An array of arrays of Edges containing routes to every vertex connected and passing goalTest(), or an empty array if no routes could be founding the entire route, or an empty array if no route could be found
+        public List<List<E>> findAllDfs(V from, Func<V, bool> goalTest)
+        {
+            int fromIndex = indexOfVertex(from);
+            if (fromIndex > 0)
+                return findAllDfs(fromIndex, goalTest);
+            return new List<List<E>>();
         }
-        return []
-    }
-        */
 
+        #endregion
 
         #region Breadth-First Algorithm
         /// Perform a computation over the graph visiting the vertices using a breadth-first algorithm.
@@ -354,10 +376,6 @@ namespace NETGraph
             {
                 int v = queue.Dequeue();
 
-                if (goalTest.Invoke(this.vertexAtIndex(v)))
-                    return pathDictToPath(fromIndex, v, pathDict);
-
-
                 visited[v] = true;
                 // return path if index fullfills goalTest delegate
                 if (goalTest(this.vertexAtIndex(v)))
@@ -383,9 +401,9 @@ namespace NETGraph
         /// - returns: An array of Edges containing the entire route, or an empty array if no route could be found
         public IEnumerable<E> bfs(V from, Func<V, bool> goalTest)
         {
-            int u = this.indexOfVertex(from);
-            if (u != -1)
-                return this.bfs(u, goalTest);
+            int fromIndex = this.indexOfVertex(from);
+            if (fromIndex != -1)
+                return this.bfs(fromIndex, goalTest);
             return Enumerable.Empty<E>();
         }
 
@@ -394,7 +412,7 @@ namespace NETGraph
         /// - parameter fromIndex: The index of the starting vertex.
         /// - parameter toIndex: The index of the ending vertex.
         /// - returns: An array of Edges containing the entire route, or an empty array if no route could be found
-        public IEnumerable<E> bfs( int fromIndex, int toIndex)
+        public IEnumerable<E> bfs(int fromIndex, int toIndex)
         {
             bool[] visited = Enumerable.Repeat(false, this.vertexCount).ToArray();
             Queue<int> queue = new Queue<int>();
@@ -427,65 +445,59 @@ namespace NETGraph
         /// - returns: An array of Edges containing the entire route, or an empty array if no route could be found
         public IEnumerable<E> bfs(V from, V to)
         {
-            int u = this.indexOfVertex(from);
-            if (u != -1)
+            int fromIndex = this.indexOfVertex(from);
+            if (fromIndex != -1)
             {
-                int v = this.indexOfVertex(to);
-                if (v != -1)
-                    return this.bfs(u, v);
+                int toIndex = this.indexOfVertex(to);
+                if (toIndex != -1)
+                    return this.bfs(fromIndex, toIndex);
             }
             return Enumerable.Empty<E>();
         }
 
-        #endregion
-        // ToDo: Implement findAllBfs methods
-        /*
-        
-    /// Find path routes from a vertex to all others the
-    /// function goalTest() returns true for using a breadth-first search.
-    ///
-    /// - parameter fromIndex: The index of the starting vertex.
-    /// - parameter goalTest: Returns true if a given vertex is a goal.
-    /// - returns: An array of arrays of Edges containing routes to every vertex connected and passing goalTest(), or an empty array if no routes could be found
-    func findAllBfs(fromIndex: Int, goalTest: (V) -> Bool) -> [[E]] {
-        // pretty standard bfs that doesn't visit anywhere twice; pathDict tracks route
-        var visited: [Bool] = [Bool](repeating: false, count: vertexCount)
-        let queue: Queue<Int> = Queue<Int>()
-        var pathDict: [Int: Edge] = [Int: Edge]()
-        var paths: [[Edge]] = [[Edge]]()
-        queue.push(fromIndex)
-        while !queue.isEmpty {
-            let v: Int = queue.pop()
-            if goalTest(vertexAtIndex(v)) {
-                // figure out route of edges based on pathDict
-                paths.append(pathDictToPath(from: fromIndex, to: v, pathDict: pathDict))
-            }
-            
-            for e in edgesForIndex(v) {
-                if !visited[e.v] {
-                    visited[e.v] = true
-                    queue.push(e.v)
-                    pathDict[e.v] = e
+
+        /// Find path routes from a vertex to all others the function goalTest() returns true for using a breadth-first search.
+        /// - Parameters:
+        /// - parameter fromIndex: The index of the starting vertex.
+        /// - parameter goalTest: Returns true if a given vertex is a goal.
+        /// - returns: An array of arrays of Edges containing routes to every vertex connected and passing goalTest(), or an empty array if no routes could be found
+        public List<List<E>> findAllBfs(int fromIndex, Func<V, bool> goalTest)
+        {
+            bool[] visited = Enumerable.Repeat(false, this.vertexCount).ToArray();
+            Queue<int> queue = new Queue<int>();
+            Dictionary<int, E> pathDict = new Dictionary<int, E>();
+            List<List<E>> paths = new List<List<E>>();
+            queue.Enqueue(fromIndex);
+
+            while (queue.Count > 0)
+            {
+                int v = queue.Dequeue();
+
+                if (goalTest(this.vertexAtIndex(v)))
+                    paths.Add(pathDictToPath(fromIndex, v, pathDict));
+
+                foreach (E edge in this.edgesForIndex(v))
+                {
+                    if (!visited[edge.v])
+                    {
+                        visited[edge.v] = true;
+                        queue.Enqueue(edge.v);
+                        pathDict.TryAdd(edge.v, edge);
+                    }
                 }
             }
+            return paths;
         }
-        return paths as! [[Self.E]]
-    }
-    
-    /// Find path routes from a vertex to all others the
-    /// function goalTest() returns true for using a breadth-first search.
-    ///
-    /// - parameter from: The index of the starting vertex.
-    /// - parameter goalTest: Returns true if a given vertex is a goal.
-    /// - returns: An array of arrays of Edges containing routes to every vertex connected and passing goalTest(), or an empty array if no routes could be founding the entire route, or an empty array if no route could be found
-    func findAllBfs(from: V, goalTest: (V) -> Bool) -> [[E]] {
-        if let u = indexOfVertex(from) {
-            return findAllBfs(fromIndex: u, goalTest: goalTest)
-        }
-        return []
-    }
-        */
 
+        public List<List<E>> findAllBfs(V from, Func<V, bool> goalTest)
+        {
+            int fromIndex = this.indexOfVertex(from);
+            if (fromIndex != -1)
+                return this.findAllBfs(fromIndex, goalTest);
+            return new List<List<E>>();
+        }
+
+        #endregion
 
 
         /// Takes a dictionary of edges to reach each node and returns an array of edges

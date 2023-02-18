@@ -12,7 +12,6 @@ namespace NETGraph
         E reversed { get; }
     }
 
-    //ToDo: Consider implementing AttributedEdge (or similar name) to provide an IEdge implementation which also holds references to vertex attributes/components (by int/string identification)
     /// A basic unweighted edge.
     public struct Edge : IEdge<Edge>, IEquatable<Edge>
     {
