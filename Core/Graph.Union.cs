@@ -12,7 +12,7 @@ namespace NETGraph
     // Stub class for missing helper and utility methods for different graph types and situations
     //  *   [ ] Union
 
-    public abstract partial class Graph<V, E> where V : IEquatable<V> where E : IEdge<E>, IEquatable<E>, new()
+    public abstract partial class Graph<V, E>
     {
 
         /*

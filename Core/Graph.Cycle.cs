@@ -7,7 +7,7 @@ using System.Text;
 namespace NETGraph
 {
 
-    public abstract partial class Graph<V, E> where V : IEquatable<V> where E : IEdge<E>, IEquatable<E>, new()
+    public abstract partial class Graph<V, E>
     {
 
         /// Find all of the cycles in a `Graph`, expressed as edges.

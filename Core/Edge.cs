@@ -3,7 +3,7 @@
 namespace NETGraph
 {
 
-    public interface IEdge<E> where E : IEdge<E>, IEquatable<E>
+    public interface IEdge<E> where E : IEquatable<E>
     {
         int u { get; set; }
         int v { get; set; }

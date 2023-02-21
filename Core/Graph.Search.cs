@@ -5,7 +5,7 @@ using System.Linq;
 namespace NETGraph
 {
 
-    public abstract partial class Graph<V, E> where V : IEquatable<V> where E : IEdge<E>, IEquatable<E>, new()
+    public abstract partial class Graph<V, E>
     {
 
         public enum SearchAlgorithm

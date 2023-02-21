@@ -9,6 +9,9 @@ namespace NETGraph
     //      The markable vertex will then be marked by an Invalidator process traversing the graph's node for changes
     //      The marked vertices will then be sweeoed by an Evaluator process which updates the nodes internal state (and marking)
 
+    public interface IVertex<E> where E : IEdge<E>, IEquatable<E>
+    { }
+
     public interface IGraph<V, E> where V : IEquatable<V> where E : IEdge<E>, IEquatable<E>
     {
         List<V> vertices { get; }
