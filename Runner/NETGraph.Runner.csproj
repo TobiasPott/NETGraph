@@ -10,5 +10,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Core\NETGraph.Core.csproj" />
+    <ProjectReference Include="..\Impl\NETGraph.Impl.csproj" />
   </ItemGroup>
 </Project>

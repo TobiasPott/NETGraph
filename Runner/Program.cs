@@ -2,7 +2,10 @@
 using System.Collections.Generic;
 using System.Linq;
 using NETGraph;
+using NETGraph.Core;
 using NETGraph.Graphs;
+using NETGraph.Impl;
+using NETGraph.Impl.Generics;
 
 public class Node : IEquatable<Node>
 {
@@ -27,6 +30,26 @@ public class Node : IEquatable<Node>
     }
 }
 
+public class FloatData : Data<float>
+{
+    public FloatData(string name, float scalar) : base(scalar)
+    {
+        this.typeIndex = TypeIndices.Float;
+        this.name = name;
+    }
+
+    public FloatData(string name, IEnumerable<float> values, bool isRezisable) : base(values, isRezisable)
+    {
+        this.typeIndex = TypeIndices.Float;
+        this.name = name;
+    }
+
+    public FloatData(string name, IEnumerable<KeyValuePair<string, float>> namedValues, bool isRezisable) : base(namedValues, isRezisable)
+    {
+        this.typeIndex = TypeIndices.Float;
+        this.name = name;
+    }
+}
 
 public class Program
 {
@@ -35,6 +58,8 @@ public class Program
     public const string VStart = "Start";
     public const string VMid = "Mitte";
     public const string VEnd = "Ende";
+
+    public static object GuidStringNode { get; private set; }
 
     public static void Main(string[] args)
     {
@@ -55,7 +80,7 @@ public class Program
         //g.addEdge(new Edge(iMid, iEnd, true));
         //Console.WriteLine($"{g}{g.edgeCount}");
 
-
+        /*
         DistinctGraph<Node, Edge<string>> u = new DistinctGraph<Node, Edge<string>>(vertices);
         u.addEdge(new Edge<string>(0, 1, NOutput, NInput));
         //u.addEdge(new NamedEdge<string>(0, 1, NInput, NOutput));
@@ -86,6 +111,22 @@ public class Program
 
         List<List<Edge<string>>> cyclesEdges = u.detectCyclesAsEdges();
         Console.WriteLine($"Detected Cycles: {cyclesEdges.Count} {string.Join(", ", cyclesEdges.Select(x => x.Count))}");
+        */
+
+        FloatData floatScalar = new FloatData("single", 1.0f);
+        FloatData floatArray = new FloatData("array", Enumerable.Range(0, 10).Select(i => (float)i), false);
+        FloatData floatDict = new FloatData("dict", new KeyValuePair<string, float>[] {
+            new KeyValuePair<string, float>("x", 0.0f),
+            new KeyValuePair<string, float>("y", 0.0f),
+            new KeyValuePair<string, float>("z", 0.0f)
+        }, false);
+
+        FloatData[] data = new FloatData[] { floatScalar, floatArray, floatDict };
+        Console.WriteLine($"{string.Join<FloatData>(Environment.NewLine, data)}");
+
+        floatDict.SetAt("x", 3.335f);
+        Console.WriteLine($"{string.Join<FloatData>(Environment.NewLine, data)}");
+
     }
 
 }
