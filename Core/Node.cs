@@ -40,6 +40,7 @@ namespace NETGraph.Core
 
         protected abstract bool hasKnob(KnobType knob);
         protected abstract Type knobValueType(KnobType knob);
+        protected abstract T GetValue<T>(string knob);
 
 
         public static bool canConnect(KnobNode<Id, KnobType> from, KnobType fromKnob, KnobNode<Id, KnobType> to, KnobType toKnob)

@@ -5,7 +5,7 @@ namespace NETGraph.Graphs
 {
 
     /// An implementation Graph that ensures there are no pairs of equal vertices and no repeated edges.
-    public class DistinctGraph<V, E> : Graph<V, E> where V : IEquatable<V> where E : IEdge<E>, IEquatable<E>, new()
+    public class DistinctGraph<V, E> : Graph<V, E> where V : IEquatable<V> where E : IEdge, IEquatable<E>, new()
     {
 
         public DistinctGraph() : base()
@@ -32,7 +32,7 @@ namespace NETGraph.Graphs
                 edges[edge.u].Add(edge);
             if (!edge.directed)
             {
-                E reversedEdge = edge.reversed;
+                E reversedEdge = (E)edge.reversed;
                 if (!edgeExists(reversedEdge))
                     edges[edge.v].Add(reversedEdge);
             }

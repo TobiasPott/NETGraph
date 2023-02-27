@@ -9,10 +9,8 @@ namespace NETGraph
     //      The markable vertex will then be marked by an Invalidator process traversing the graph's node for changes
     //      The marked vertices will then be sweeoed by an Evaluator process which updates the nodes internal state (and marking)
 
-    public interface IVertex<E> where E : IEdge<E>, IEquatable<E>
-    { }
 
-    public interface IGraph<V, E> where V : IEquatable<V> where E : IEdge<E>, IEquatable<E>
+    public interface IGraph<V, E> where V : IEquatable<V> where E : IEdge
     {
         List<V> vertices { get; }
         Dictionary<int, List<E>> edges { get; }
@@ -21,7 +19,7 @@ namespace NETGraph
     }
 
 
-    public abstract partial class Graph<V, E> : IGraph<V, E> where V : IEquatable<V> where E : IEdge<E>, IEquatable<E>, new()
+    public abstract partial class Graph<V, E> : IGraph<V, E> where V : IEquatable<V> where E : IEdge, new()
     {
         public List<V> vertices { get; protected set; } = new List<V>();
         public Dictionary<int, List<E>> edges { get; protected set; } = new Dictionary<int, List<E>>();
@@ -155,9 +153,10 @@ namespace NETGraph
         {
             // add edge to first vertex
             edges[edge.u].Add(edge);
+
             // check if undirected and different vertices and add edge to second vertex
             if (!edge.directed && edge.u != edge.v)
-                edges[edge.v].Add(edge.reversed);
+                edges[edge.v].Add((E)edge.reversed);
         }
         /// This is a convenience method that adds an unweighted edge.
         public virtual void addEdge(int fromIndex, int toIndex, bool directed = false)
@@ -315,12 +314,12 @@ namespace NETGraph
         /// Returns a graph of the same type with all edges reversed.
         ///
         /// - returns: Graph of the same type with all edges reversed.
-        public static G reversed<G, GV, GE>(this G graph) where G : Graph<GV, GE>, new() where GV : IEquatable<GV> where GE : IEdge<GE>, IEquatable<GE>, new()
+        public static G reversed<G, GV, GE>(this G graph) where G : Graph<GV, GE>, new() where GV : IEquatable<GV> where GE : IEdge, IEquatable<GE>, new()
         {
             G reversed = new G();
             reversed.buildWith(graph.vertices);
             foreach (GE edge in graph.edgeList())
-                reversed.addEdge(edge.reversed);
+                reversed.addEdge((GE)edge.reversed);
             return reversed;
         }
     }
