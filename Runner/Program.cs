@@ -30,27 +30,6 @@ public class Node : IEquatable<Node>
     }
 }
 
-public class FloatData : Data<float>
-{
-    public FloatData(string name, float scalar) : base(scalar)
-    {
-        this.typeIndex = TypeIndices.Float;
-        this.name = name;
-    }
-
-    public FloatData(string name, IEnumerable<float> values, bool isRezisable) : base(values, isRezisable)
-    {
-        this.typeIndex = TypeIndices.Float;
-        this.name = name;
-    }
-
-    public FloatData(string name, IEnumerable<KeyValuePair<string, float>> namedValues, bool isRezisable) : base(namedValues, isRezisable)
-    {
-        this.typeIndex = TypeIndices.Float;
-        this.name = name;
-    }
-}
-
 public class Program
 {
     public const string NInput = "input";
@@ -115,6 +94,7 @@ public class Program
 
         FloatData floatScalar = new FloatData("single", 1.0f);
         FloatData floatArray = new FloatData("array", Enumerable.Range(0, 10).Select(i => (float)i), false);
+        FloatData floatArray2 = new FloatData("array", Enumerable.Range(0, 10).Select(i => (float)i), false);
         FloatData floatDict = new FloatData("dict", new KeyValuePair<string, float>[] {
             new KeyValuePair<string, float>("x", 0.0f),
             new KeyValuePair<string, float>("y", 0.0f),
@@ -123,9 +103,16 @@ public class Program
 
         FloatData[] data = new FloatData[] { floatScalar, floatArray, floatDict };
         Console.WriteLine($"{string.Join<FloatData>(Environment.NewLine, data)}");
+        Console.WriteLine();
 
+        Console.WriteLine($"{floatArray} == {floatArray2} : {floatArray.matchWithValue(floatArray2)}");
+        floatArray.SetAt(3, -22.0f);
         floatDict.SetAt("x", 3.335f);
         Console.WriteLine($"{string.Join<FloatData>(Environment.NewLine, data)}");
+        Console.WriteLine();
+
+        Console.WriteLine($"{floatArray} == {floatArray2} : {floatArray.matchWithValue(floatArray2)}");
+
 
     }
 
