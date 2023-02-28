@@ -24,9 +24,19 @@ namespace NETGraph.Core
         protected abstract void SetAtUntyped(string key, object value);
 
 
+        public abstract void RemoveAt(int index);
+        public abstract void RemoveRange(int index, int count);
+        public abstract void RemoveAt(string key);
+        public abstract void RemoveRange(params string[] keys);
+
+
         protected bool canCast(int typeIndex) => this.typeIndex == typeIndex;
         protected bool canCopy(int typeIndex, DataStructures structure) => (this.structure == structure && this.typeIndex == typeIndex); // does not check for size as this is left to copy function
 
+        public virtual bool match(Data lh, Data rh) => lh.TypeIndex == rh.TypeIndex;
+        // checks for match with structure
+        public virtual bool matchStructure(Data lh, Data rh) => lh.TypeIndex == rh.TypeIndex && lh.Structure == rh.Structure;
+        public virtual bool matchStructureAndSize(Data lh, Data rh) => lh.TypeIndex == rh.TypeIndex && lh.Structure == rh.Structure && lh.Count == rh.Count;
     }
 
     public abstract class Data<T> : Data
@@ -92,6 +102,15 @@ namespace NETGraph.Core
             }
             set => list[index] = value;
         }
+        public T this[string key]
+        {
+            get
+            {
+                if (this.structure != DataStructures.Dict)
+                    throw new InvalidCastException($"{typeof(Data<T>)}[{this.name}] cannot be accessed by key.");
+                return dict[key];
+            }
+        }
         protected Dictionary<string, T> Dict
         {
             get
@@ -102,7 +121,7 @@ namespace NETGraph.Core
             }
         }
 
-
+        #region Data untyped get and set implementations
         protected override object GetScalarUntyped() => this.scalar;
         protected override object GetAtUntyped(int index) => this[index];
         protected override object GetAtUntyped(string key) => this.dict[key];
@@ -129,6 +148,46 @@ namespace NETGraph.Core
                 throw new InvalidCastException($"{nameof(value)} has missmatching type and cannot be set");
         }
 
+        #endregion
+
+        #region Data Remove implementations
+        public override void RemoveAt(int index)
+        {
+            if (!this.isResizable)
+                throw new InvalidOperationException($"You cannot remove items from a non resizable structure.");
+            if (this.Structure != DataStructures.List)
+                throw new InvalidOperationException($"You cannot remove items from a non collection structure. Consider using a {DataStructures.List} structure.");
+            this.list.RemoveAt(index);
+        }
+        public override void RemoveAt(string key)
+        {
+            if (!this.isResizable)
+                throw new InvalidOperationException($"You cannot remove items from a non resizable structure.");
+            if (this.Structure != DataStructures.List)
+                throw new InvalidOperationException($"You cannot remove items from a non collection structure. Consider using a {DataStructures.Dict} structure.");
+            this.dict.Remove(key);
+        }
+        public override void RemoveRange(int index, int count)
+        {
+            if (!this.isResizable)
+                throw new InvalidOperationException($"You cannot remove items from a non resizable structure.");
+            if (this.Structure != DataStructures.List)
+                throw new InvalidOperationException($"You cannot remove items from a non collection structure. Consider using a {DataStructures.List} structure.");
+            this.list.RemoveRange(index, count);
+        }
+        public override void RemoveRange(params string[] keys)
+        {
+            if (!this.isResizable)
+                throw new InvalidOperationException($"You cannot remove items from a non resizable structure.");
+            if (this.Structure != DataStructures.List)
+                throw new InvalidOperationException($"You cannot remove items from a non collection structure. Consider using a {DataStructures.Dict} structure.");
+            foreach (string key in keys)
+                this.dict.Remove(key);
+        }
+        #endregion
+
+
+        #region Data<T> get and set implementations
         public virtual T GetScalar() => this.Scalar;
         public virtual T GetAt(int index) => this[index];
         public virtual T GetAt(string key) => this.Dict[key];
@@ -140,6 +199,54 @@ namespace NETGraph.Core
                 this.Dict[knobName] = value;
             else
                 this.Dict.Add(knobName, value);
+        }
+        #endregion
+
+        public virtual bool matchExact(Data<T> rh)
+        {
+            // if self reference, return early true
+            if (this == rh)
+                return true;
+            if (matchStructureAndSize(this, rh))
+            {
+                if (this.Structure == DataStructures.Dict)
+                {
+                    foreach (string key in this.dict.Keys)
+                        if (!rh.dict.ContainsKey(key)) return false;
+                    return true;
+                }
+                return true;
+            }
+            return false;
+        }
+        public virtual bool matchWithValue(Data<T> rh)
+        {
+            // if self reference, return early true
+            if (this == rh)
+                return true;
+            if (matchStructureAndSize(this, rh))
+            {
+                if (this.Structure == DataStructures.Dict)
+                {
+                    foreach (string key in this.dict.Keys)
+                    {
+                        if (!rh.dict.ContainsKey(key)) return false;
+                        if (rh.dict.TryGetValue(key, out T rhValue))
+                            if (!this[key].Equals(rhValue)) return false;
+                    }
+                    return true;
+                }
+                if (this.Structure == DataStructures.Array || this.Structure == DataStructures.List)
+                {
+                    for (int i = 0; i < this.Count; i++)
+                        if (!this[i].Equals(rh[i]))
+                            return false;
+                    return true;
+                }
+                if (this.Structure == DataStructures.Scalar)
+                    return this.scalar.Equals(rh.scalar);
+            }
+            return false;
         }
 
 
