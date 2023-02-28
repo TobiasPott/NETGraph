@@ -92,10 +92,10 @@ public class Program
         Console.WriteLine($"Detected Cycles: {cyclesEdges.Count} {string.Join(", ", cyclesEdges.Select(x => x.Count))}");
         */
 
-        FloatData floatScalar = new FloatData("single", 1.0f);
-        FloatData floatArray = new FloatData("array", Enumerable.Range(0, 10).Select(i => (float)i), false);
-        FloatData floatArray2 = new FloatData("array", Enumerable.Range(0, 10).Select(i => (float)i), false);
-        FloatData floatDict = new FloatData("dict", new KeyValuePair<string, float>[] {
+        FloatData floatScalar = new FloatData(1.0f);
+        FloatData floatArray = new FloatData(Enumerable.Range(0, 10).Select(i => (float)i), false);
+        FloatData floatArray2 = new FloatData(Enumerable.Range(0, 10).Select(i => (float)i), false);
+        FloatData floatDict = new FloatData(new KeyValuePair<string, float>[] {
             new KeyValuePair<string, float>("x", 0.0f),
             new KeyValuePair<string, float>("y", 0.0f),
             new KeyValuePair<string, float>("z", 0.0f)
