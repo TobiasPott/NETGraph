@@ -75,8 +75,7 @@ namespace NETGraph.Core
         {
             get
             {
-                if (this.structure != DataStructures.Array && this.structure != DataStructures.List)
-                    throw new InvalidCastException($"{typeof(Data<T>)}[{this.name}] cannot be accessed by index.");
+                throwCheckAccessByIndex();
                 return list[index];
             }
             set => list[index] = value;
@@ -85,8 +84,7 @@ namespace NETGraph.Core
         {
             get
             {
-                if (this.structure != DataStructures.Dict)
-                    throw new InvalidCastException($"{typeof(Data<T>)}[{this.name}] cannot be accessed by key.");
+                throwCheckAccessByKey();
                 return dict[key];
             }
             set
@@ -101,8 +99,7 @@ namespace NETGraph.Core
         {
             get
             {
-                if (this.structure != DataStructures.Scalar)
-                    throw new InvalidCastException($"{typeof(Data<T>)}[{this.name}] cannot be accessed as scalar.");
+                throwCheckAccessByScalar();
                 return scalar;
             }
             set { if (this.structure == DataStructures.Scalar) scalar = value; }
@@ -275,6 +272,22 @@ namespace NETGraph.Core
             if (!(item is T))
                 throw new InvalidCastException($"{nameof(item)} has missmatching type.");
         }
+        private void throwCheckAccessByIndex()
+        {
+            if (this.structure != DataStructures.Array && this.structure != DataStructures.List)
+                throw new InvalidCastException($"{typeof(Data<T>)} cannot be accessed by index.");
+        }
+        private void throwCheckAccessByKey()
+        {
+            if (this.structure != DataStructures.Dict)
+                throw new InvalidCastException($"{typeof(Data<T>)} cannot be accessed by key.");
+        }
+        private void throwCheckAccessByScalar()
+        {
+            if (this.structure != DataStructures.Scalar)
+                throw new InvalidCastException($"{typeof(Data<T>)} cannot be accessed as scalar.");
+        }
+
 
 
         public override string ToString()
