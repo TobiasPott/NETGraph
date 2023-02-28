@@ -15,7 +15,7 @@ namespace NETGraph.Core
     public static class TypeIndices
     {
         public const int Object = 0;
-        public const int Boolean = 1;
+        public const int Bool = 1;
         public const int Int = 2;
         public const int Long = 3;
         public const int Float = 4;
