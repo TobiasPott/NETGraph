@@ -7,7 +7,6 @@ namespace NETGraph.Core
 
     public abstract class Data
     {
-        protected string name; // descriptor set by container/owner
         protected DataStructures structure = DataStructures.Scalar;
         protected int typeIndex;
         protected bool isResizable = true;
@@ -48,23 +47,22 @@ namespace NETGraph.Core
         private List<T> list;
         private Dictionary<string, T> dict;
 
-        protected Data(string name, int typeIndex, T scalar)
+        protected Data(int typeIndex, T scalar)
         {
             this.typeIndex = TypeIndices.Long;
-            this.name = name;
             this.structure = DataStructures.Scalar;
             this.isResizable = false;
             this.Scalar = scalar;
         }
-        protected Data(string name, int typeIndex, IEnumerable<T> values, bool isResizable)
+        protected Data(int typeIndex, IEnumerable<T> values, bool isResizable)
         {
             this.structure = isResizable ? DataStructures.List : DataStructures.Array;
             this.isResizable = isResizable;
             this.list = new List<T>(values);
         }
-        protected Data(string name, int typeIndex, int size, bool isResizable) : this(name, typeIndex, Enumerable.Repeat(default(T), size), isResizable)
+        protected Data(int typeIndex, int size, bool isResizable) : this(typeIndex, Enumerable.Repeat(default(T), size), isResizable)
         { }
-        protected Data(string name, int typeIndex, IEnumerable<KeyValuePair<string, T>> namedValues, bool isResizable)
+        protected Data(int typeIndex, IEnumerable<KeyValuePair<string, T>> namedValues, bool isResizable)
         {
             this.structure = DataStructures.Dict;
             this.isResizable = isResizable;
