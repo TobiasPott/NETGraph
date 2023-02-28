@@ -24,6 +24,9 @@ namespace NETGraph.Core
         protected abstract void SetAtUntyped(string key, object value);
 
 
+        public abstract void Add(object item);
+        public abstract void Add(string key, object item);
+
         public abstract void RemoveAt(int index);
         public abstract void RemoveRange(int index, int count);
         public abstract void RemoveAt(string key);
@@ -68,7 +71,42 @@ namespace NETGraph.Core
             this.dict = new Dictionary<string, T>(namedValues);
         }
 
-
+        protected T this[int index]
+        {
+            get
+            {
+                if (this.structure != DataStructures.Array && this.structure != DataStructures.List)
+                    throw new InvalidCastException($"{typeof(Data<T>)}[{this.name}] cannot be accessed by index.");
+                return list[index];
+            }
+            set => list[index] = value;
+        }
+        protected T this[string key]
+        {
+            get
+            {
+                if (this.structure != DataStructures.Dict)
+                    throw new InvalidCastException($"{typeof(Data<T>)}[{this.name}] cannot be accessed by key.");
+                return dict[key];
+            }
+            set
+            {
+                if (!dict.ContainsKey(key))
+                    dict.Add(key, value);
+                else
+                    dict[key] = value;
+            }
+        }
+        protected T Scalar
+        {
+            get
+            {
+                if (this.structure != DataStructures.Scalar)
+                    throw new InvalidCastException($"{typeof(Data<T>)}[{this.name}] cannot be accessed as scalar.");
+                return scalar;
+            }
+            set { if (this.structure == DataStructures.Scalar) scalar = value; }
+        }
         public override int Count
         {
             get
@@ -82,44 +120,8 @@ namespace NETGraph.Core
                 return 1;
             }
         }
-        protected T Scalar
-        {
-            get
-            {
-                if (this.structure != DataStructures.Scalar)
-                    throw new InvalidCastException($"{typeof(Data<T>)}[{this.name}] cannot be accessed as scalar.");
-                return scalar;
-            }
-            set { if (this.structure == DataStructures.Scalar) scalar = value; }
-        }
-        protected T this[int index]
-        {
-            get
-            {
-                if (this.structure != DataStructures.Array && this.structure != DataStructures.List)
-                    throw new InvalidCastException($"{typeof(Data<T>)}[{this.name}] cannot be accessed by index.");
-                return list[index];
-            }
-            set => list[index] = value;
-        }
-        public T this[string key]
-        {
-            get
-            {
-                if (this.structure != DataStructures.Dict)
-                    throw new InvalidCastException($"{typeof(Data<T>)}[{this.name}] cannot be accessed by key.");
-                return dict[key];
-            }
-        }
-        protected Dictionary<string, T> Dict
-        {
-            get
-            {
-                if (this.structure != DataStructures.Dict)
-                    throw new InvalidCastException($"{typeof(Data<T>)}[{this.name}] cannot be accessed as dict.");
-                return dict;
-            }
-        }
+
+
 
         #region Data untyped get and set implementations
         protected override object GetScalarUntyped() => this.scalar;
@@ -150,37 +152,50 @@ namespace NETGraph.Core
 
         #endregion
 
-        #region Data Remove implementations
+
+
+        #region Data Add & Remove implementations
+        public override void Add(object item)
+        {
+            throwCheckResizable();
+            throwCheckStructure(DataStructures.List);
+            // typecheck
+            throwCheckGenericType(item);
+
+            this.list.Add((T)item);
+        }
+        public override void Add(string key, object item)
+        {
+            throwCheckResizable();
+            throwCheckStructure(DataStructures.Dict);
+            // typecheck
+            throwCheckGenericType(item);
+
+            this.dict.Add(key, (T)item);
+        }
+
         public override void RemoveAt(int index)
         {
-            if (!this.isResizable)
-                throw new InvalidOperationException($"You cannot remove items from a non resizable structure.");
-            if (this.Structure != DataStructures.List)
-                throw new InvalidOperationException($"You cannot remove items from a non collection structure. Consider using a {DataStructures.List} structure.");
+            throwCheckResizable();
+            throwCheckStructure(DataStructures.List);
             this.list.RemoveAt(index);
         }
         public override void RemoveAt(string key)
         {
-            if (!this.isResizable)
-                throw new InvalidOperationException($"You cannot remove items from a non resizable structure.");
-            if (this.Structure != DataStructures.List)
-                throw new InvalidOperationException($"You cannot remove items from a non collection structure. Consider using a {DataStructures.Dict} structure.");
+            throwCheckResizable();
+            throwCheckStructure(DataStructures.Dict);
             this.dict.Remove(key);
         }
         public override void RemoveRange(int index, int count)
         {
-            if (!this.isResizable)
-                throw new InvalidOperationException($"You cannot remove items from a non resizable structure.");
-            if (this.Structure != DataStructures.List)
-                throw new InvalidOperationException($"You cannot remove items from a non collection structure. Consider using a {DataStructures.List} structure.");
+            throwCheckResizable();
+            throwCheckStructure(DataStructures.List);
             this.list.RemoveRange(index, count);
         }
         public override void RemoveRange(params string[] keys)
         {
-            if (!this.isResizable)
-                throw new InvalidOperationException($"You cannot remove items from a non resizable structure.");
-            if (this.Structure != DataStructures.List)
-                throw new InvalidOperationException($"You cannot remove items from a non collection structure. Consider using a {DataStructures.Dict} structure.");
+            throwCheckResizable();
+            throwCheckStructure(DataStructures.Dict);
             foreach (string key in keys)
                 this.dict.Remove(key);
         }
@@ -190,16 +205,10 @@ namespace NETGraph.Core
         #region Data<T> get and set implementations
         public virtual T GetScalar() => this.Scalar;
         public virtual T GetAt(int index) => this[index];
-        public virtual T GetAt(string key) => this.Dict[key];
+        public virtual T GetAt(string key) => this[key];
         public virtual void SetScalar(T scalarValue) => this.Scalar = scalarValue;
         public virtual void SetAt(int index, T value) => this[index] = value;
-        public virtual void SetAt(string knobName, T value)
-        {
-            if (this.Dict.ContainsKey(knobName))
-                this.Dict[knobName] = value;
-            else
-                this.Dict.Add(knobName, value);
-        }
+        public virtual void SetAt(string key, T value) => this[key] = value;
         #endregion
 
         public virtual bool matchExact(Data<T> rh)
@@ -247,6 +256,24 @@ namespace NETGraph.Core
                     return this.scalar.Equals(rh.scalar);
             }
             return false;
+        }
+
+
+
+        private void throwCheckResizable()
+        {
+            if (!this.isResizable)
+                throw new InvalidOperationException($"You cannot add items to a non resizable structure.");
+        }
+        private void throwCheckStructure(DataStructures structure)
+        {
+            if (this.Structure != structure)
+                throw new InvalidOperationException($"You cannot add items to a non collection structure. Consider using a {structure} structure.");
+        }
+        private void throwCheckGenericType(object item)
+        {
+            if (!(item is T))
+                throw new InvalidCastException($"{nameof(item)} has missmatching type.");
         }
 
 
