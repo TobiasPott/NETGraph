@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using NETGraph.Core;
+using NETGraph.Data;
 
 namespace NETGraph.Impl.Generics
 {
@@ -9,7 +10,7 @@ namespace NETGraph.Impl.Generics
     public abstract class BehaviourNode : KnobNode<Guid, string>
     {
 
-        Dictionary<string, Data> datas = null;
+        Dictionary<string, DataBase> datas = null;
         INodeBehaviour behaviour = null;
 
         protected BehaviourNode(Guid id, INodeBehaviour behaviour, params DataDefinition[] dataDefinitions) : base(id)

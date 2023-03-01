@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using NETGraph.Data;
 
 namespace NETGraph.Core
 {
@@ -34,8 +35,8 @@ namespace NETGraph.Core
 
     public interface IMethodProvider
     {
-        bool Invoke(MethodAccessor accessor, Data result, params Data[] inputs);
-        bool Invoke(MethodAccessor accessor, Data result, IEnumerable<Data> inputs);
+        bool Invoke(MethodAccessor accessor, DataBase result, params DataBase[] inputs);
+        bool Invoke(MethodAccessor accessor, DataBase result, IEnumerable<DataBase> inputs);
     }
     public struct MethodAccessor
     {

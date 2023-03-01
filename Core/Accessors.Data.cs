@@ -1,4 +1,5 @@
 ﻿using System;
+using NETGraph.Data;
 
 namespace NETGraph.Core
 {
@@ -28,12 +29,12 @@ namespace NETGraph.Core
             this.provider = provider;
         }
 
-        public Data Evaluate() => provider.Access(accessor);
+        public DataBase Evaluate() => provider.Access(accessor);
     }
 
     public interface IDataProvider
     {
-        Data Access(DataAccessor accessor);
+        DataBase Access(DataAccessor accessor);
     }
     public struct DataAccessor
     {

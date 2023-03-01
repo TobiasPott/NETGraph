@@ -1,5 +1,6 @@
 ﻿using System;
-namespace NETGraph.Core
+
+namespace NETGraph.Data
 {
     public interface IDataDefinition
     {
@@ -18,6 +19,8 @@ namespace NETGraph.Core
         public bool IsResizable { get; private set; }
         public string[] Keys { get; private set; }
 
+        public DataDefinition(string name, DataTypes type, DataStructures structure = DataStructures.Scalar, bool isResizable = false, params string[] keys) : this(name, (int)type, structure, isResizable, keys)
+        { }
         public DataDefinition(string name, int typeIndex, DataStructures structure = DataStructures.Scalar, bool isResizable = false, params string[] keys)
         {
             this.Name = name;

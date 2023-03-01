@@ -2,10 +2,10 @@
 using System.Collections.Generic;
 using System.Linq;
 
-namespace NETGraph.Core
+namespace NETGraph.Data
 {
 
-    public abstract class Data
+    public abstract class DataBase
     {
         protected DataStructures structure = DataStructures.Scalar;
         protected int typeIndex;
@@ -35,35 +35,39 @@ namespace NETGraph.Core
         protected bool canCast(int typeIndex) => this.typeIndex == typeIndex;
         protected bool canCopy(int typeIndex, DataStructures structure) => (this.structure == structure && this.typeIndex == typeIndex); // does not check for size as this is left to copy function
 
-        public virtual bool match(Data lh, Data rh) => lh.TypeIndex == rh.TypeIndex;
+        public virtual bool match(DataBase lh, DataBase rh) => lh.TypeIndex == rh.TypeIndex;
         // checks for match with structure
-        public virtual bool matchStructure(Data lh, Data rh) => lh.TypeIndex == rh.TypeIndex && lh.Structure == rh.Structure;
-        public virtual bool matchStructureAndSize(Data lh, Data rh) => lh.TypeIndex == rh.TypeIndex && lh.Structure == rh.Structure && lh.Count == rh.Count;
+        public virtual bool matchStructure(DataBase lh, DataBase rh) => lh.TypeIndex == rh.TypeIndex && lh.Structure == rh.Structure;
+        public virtual bool matchStructureAndSize(DataBase lh, DataBase rh) => lh.TypeIndex == rh.TypeIndex && lh.Structure == rh.Structure && lh.Count == rh.Count;
     }
 
-    public abstract class Data<T> : Data
+    public abstract class DataBase<T> : DataBase
     {
         private T scalar;
         private List<T> list;
         private Dictionary<string, T> dict;
 
-        protected Data(int typeIndex, T scalar)
+        protected DataBase(DataTypes type, T scalar) : this((int)type, scalar) { }
+        private DataBase(int typeIndex, T scalar)
         {
             this.typeIndex = typeIndex;
             this.structure = DataStructures.Scalar;
             this.isResizable = false;
             this.Scalar = scalar;
         }
-        protected Data(int typeIndex, IEnumerable<T> values, bool isResizable)
+        protected DataBase(DataTypes type, IEnumerable<T> values, bool isResizable) : this((int)type, values, isResizable) { }
+        private DataBase(int typeIndex, IEnumerable<T> values, bool isResizable)
         {
             this.typeIndex = typeIndex;
             this.structure = isResizable ? DataStructures.List : DataStructures.Array;
             this.isResizable = isResizable;
             this.list = new List<T>(values);
         }
-        protected Data(int typeIndex, int size, bool isResizable) : this(typeIndex, Enumerable.Repeat(default(T), size), isResizable)
+        protected DataBase(DataTypes type, int size, bool isResizable) : this((int)type, size, isResizable) { }
+        private DataBase(int typeIndex, int size, bool isResizable) : this(typeIndex, Enumerable.Repeat(default(T), size), isResizable)
         { }
-        protected Data(int typeIndex, IEnumerable<KeyValuePair<string, T>> namedValues, bool isResizable)
+        protected DataBase(DataTypes type, IEnumerable<KeyValuePair<string, T>> namedValues, bool isResizable) : this((int)type, namedValues, isResizable) { }
+        private DataBase(int typeIndex, IEnumerable<KeyValuePair<string, T>> namedValues, bool isResizable)
         {
             this.typeIndex = typeIndex;
             this.structure = DataStructures.Dict;
@@ -208,7 +212,7 @@ namespace NETGraph.Core
         public virtual void SetAt(string key, T value) => this[key] = value;
         #endregion
 
-        public virtual bool matchExact(Data<T> rh)
+        public virtual bool matchExact(DataBase<T> rh)
         {
             // if self reference, return early true
             if (this == rh)
@@ -225,7 +229,7 @@ namespace NETGraph.Core
             }
             return false;
         }
-        public virtual bool matchWithValue(Data<T> rh)
+        public virtual bool matchWithValue(DataBase<T> rh)
         {
             // if self reference, return early true
             if (this == rh)
@@ -275,17 +279,17 @@ namespace NETGraph.Core
         private void throwCheckAccessByIndex()
         {
             if (this.structure != DataStructures.Array && this.structure != DataStructures.List)
-                throw new InvalidCastException($"{typeof(Data<T>)} cannot be accessed by index.");
+                throw new InvalidCastException($"{typeof(DataBase<T>)} cannot be accessed by index.");
         }
         private void throwCheckAccessByKey()
         {
             if (this.structure != DataStructures.Dict)
-                throw new InvalidCastException($"{typeof(Data<T>)} cannot be accessed by key.");
+                throw new InvalidCastException($"{typeof(DataBase<T>)} cannot be accessed by key.");
         }
         private void throwCheckAccessByScalar()
         {
             if (this.structure != DataStructures.Scalar)
-                throw new InvalidCastException($"{typeof(Data<T>)} cannot be accessed as scalar.");
+                throw new InvalidCastException($"{typeof(DataBase<T>)} cannot be accessed as scalar.");
         }
 
 
