@@ -6,6 +6,7 @@ using NETGraph.Core;
 using NETGraph.Graphs;
 using NETGraph.Impl;
 using NETGraph.Impl.Generics;
+using NETGraph.Runner;
 
 public class Node : IEquatable<Node>
 {
@@ -115,13 +116,29 @@ public class Program
         Console.WriteLine($"{floatArray} == {floatArray2} : {floatArray.matchWithValue(floatArray2)}");
         */
 
+        AddDataProvider addData = new AddDataProvider(2, 10);
+        MathProvider math = MathProvider.Instance;
 
-        DataAccessor aByKey = new DataAccessor("position.x");
-        DataAccessor aByIndex = new DataAccessor("position[0]");
-        DataAccessor aByScalar = new DataAccessor("position");
+        DataQuery sumQuery = new DataQuery(addData, "sum");
+        DataQuery lhQuery = new DataQuery(addData, "lh");
+        DataQuery rhQuery = new DataQuery(addData, "rh");
 
-        MethodAccessor mCall = new MethodAccessor("void add << position.x, position.y, position.z");
-        MethodAccessor mCall2 = new MethodAccessor("void add << position.x, mat4x4[0], position");
+        MethodQuery addQuery = new MethodQuery(math, "sum add << lh rh", sumQuery, lhQuery, rhQuery);
+        Console.WriteLine(addData);
+        addQuery.Evaluate();
+        Console.WriteLine(addData);
+
+        addQuery = new MethodQuery(math, "sum add << lh rh", sumQuery, sumQuery, rhQuery);
+        for (int i = 0; i < 5; i++)
+            addQuery.Evaluate();
+
+        IntData rhData = rhQuery.Evaluate() as IntData;
+        rhData.SetScalar(-5);
+        for (int i = 0; i < 5; i++)
+            addQuery.Evaluate();
+
+        Console.WriteLine(addData);
+
     }
 
 }
