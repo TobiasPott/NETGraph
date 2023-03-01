@@ -92,6 +92,7 @@ public class Program
         Console.WriteLine($"Detected Cycles: {cyclesEdges.Count} {string.Join(", ", cyclesEdges.Select(x => x.Count))}");
         */
 
+        /*
         FloatData floatScalar = new FloatData(1.0f);
         FloatData floatArray = new FloatData(Enumerable.Range(0, 10).Select(i => (float)i), false);
         FloatData floatArray2 = new FloatData(Enumerable.Range(0, 10).Select(i => (float)i), false);
@@ -112,8 +113,15 @@ public class Program
         Console.WriteLine();
 
         Console.WriteLine($"{floatArray} == {floatArray2} : {floatArray.matchWithValue(floatArray2)}");
+        */
 
 
+        DataAccessor aByKey = new DataAccessor("position.x");
+        DataAccessor aByIndex = new DataAccessor("position[0]");
+        DataAccessor aByScalar = new DataAccessor("position");
+
+        MethodAccessor mCall = new MethodAccessor("void add << position.x, position.y, position.z");
+        MethodAccessor mCall2 = new MethodAccessor("void add << position.x, mat4x4[0], position");
     }
 
 }
