@@ -49,13 +49,14 @@ namespace NETGraph.Core
 
         protected Data(int typeIndex, T scalar)
         {
-            this.typeIndex = TypeIndices.Long;
+            this.typeIndex = typeIndex;
             this.structure = DataStructures.Scalar;
             this.isResizable = false;
             this.Scalar = scalar;
         }
         protected Data(int typeIndex, IEnumerable<T> values, bool isResizable)
         {
+            this.typeIndex = typeIndex;
             this.structure = isResizable ? DataStructures.List : DataStructures.Array;
             this.isResizable = isResizable;
             this.list = new List<T>(values);
@@ -64,6 +65,7 @@ namespace NETGraph.Core
         { }
         protected Data(int typeIndex, IEnumerable<KeyValuePair<string, T>> namedValues, bool isResizable)
         {
+            this.typeIndex = typeIndex;
             this.structure = DataStructures.Dict;
             this.isResizable = isResizable;
             this.dict = new Dictionary<string, T>(namedValues);

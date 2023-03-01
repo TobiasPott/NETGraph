@@ -11,10 +11,29 @@ namespace NETGraph.Core
     //  a type implementing method provision only can be used independent from own data access
 
 
+    // ToDo: add constructor overload to create accessor from string accessPath passinng it into the Accessor ctor
+    public struct DataQuery
+    {
+        DataAccessor accessor;
+        IDataProvider provider;
+
+        public DataQuery(IDataProvider provider, DataAccessor accessor)
+        {
+            this.accessor = accessor;
+            this.provider = provider;
+        }
+        public DataQuery(IDataProvider provider, string accessPath)
+        {
+            this.accessor = new DataAccessor(accessPath);
+            this.provider = provider;
+        }
+
+        public Data Evaluate() => provider.Access(accessor);
+    }
+
     public interface IDataProvider
     {
         Data Access(DataAccessor accessor);
-        Data<T> Access<T>(DataAccessor accessor);
     }
     public struct DataAccessor
     {
@@ -22,11 +41,14 @@ namespace NETGraph.Core
         {
             Scalar,
             Index,
-            Key
+            Key,
+            Void
         }
 
         private const string SplitMark_Key = ".";
         private const string SplitMark_Index = "#";
+
+        public static readonly DataAccessor Void = new DataAccessor(string.Empty);
 
 
         public string dataName { get; private set; }
@@ -36,7 +58,14 @@ namespace NETGraph.Core
 
         public DataAccessor(string accessPath)
         {
-            if (accessPath.Contains("."))
+            if (string.IsNullOrEmpty(accessPath))
+            {
+                accessType = AccessTypes.Void;
+                dataName = string.Empty;
+                index = -1;
+                key = string.Empty;
+            }
+            else if (accessPath.Contains("."))
             {
                 accessType = AccessTypes.Key;
                 dataName = accessPath.Substring(0, accessPath.IndexOf('.'));
@@ -68,6 +97,7 @@ namespace NETGraph.Core
             }
         }
 
+
         public static string AccessPath(string dataName, int index) => string.Format("{0}[{1}]", dataName, index);
         public static string AccessPath(string dataName, string key) => string.Format("{0}.{1}", dataName, key);
         public static string AccessPath(string dataName) => dataName;
@@ -78,66 +108,10 @@ namespace NETGraph.Core
                 return AccessPath(dataName, index);
             if (accessType == AccessTypes.Key)
                 return AccessPath(dataName, key);
-            return dataName;
+            if (accessType == AccessTypes.Scalar)
+                return dataName;
+            return "void";
         }
-    }
-
-
-    public interface IMethodProvider
-    {
-        void Invoke(MethodAccessor accessor, params Data[] input);
-        T Invoke<T>(MethodAccessor accessor, params Data[] input);
-    }
-    public struct MethodAccessor
-    {
-        private const string SplitMark_Arguments = "<<";
-        private static readonly string[] SplitMarks_Arguments = new string[] { ",", " " };
-
-        int typeIndex;
-        string method;
-        DataAccessor[] accessors;
-
-        public MethodAccessor(string methodPath)
-        {
-            typeIndex = -1;
-            method = string.Empty;
-            accessors = null;
-            string[] argumentSplit = methodPath.Split(SplitMark_Arguments, StringSplitOptions.RemoveEmptyEntries);
-            if (argumentSplit.Length > 0)
-            {
-                string[] nameSplit = argumentSplit[0].Split(' ', StringSplitOptions.RemoveEmptyEntries);
-                typeIndex = parseTypeIndex(nameSplit[0]);
-                method = parseMethod(nameSplit[1]);
-                Console.WriteLine($"\t{typeIndex}{Environment.NewLine}\t{method}");
-
-                if (argumentSplit.Length > 1)
-                {
-                    string[] accessorsSplit = argumentSplit[1].Split(SplitMarks_Arguments, StringSplitOptions.RemoveEmptyEntries);
-                    if (accessorsSplit.Length > 0)
-                    {
-                        accessors = new DataAccessor[accessorsSplit.Length];
-                        for (int i = 0; i < accessorsSplit.Length; i++)
-                            accessors[i] = new DataAccessor(accessorsSplit[i]);
-                    }
-                    else
-                        accessors = null;
-                }
-
-            }
-
-        }
-
-        private int parseTypeIndex(string typeIndexString)
-        {
-            if (int.TryParse(typeIndexString.Trim(), out int index))
-                return index;
-            return -1;
-        }
-        private string parseMethod(string methodString)
-        {
-            return methodString.Trim();
-        }
-
     }
 
 }
