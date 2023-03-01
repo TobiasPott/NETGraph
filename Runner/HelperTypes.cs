@@ -2,17 +2,19 @@
 using System.Collections.Generic;
 using System.Linq;
 using NETGraph.Core;
+using NETGraph.Data;
+using NETGraph.Data.Simple;
 
 namespace NETGraph.Runner
 {
 
     public class AddDataProvider : IDataProvider
     {
-        Dictionary<string, Data> datas;
+        Dictionary<string, DataBase> datas;
 
         public AddDataProvider(int lh, int rh)
         {
-            datas = new Dictionary<string, Data>()
+            datas = new Dictionary<string, DataBase>()
             {
                 { "lh", new IntData(lh) },
                 { "rh", new IntData(rh) },
@@ -20,7 +22,7 @@ namespace NETGraph.Runner
             };
         }
 
-        public Data Access(DataAccessor accessor)
+        public DataBase Access(DataAccessor accessor)
         {
             // ToDo: a base implementation for the 'Access' method may include type check by index and other validations to avoid runtime errors
             return datas[accessor.dataName];
@@ -40,12 +42,12 @@ namespace NETGraph.Runner
         public static MathProvider Instance { get; private set; } = new MathProvider();
 
 
-        public bool Invoke(MethodAccessor accessor, Data result, params Data[] inputs)
+        public bool Invoke(MethodAccessor accessor, DataBase result, params DataBase[] inputs)
         {
-            return Invoke(accessor, result, inputs as IEnumerable<Data>);
+            return Invoke(accessor, result, inputs as IEnumerable<DataBase>);
         }
 
-        public bool Invoke(MethodAccessor accessor, Data result, IEnumerable<Data> inputs)
+        public bool Invoke(MethodAccessor accessor, DataBase result, IEnumerable<DataBase> inputs)
         {
             if (accessor.method.Equals("add"))
             {
@@ -60,10 +62,10 @@ namespace NETGraph.Runner
         //      The unpacker returns a result Data object from provider using the accessor (use IDataProvider.Access)
         //      The unpacker also returns an array of Data objects passed to actual methods
 
-        private void Add(Data rawResult, IEnumerable<Data> inputs)
+        private void Add(DataBase rawResult, IEnumerable<DataBase> inputs)
         {
-            Data<int> result = rawResult as Data<int>;
-            int sum = inputs.Where(x => x.TypeIndex == TypeIndices.Int).Sum(x => (x as Data<int>).GetScalar());
+            DataBase<int> result = rawResult as DataBase<int>;
+            int sum = inputs.Where(x => x.TypeIndex == (int)DataTypes.Int).Sum(x => (x as DataBase<int>).GetScalar());
             result.SetScalar(sum);
         }
 

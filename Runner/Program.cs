@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using NETGraph;
 using NETGraph.Core;
+using NETGraph.Data.Simple;
 using NETGraph.Graphs;
 using NETGraph.Impl;
 using NETGraph.Impl.Generics;
