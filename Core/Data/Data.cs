@@ -1,19 +1,23 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using NETGraph.Core;
 
 namespace NETGraph.Data
 {
 
-    public abstract class DataBase
+    public abstract class DataBase : IDataProvider
     {
+        // ToDo: Add implementation for IDataProvider interface to allow DataBase to provide itself to queries?!
+        //      Return type of Access may be changed to T (where T can be DataBase of course) to allow typed return of scalar, index or key based values
+
         protected DataStructures structure = DataStructures.Scalar;
         protected int typeIndex;
         protected bool isResizable;
 
         public DataStructures Structure { get => structure; }
         public int TypeIndex { get => typeIndex; }
-        public abstract int Count { get; }
+        public virtual int Count { get; } = 1;
 
 
         protected DataBase(DataTypes type, DataStructures structure, bool isResizable = true) : this((int)type, structure, isResizable)
@@ -26,13 +30,13 @@ namespace NETGraph.Data
         }
 
 
-        public abstract void Add(object item);
-        public abstract void Add(string key, object item);
+        //public abstract void Add(object item);
+        //public abstract void Add(string key, object item);
 
-        public abstract void RemoveAt(int index);
-        public abstract void RemoveRange(int index, int count);
-        public abstract void RemoveAt(string key);
-        public abstract void RemoveRange(params string[] keys);
+        //public abstract void RemoveAt(int index);
+        //public abstract void RemoveRange(int index, int count);
+        //public abstract void RemoveAt(string key);
+        //public abstract void RemoveRange(params string[] keys);
 
 
         protected bool canCast(int typeIndex) => this.typeIndex == typeIndex;
@@ -42,8 +46,9 @@ namespace NETGraph.Data
         // checks for match with structure
         public virtual bool matchStructure(DataBase lh, DataBase rh) => lh.TypeIndex == rh.TypeIndex && lh.Structure == rh.Structure;
         public virtual bool matchStructureAndSize(DataBase lh, DataBase rh) => lh.TypeIndex == rh.TypeIndex && lh.Structure == rh.Structure && lh.Count == rh.Count;
-    }
 
+        public abstract DataBase Access(DataAccessor accessor);
+    }
 
     public abstract class DataBase<T> : DataBase
     {
@@ -134,53 +139,66 @@ namespace NETGraph.Data
                 throw new InvalidOperationException($"Cannot initialize data on assigned {this.structure} structure. Please init data only once.");
         }
 
-
-        #region Data Add & Remove implementations
-        public override void Add(object item)
+        public override DataBase Access(DataAccessor accessor)
         {
-            throwCheckResizable();
-            throwCheckStructure(DataStructures.List);
-            // typecheck
-            throwCheckGenericType(item);
-
-            this.list.Add((T)item);
-        }
-        public override void Add(string key, object item)
-        {
-            throwCheckResizable();
-            throwCheckStructure(DataStructures.Named);
-            // typecheck
-            throwCheckGenericType(item);
-
-            this.dict.Add(key, (T)item);
+            switch (accessor.accessType)
+            {
+                case DataAccessor.AccessTypes.Key:
+                    return this[accessor.key] as DataBase;
+                case DataAccessor.AccessTypes.Index:
+                    return this[accessor.index] as DataBase;
+                case DataAccessor.AccessTypes.Scalar:
+                default:
+                    return this;
+            }
         }
 
-        public override void RemoveAt(int index)
-        {
-            throwCheckResizable();
-            throwCheckStructure(DataStructures.List);
-            this.list.RemoveAt(index);
-        }
-        public override void RemoveAt(string key)
-        {
-            throwCheckResizable();
-            throwCheckStructure(DataStructures.Named);
-            this.dict.Remove(key);
-        }
-        public override void RemoveRange(int index, int count)
-        {
-            throwCheckResizable();
-            throwCheckStructure(DataStructures.List);
-            this.list.RemoveRange(index, count);
-        }
-        public override void RemoveRange(params string[] keys)
-        {
-            throwCheckResizable();
-            throwCheckStructure(DataStructures.Named);
-            foreach (string key in keys)
-                this.dict.Remove(key);
-        }
-        #endregion
+        //#region Data Add & Remove implementations
+        //public override void Add(object item)
+        //{
+        //    throwCheckResizable();
+        //    throwCheckStructure(DataStructures.List);
+        //    // typecheck
+        //    throwCheckGenericType(item);
+
+        //    this.list.Add((T)item);
+        //}
+        //public override void Add(string key, object item)
+        //{
+        //    throwCheckResizable();
+        //    throwCheckStructure(DataStructures.Named);
+        //    // typecheck
+        //    throwCheckGenericType(item);
+
+        //    this.dict.Add(key, (T)item);
+        //}
+
+        //public override void RemoveAt(int index)
+        //{
+        //    throwCheckResizable();
+        //    throwCheckStructure(DataStructures.List);
+        //    this.list.RemoveAt(index);
+        //}
+        //public override void RemoveAt(string key)
+        //{
+        //    throwCheckResizable();
+        //    throwCheckStructure(DataStructures.Named);
+        //    this.dict.Remove(key);
+        //}
+        //public override void RemoveRange(int index, int count)
+        //{
+        //    throwCheckResizable();
+        //    throwCheckStructure(DataStructures.List);
+        //    this.list.RemoveRange(index, count);
+        //}
+        //public override void RemoveRange(params string[] keys)
+        //{
+        //    throwCheckResizable();
+        //    throwCheckStructure(DataStructures.Named);
+        //    foreach (string key in keys)
+        //        this.dict.Remove(key);
+        //}
+        //#endregion
 
 
         #region Data<T> get and set implementations

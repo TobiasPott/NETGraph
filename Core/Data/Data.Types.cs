@@ -31,7 +31,14 @@ namespace NETGraph.Data
 
     }
 
-    public static class TypeIndices
+    public interface IDataGenerator
+    {
+        DataBase Scalar(object scalar);
+        DataBase List(int size, bool isResizable);
+        DataBase Dict(bool isRezisable);
+    }
+
+    public class DataRegistry
     {
         public static Dictionary<DataTypes, Type> Map = new Dictionary<DataTypes, Type>()
         {
@@ -51,17 +58,26 @@ namespace NETGraph.Data
             { DataTypes.Decimal, typeof(decimal) },
             { DataTypes.String, typeof(string) },
         };
-    }
+        // reversed lookup for type to DataTypes
+        public static Dictionary<Type, DataTypes> MapReveresed = new Dictionary<Type, DataTypes>(Map.Select(x => new KeyValuePair<Type, DataTypes>(x.Value, x.Key)));
 
-    public interface IDataGenerator
-    {
-        DataBase Scalar(object scalar);
-        DataBase List(int size, bool isResizable);
-        DataBase Dict(bool isRezisable);
-    }
 
-    public class DataRegistry
-    {
+        public static bool RegisterDataType(DataTypes dataType, Type type)
+        {
+            if (!Map.ContainsKey(dataType))
+            {
+                if (!MapReveresed.ContainsKey(type))
+                {
+                    Map.Add(dataType, type);
+                    MapReveresed.Add(type, dataType);
+                    return true;
+                }
+            }
+            //throw new ArgumentException($"{dataType}/{type} is already registered. Duplicate types are not allowed.");
+            return false;
+        }
+
+
         // ToDo: Implement Func<DataBase> based generators which allow passing Data constructor parameters
         //      Wrap generator into simple type/interface which provides all methods to generate:
         //          scalar data
