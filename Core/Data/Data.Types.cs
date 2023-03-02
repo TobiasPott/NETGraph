@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using NETGraph.Core;
 
 namespace NETGraph.Data
@@ -10,7 +11,7 @@ namespace NETGraph.Data
         Scalar,
         Array,
         List,
-        Dict,
+        Named,
     }
 
     public enum DataTypes : int
@@ -52,5 +53,36 @@ namespace NETGraph.Data
         };
     }
 
+    public interface IDataGenerator
+    {
+        DataBase Scalar(object scalar);
+        DataBase List(int size, bool isResizable);
+        DataBase Dict(bool isRezisable);
+    }
+
+    public class DataRegistry
+    {
+        // ToDo: Implement Func<DataBase> based generators which allow passing Data constructor parameters
+        //      Wrap generator into simple type/interface which provides all methods to generate:
+        //          scalar data
+        //          array/list data
+        //          dict data
+        static Dictionary<DataTypes, IDataGenerator> generators = new Dictionary<DataTypes, IDataGenerator>();
+
+        public static bool Register(DataTypes type, IDataGenerator generator)
+        {
+            if (!generators.ContainsKey(type))
+            {
+                generators.Add(type, generator);
+                return true;
+            }
+            return false;
+        }
+
+        public DataBase generateScalar<T>(DataTypes type, object scalar) => generators[type].Scalar(scalar);
+        public DataBase generateList<T>(DataTypes type, int size, bool isResizable) => generators[type].List(size, isResizable);
+        public DataBase generateDict<T>(DataTypes type, bool isResizable) => generators[type].Dict(isResizable);
+
+    }
 }
 

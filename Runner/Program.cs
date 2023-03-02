@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using NETGraph;
 using NETGraph.Core;
+using NETGraph.Data;
 using NETGraph.Data.Simple;
 using NETGraph.Graphs;
 using NETGraph.Impl;
@@ -117,6 +119,9 @@ public class Program
         Console.WriteLine($"{floatArray} == {floatArray2} : {floatArray.matchWithValue(floatArray2)}");
         */
 
+        Stopwatch sw = new Stopwatch();
+        sw.Start();
+
         AddDataProvider addData = new AddDataProvider(2, 10);
         MathProvider math = MathProvider.Instance;
 
@@ -124,21 +129,25 @@ public class Program
         DataQuery lhQuery = new DataQuery(addData, "lh");
         DataQuery rhQuery = new DataQuery(addData, "rh");
 
+
         MethodQuery addQuery = new MethodQuery(math, "sum add << lh rh", sumQuery, lhQuery, rhQuery);
-        Console.WriteLine(addData);
+        Console.WriteLine(sw.ElapsedMilliseconds.ToString("0000") + ": " + addData);
+
         addQuery.Evaluate();
-        Console.WriteLine(addData);
+        Console.WriteLine(sw.ElapsedMilliseconds.ToString("0000") + ": " + addData);
 
         addQuery = new MethodQuery(math, "sum add << lh rh", sumQuery, sumQuery, rhQuery);
         for (int i = 0; i < 5; i++)
             addQuery.Evaluate();
+        Console.WriteLine(sw.ElapsedMilliseconds.ToString("0000") + ": " + addData);
+
 
         IntData rhData = rhQuery.Evaluate() as IntData;
         rhData.SetScalar(-5);
         for (int i = 0; i < 5; i++)
             addQuery.Evaluate();
+        Console.WriteLine(sw.ElapsedMilliseconds.ToString("0000") + ": " + addData);
 
-        Console.WriteLine(addData);
 
     }
 

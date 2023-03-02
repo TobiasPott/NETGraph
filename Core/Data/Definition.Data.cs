@@ -32,5 +32,26 @@ namespace NETGraph.Data
 
     }
 
+    public struct GeneratorDefinition : IDataGenerator
+    {
+        Func<object, DataBase> scalar;
+        Func<int, bool, DataBase> list;
+        Func<bool, DataBase> dict;
+
+        public GeneratorDefinition(Func<object, DataBase> scalar, Func<int, bool, DataBase> list, Func<bool, DataBase> dict)
+        {
+            if (scalar == null || list == null || dict == null)
+                throw new ArgumentNullException($"{nameof(scalar)},{nameof(list)} and {nameof(dict)} cannot be left empty. Please provide all generator methods.");
+            this.scalar = scalar;
+            this.list = list;
+            this.dict = dict;
+        }
+
+        public DataBase Scalar(object scalar) => this.scalar.Invoke(scalar);
+        public DataBase List(int size, bool isResizable) => this.list.Invoke(size, isResizable);
+        public DataBase Dict(bool isRezisable) => this.dict.Invoke(isRezisable);
+
+    }
+
 }
 

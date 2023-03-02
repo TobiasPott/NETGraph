@@ -9,18 +9,21 @@ namespace NETGraph.Data
     {
         protected DataStructures structure = DataStructures.Scalar;
         protected int typeIndex;
-        protected bool isResizable = true;
+        protected bool isResizable;
 
         public DataStructures Structure { get => structure; }
         public int TypeIndex { get => typeIndex; }
         public abstract int Count { get; }
 
-        protected abstract object GetScalarUntyped();
-        protected abstract void SetScalarUntyped(object value);
-        protected abstract object GetAtUntyped(int index);
-        protected abstract void SetAtUntyped(int index, object value);
-        protected abstract object GetAtUntyped(string key);
-        protected abstract void SetAtUntyped(string key, object value);
+
+        protected DataBase(DataTypes type, DataStructures structure, bool isResizable = true) : this((int)type, structure, isResizable)
+        { }
+        protected DataBase(int typeIndex, DataStructures structure, bool isResizable = true)
+        {
+            this.typeIndex = typeIndex;
+            this.structure = structure;
+            this.isResizable = structure == DataStructures.Scalar ? false : isResizable;
+        }
 
 
         public abstract void Add(object item);
@@ -41,39 +44,19 @@ namespace NETGraph.Data
         public virtual bool matchStructureAndSize(DataBase lh, DataBase rh) => lh.TypeIndex == rh.TypeIndex && lh.Structure == rh.Structure && lh.Count == rh.Count;
     }
 
+
     public abstract class DataBase<T> : DataBase
     {
         private T scalar;
         private List<T> list;
         private Dictionary<string, T> dict;
 
-        protected DataBase(DataTypes type, T scalar) : this((int)type, scalar) { }
-        private DataBase(int typeIndex, T scalar)
-        {
-            this.typeIndex = typeIndex;
-            this.structure = DataStructures.Scalar;
-            this.isResizable = false;
-            this.Scalar = scalar;
-        }
-        protected DataBase(DataTypes type, IEnumerable<T> values, bool isResizable) : this((int)type, values, isResizable) { }
-        private DataBase(int typeIndex, IEnumerable<T> values, bool isResizable)
-        {
-            this.typeIndex = typeIndex;
-            this.structure = isResizable ? DataStructures.List : DataStructures.Array;
-            this.isResizable = isResizable;
-            this.list = new List<T>(values);
-        }
-        protected DataBase(DataTypes type, int size, bool isResizable) : this((int)type, size, isResizable) { }
-        private DataBase(int typeIndex, int size, bool isResizable) : this(typeIndex, Enumerable.Repeat(default(T), size), isResizable)
+
+        protected DataBase(DataTypes type, DataStructures structure, bool isResizable) : base(type, structure, isResizable)
         { }
-        protected DataBase(DataTypes type, IEnumerable<KeyValuePair<string, T>> namedValues, bool isResizable) : this((int)type, namedValues, isResizable) { }
-        private DataBase(int typeIndex, IEnumerable<KeyValuePair<string, T>> namedValues, bool isResizable)
-        {
-            this.typeIndex = typeIndex;
-            this.structure = DataStructures.Dict;
-            this.isResizable = isResizable;
-            this.dict = new Dictionary<string, T>(namedValues);
-        }
+        protected DataBase(int typeIndex, DataStructures structure, bool isResizable) : base(typeIndex, structure, isResizable)
+        { }
+
 
         protected T this[int index]
         {
@@ -108,6 +91,7 @@ namespace NETGraph.Data
             }
             set { if (this.structure == DataStructures.Scalar) scalar = value; }
         }
+
         public override int Count
         {
             get
@@ -116,7 +100,7 @@ namespace NETGraph.Data
                 {
                     case DataStructures.Array: return list.Count;
                     case DataStructures.List: return list.Count;
-                    case DataStructures.Dict: return dict.Count;
+                    case DataStructures.Named: return dict.Count;
                 }
                 return 1;
             }
@@ -124,35 +108,31 @@ namespace NETGraph.Data
 
 
 
-        #region Data untyped get and set implementations
-        protected override object GetScalarUntyped() => this.scalar;
-        protected override object GetAtUntyped(int index) => this[index];
-        protected override object GetAtUntyped(string key) => this.dict[key];
-
-        protected override void SetScalarUntyped(object value)
+        protected DataBase<T> initData(T scalar)
         {
-            if (value is T)
-                this.SetScalar((T)value);
-            else
-                throw new InvalidCastException($"{nameof(value)} has missmatching type and cannot be set");
+            this.Scalar = scalar;
+            return this;
         }
-        protected override void SetAtUntyped(int index, object value)
+        protected DataBase<T> initData(IEnumerable<T> values)
         {
-            if (value is T)
-                this.SetAt(index, (T)value);
+            if (this.list == null)
+            {
+                this.list = new List<T>(values);
+                return this;
+            }
             else
-                throw new InvalidCastException($"{nameof(value)} has missmatching type and cannot be set");
+                throw new InvalidOperationException($"Cannot initialize data on assigned {this.structure} structure. Please init data only once.");
         }
-        protected override void SetAtUntyped(string key, object value)
+        protected DataBase<T> initData(IEnumerable<KeyValuePair<string, T>> keyedValues)
         {
-            if (value is T)
-                this.SetAt(key, (T)value);
+            if (this.dict == null)
+            {
+                this.dict = new Dictionary<string, T>(keyedValues);
+                return this;
+            }
             else
-                throw new InvalidCastException($"{nameof(value)} has missmatching type and cannot be set");
+                throw new InvalidOperationException($"Cannot initialize data on assigned {this.structure} structure. Please init data only once.");
         }
-
-        #endregion
-
 
 
         #region Data Add & Remove implementations
@@ -168,7 +148,7 @@ namespace NETGraph.Data
         public override void Add(string key, object item)
         {
             throwCheckResizable();
-            throwCheckStructure(DataStructures.Dict);
+            throwCheckStructure(DataStructures.Named);
             // typecheck
             throwCheckGenericType(item);
 
@@ -184,7 +164,7 @@ namespace NETGraph.Data
         public override void RemoveAt(string key)
         {
             throwCheckResizable();
-            throwCheckStructure(DataStructures.Dict);
+            throwCheckStructure(DataStructures.Named);
             this.dict.Remove(key);
         }
         public override void RemoveRange(int index, int count)
@@ -196,7 +176,7 @@ namespace NETGraph.Data
         public override void RemoveRange(params string[] keys)
         {
             throwCheckResizable();
-            throwCheckStructure(DataStructures.Dict);
+            throwCheckStructure(DataStructures.Named);
             foreach (string key in keys)
                 this.dict.Remove(key);
         }
@@ -219,7 +199,7 @@ namespace NETGraph.Data
                 return true;
             if (matchStructureAndSize(this, rh))
             {
-                if (this.Structure == DataStructures.Dict)
+                if (this.Structure == DataStructures.Named)
                 {
                     foreach (string key in this.dict.Keys)
                         if (!rh.dict.ContainsKey(key)) return false;
@@ -236,7 +216,7 @@ namespace NETGraph.Data
                 return true;
             if (matchStructureAndSize(this, rh))
             {
-                if (this.Structure == DataStructures.Dict)
+                if (this.Structure == DataStructures.Named)
                 {
                     foreach (string key in this.dict.Keys)
                     {
@@ -283,7 +263,7 @@ namespace NETGraph.Data
         }
         private void throwCheckAccessByKey()
         {
-            if (this.structure != DataStructures.Dict)
+            if (this.structure != DataStructures.Named)
                 throw new InvalidCastException($"{typeof(DataBase<T>)} cannot be accessed by key.");
         }
         private void throwCheckAccessByScalar()
@@ -301,7 +281,7 @@ namespace NETGraph.Data
                 toString = $"{scalar}";
             else if (this.structure == DataStructures.Array || this.structure == DataStructures.List)
                 toString = $"[{string.Join(", ", list)}]";
-            else if (this.structure == DataStructures.Dict)
+            else if (this.structure == DataStructures.Named)
                 toString = $"[{string.Join(", ", dict)}]";
 
             return base.ToString() + $"[{this.structure}] = " + toString;

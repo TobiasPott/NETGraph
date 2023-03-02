@@ -14,11 +14,13 @@ namespace NETGraph.Runner
 
         public AddDataProvider(int lh, int rh)
         {
+            GeneratorDefinition intGen = IntData.Generator;
+            
             datas = new Dictionary<string, DataBase>()
             {
-                { "lh", new IntData(lh) },
-                { "rh", new IntData(rh) },
-                { "sum", new IntData(0) },
+                { "lh", IntData.Generator.Scalar(lh) },
+                { "rh", IntData.Generator.Scalar(rh) },
+                { "sum", IntData.Generator.Scalar(0) },
             };
         }
 
@@ -35,7 +37,13 @@ namespace NETGraph.Runner
 
     }
 
+    // regex: ^(?:(.*)?[$(]+)               // match return and name part (no ())
+    //          ([$(]{1}(?<args>.*)?[$)]{1})        // match argument list (no ())
+    //          (?:[$(]{1}(?<args>(((?:[\w.]+)+),?).*)[$)]{1})      // match down to first argument name (not repeated)
 
+    //      (?:[$(]{1}(?<args>(?:[\w.]+).*)( >> insert , split here << )[$)]{1}) // outer
+
+    //      (?:(?:\b[a-zA-Z]{1}(?:[\w.\[\]]+))+,{0})    // final regex to separate everything into
 
     public class MathProvider : IMethodProvider
     {
