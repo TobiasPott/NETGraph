@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.RegularExpressions;
 using NETGraph.Data;
 
 namespace NETGraph.Core
@@ -40,8 +41,8 @@ namespace NETGraph.Core
     }
     public struct MethodAccessor
     {
-        private const string SplitMark_Arguments = "<<";
-        private static readonly string[] SplitMarks_Arguments = new string[] { ",", " " };
+        // Regex for method path parssing
+        private static readonly Regex regEx = new Regex("(?:(?:\\b[a-zA-Z]{1}(?:[\\w.\\[\\]]+))+,{0})", RegexOptions.Compiled | RegexOptions.IgnoreCase);
 
         DataAccessor result;
         public string method { get; private set; }
@@ -50,24 +51,19 @@ namespace NETGraph.Core
         public MethodAccessor(string methodPath)
         {
             inputs = null;
-            string[] argumentSplit = methodPath.Split(SplitMark_Arguments, StringSplitOptions.RemoveEmptyEntries);
-            if (argumentSplit.Length > 0)
+            MatchCollection matches = regEx.Matches(methodPath);
+            if (matches.Count >= 2)
             {
-                // split result accessor and method name
-                string[] nameSplit = argumentSplit[0].Split(' ', StringSplitOptions.RemoveEmptyEntries);
-                result = new DataAccessor(nameSplit[0].Trim());
-                method = nameSplit[1].Trim();
+                // proces matches for result and name parts
+                result = new DataAccessor(matches[0].Value);
+                method = matches[1].Value;
 
-                // split the inputs part if it exists
-                if (argumentSplit.Length > 1)
+                if (matches.Count > 2)
                 {
-                    string[] inputsSplit = argumentSplit[1].Split(SplitMarks_Arguments, StringSplitOptions.RemoveEmptyEntries);
-                    if (inputsSplit.Length > 0)
-                    {
-                        inputs = new DataAccessor[inputsSplit.Length];
-                        for (int i = 0; i < inputsSplit.Length; i++)
-                            inputs[i] = new DataAccessor(inputsSplit[i]);
-                    }
+                    inputs = new DataAccessor[matches.Count - 2];
+                    // process matches for input argument parts
+                    for (int i = 2; i < matches.Count; i++)
+                        inputs[i - 2] = new DataAccessor(matches[i].Value);
                 }
             }
             else
