@@ -38,7 +38,7 @@ namespace NETGraph.Data
         {
             this.typeName = dataType.ToString().ToLowerInvariant();
             this.typeIndex = (int)dataType;
-            this.type = TypeRegistry.GetTypeForInternal(dataType);
+            this.type = TypeRegistry.BuiltInTypeFor(dataType);
             this.generator = generator;
 
         }
@@ -51,21 +51,25 @@ namespace NETGraph.Data
         }
     }
 
+    public struct Void
+    { }
 
     public class TypeRegistry
     {
-        private static Dictionary<DataTypes, Type> InternalTypes = new Dictionary<DataTypes, Type>()
+        // reversed lookup for type to DataTypes
+        private static Dictionary<Type, DataTypes> builtInTypesMapRev = new Dictionary<Type, DataTypes>(builtInTypesMap.Select(x => new KeyValuePair<Type, DataTypes>(x.Value, x.Key)));
+        private static Dictionary<DataTypes, Type> builtInTypesMap = new Dictionary<DataTypes, Type>()
         {
-            { DataTypes.Void, null },
+            { DataTypes.Void, typeof(Void) },
             { DataTypes.Object, typeof(object) },
             { DataTypes.Bool, typeof(bool) },
             { DataTypes.Byte, typeof(byte) },
             { DataTypes.SByte, typeof(sbyte) },
             { DataTypes.Short, typeof(short) },
             { DataTypes.UShort, typeof(ushort) },
+            { DataTypes.Char, typeof(char) },
             { DataTypes.Int, typeof(int) },
             { DataTypes.UInt, typeof(uint) },
-            { DataTypes.Char, typeof(char) },
             { DataTypes.Long, typeof(long) },
             { DataTypes.ULong, typeof(ulong) },
             { DataTypes.Float, typeof(float) },
@@ -75,16 +79,19 @@ namespace NETGraph.Data
             // internal library types
             { DataTypes.IData, typeof(IData) },
         };
-        // reversed lookup for type to DataTypes
-        private static Dictionary<Type, DataTypes> InternalTypesReversed = new Dictionary<Type, DataTypes>(InternalTypes.Select(x => new KeyValuePair<Type, DataTypes>(x.Value, x.Key)));
+        private static Dictionary<DataTypes, TypeBlueprint> blueprints = new Dictionary<DataTypes, TypeBlueprint>();
+
+        // ToDo: transform to operate on blueprints dictionary and auto-init if required
+        //      
+        public static Type BuiltInTypeFor(DataTypes dataType) => builtInTypesMap[dataType];
 
 
-        static Dictionary<DataTypes, TypeBlueprint> blueprints = new Dictionary<DataTypes, TypeBlueprint>();
+        public static DataTypes GetDataTypeFor(string dataName)
+        {
+            TypeRegistry.AutoInit();
+            return blueprints.Values.Where(x => x.typeName.Equals(dataName.ToLowerInvariant())).Select(x => x.dataType).First();
+        }
 
-
-        public static Type GetTypeForInternal(DataTypes dataType) => InternalTypes[dataType];
-        public static DataTypes GetDataTypeFor(string dataName) => blueprints.Values.Where(x => x.typeName.Equals(dataName.ToLowerInvariant())).Select(x => x.dataType).First()
-            ;
 
         public static bool RegisterDataType(TypeBlueprint blueprint)
         {
@@ -92,9 +99,14 @@ namespace NETGraph.Data
                 blueprints.Add(blueprint.dataType, blueprint);
             return false;
         }
-        public static void RegisterBuiltIn()
+        private static void AutoInit()
         {
-            //RegisterDataType(new TypeBlueprint(DataTypes.Void, null));
+            if (blueprints.Count == 0)
+                RegisterBuiltIn();
+        }
+        private static void RegisterBuiltIn()
+        {
+            RegisterDataType(new TypeBlueprint(DataTypes.Void, null));
             RegisterDataType(new TypeBlueprint(DataTypes.Object, null));
             RegisterDataType(new TypeBlueprint(DataTypes.Bool, null));
             RegisterDataType(new TypeBlueprint(DataTypes.Byte, null));
