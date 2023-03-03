@@ -40,16 +40,16 @@ namespace NETGraph.Data.Simple
     //}
     public class IntData : DataBase<int>
     {
-        public IntData(int typeIndex, DataStructures structure, bool isResizable) : base(typeIndex, structure, isResizable)
+        public IntData(int typeIndex, DataStructure structure, bool isResizable) : base(typeIndex, structure, isResizable)
         { }
 
         public static GeneratorDefinition Generator { get; } = new GeneratorDefinition(
-            (s) => (IntData)new IntData((int)DataTypes.Int, DataStructures.Scalar, false).initScalar((int)s),
-            (s, r) => (IntData)new IntData((int)DataTypes.Int, r ? DataStructures.List : DataStructures.Array, r),
-            (r) => (IntData)new IntData((int)DataTypes.Int, DataStructures.Named, r)
+            (s) => (IntData)new IntData((int)DataTypes.Int, DataStructure.Scalar, false).initScalar((int)s),
+            (s, r) => (IntData)new IntData((int)DataTypes.Int, DataStructure.List, r),
+            (r) => (IntData)new IntData((int)DataTypes.Int, DataStructure.Named, r)
         );
-        public static DataDefinition Definition(string name, DataStructures structure = DataStructures.Scalar, bool isResizable = false, params string[] keys)
-            => new DataDefinition(name, DataTypes.Int, structure, isResizable, keys);
+        //public static DataDefinition Definition(string name, DataStructures structure = DataStructures.Scalar, bool isResizable = false, params string[] keys)
+        //    => new DataDefinition(name, DataTypes.Int, structure, isResizable, keys);
     }
     //public class LongData : DataBase<long>
     //{

@@ -1,37 +1,8 @@
 ﻿using System;
+using NETGraph.Core.Meta;
 
 namespace NETGraph.Data
 {
-    public interface IDataDefinition
-    {
-        string Name { get; }
-        int TypeIndex { get; }
-        DataStructures Structure { get; }
-        bool IsResizable { get; }
-        string[] Keys { get; }
-    }
-
-    public struct DataDefinition : IDataDefinition
-    {
-        public string Name { get; private set; }
-        public int TypeIndex { get; private set; }
-        public DataStructures Structure { get; private set; }
-        public bool IsResizable { get; private set; }
-        public string[] Keys { get; private set; }
-
-        public DataDefinition(string name, DataTypes type, DataStructures structure = DataStructures.Scalar, bool isResizable = false, params string[] keys) : this(name, (int)type, structure, isResizable, keys)
-        { }
-        public DataDefinition(string name, int typeIndex, DataStructures structure = DataStructures.Scalar, bool isResizable = false, params string[] keys)
-        {
-            this.Name = name;
-            this.TypeIndex = typeIndex;
-            this.Structure = structure;
-            this.IsResizable = isResizable;
-            this.Keys = (keys.Length > 0) ? keys : null;
-        }
-
-    }
-
     public struct GeneratorDefinition : IDataGenerator
     {
         Func<object, DataBase> scalar;
@@ -51,6 +22,17 @@ namespace NETGraph.Data
         public DataBase List(int size, bool isResizable) => this.list.Invoke(size, isResizable);
         public DataBase Dict(bool isRezisable) => this.dict.Invoke(isRezisable);
 
+
+        // ToDo: Consider implementing a runtime Data Factory which builds new DataBase<T> typees by Type parameter
+        //      This might be limited to reflection not available at runtime on iOS
+        /*
+          // Specify the type parameter of the A<> type
+          Type genericType = typeof(A<>).MakeGenericType(new Type[] { o.GetType() });
+          // Get the 'B' method and invoke it:
+          object res = genericType.GetMethod("B").Invoke(new object[] { o });
+          // Convert the result to string & return it
+          return (string)res;
+        */
     }
 
 }

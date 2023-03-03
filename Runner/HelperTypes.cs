@@ -13,7 +13,7 @@ namespace NETGraph.Runner
     {
         private static string[] keys = new[] { "lh", "rh", "sum" };
 
-        public MathOpDataProvider(int lh, int rh) : base(DataTypes.Int, DataStructures.Named, false)
+        public MathOpDataProvider(int lh, int rh) : base(DataTypes.Int, DataStructure.Named, false)
         {
             initNamed(keys.Select(k => new KeyValuePair<string, int>(k, 0)));
             this.setAt(keys[0], lh);

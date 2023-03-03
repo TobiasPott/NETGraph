@@ -7,9 +7,17 @@ using NETGraph.Core.Meta;
 namespace NETGraph.Data
 {
 
+    public enum DataStructure
+    {
+        Scalar,
+        List,
+        Named,
+    }
+
+
     public interface IData
     {
-        DataStructures Structure { get; }
+        DataStructure Structure { get; }
         int TypeIndex { get; }
         int Count { get; }
 
@@ -37,22 +45,22 @@ namespace NETGraph.Data
 
     public abstract class DataBase : IData
     {
-        protected DataStructures structure = DataStructures.Scalar;
+        protected DataStructure structure = DataStructure.Scalar;
         protected int typeIndex;
         protected bool isResizable;
 
-        public DataStructures Structure { get => structure; }
+        public DataStructure Structure { get => structure; }
         public int TypeIndex { get => typeIndex; }
         public virtual int Count { get; } = 1;
 
 
-        protected DataBase(DataTypes type, DataStructures structure, bool isResizable = true) : this((int)type, structure, isResizable)
+        protected DataBase(DataTypes type, DataStructure structure, bool isResizable = true) : this((int)type, structure, isResizable)
         { }
-        protected DataBase(int typeIndex, DataStructures structure, bool isResizable = true)
+        protected DataBase(int typeIndex, DataStructure structure, bool isResizable = true)
         {
             this.typeIndex = typeIndex;
             this.structure = structure;
-            this.isResizable = structure == DataStructures.Scalar ? false : isResizable;
+            this.isResizable = structure == DataStructure.Scalar ? false : isResizable;
         }
 
         public abstract object getValueScalar();
@@ -63,7 +71,7 @@ namespace NETGraph.Data
         public abstract void assign(string name, object scalar);
 
         protected bool canCast(int typeIndex) => this.typeIndex == typeIndex;
-        protected bool canCopy(int typeIndex, DataStructures structure) => (this.structure == structure && this.typeIndex == typeIndex); // does not check for size as this is left to copy function
+        protected bool canCopy(int typeIndex, DataStructure structure) => (this.structure == structure && this.typeIndex == typeIndex);
 
         // accessing nested DataBase objects and resolving to actual types
         public abstract IData access(DataSignature signature);
@@ -79,14 +87,14 @@ namespace NETGraph.Data
         private Dictionary<string, T> dict;
 
 
-        protected DataBase(DataTypes type, DataStructures structure, bool isResizable) : base(type, structure, isResizable)
+        protected DataBase(DataTypes type, DataStructure structure, bool isResizable) : base(type, structure, isResizable)
         {
-            if (structure == DataStructures.Array || structure == DataStructures.List)
+            if (structure == DataStructure.List)
                 this.list = new List<T>();
-            else if (structure == DataStructures.Named)
+            else if (structure == DataStructure.Named)
                 this.dict = new Dictionary<string, T>();
         }
-        protected DataBase(int typeIndex, DataStructures structure, bool isResizable) : this((DataTypes)typeIndex, structure, isResizable)
+        protected DataBase(int typeIndex, DataStructure structure, bool isResizable) : this((DataTypes)typeIndex, structure, isResizable)
         { }
 
 
@@ -121,7 +129,7 @@ namespace NETGraph.Data
                 throwCheckAccessByScalar();
                 return scalar;
             }
-            set { if (this.structure == DataStructures.Scalar) scalar = value; }
+            set { if (this.structure == DataStructure.Scalar) scalar = value; }
         }
 
         public override int Count
@@ -130,9 +138,8 @@ namespace NETGraph.Data
             {
                 switch (this.structure)
                 {
-                    case DataStructures.Array: return list.Count;
-                    case DataStructures.List: return list.Count;
-                    case DataStructures.Named: return dict.Count;
+                    case DataStructure.List: return list.Count;
+                    case DataStructure.Named: return dict.Count;
                 }
                 return 1;
             }
@@ -222,7 +229,7 @@ namespace NETGraph.Data
         public virtual void setAt(string name, T value) => this[name] = value;
         #endregion
 
-        
+
         //#region Data Add & Remove implementations
         //public override void Add(object item)
         //{
@@ -279,7 +286,7 @@ namespace NETGraph.Data
                 return true;
             if (IData.matchStructureAndSize(this, rh))
             {
-                if (this.Structure == DataStructures.Named)
+                if (this.Structure == DataStructure.Named)
                 {
                     foreach (string key in this.dict.Keys)
                         if (!rh.dict.ContainsKey(key)) return false;
@@ -296,7 +303,7 @@ namespace NETGraph.Data
                 return true;
             if (IData.matchStructureAndSize(this, rh))
             {
-                if (this.Structure == DataStructures.Named)
+                if (this.Structure == DataStructure.Named)
                 {
                     foreach (string key in this.dict.Keys)
                     {
@@ -306,14 +313,14 @@ namespace NETGraph.Data
                     }
                     return true;
                 }
-                if (this.Structure == DataStructures.Array || this.Structure == DataStructures.List)
+                if (this.Structure == DataStructure.List)
                 {
                     for (int i = 0; i < this.Count; i++)
                         if (!this[i].Equals(rh[i]))
                             return false;
                     return true;
                 }
-                if (this.Structure == DataStructures.Scalar)
+                if (this.Structure == DataStructure.Scalar)
                     return this.scalar.Equals(rh.scalar);
             }
             return false;
@@ -327,7 +334,7 @@ namespace NETGraph.Data
                 throw new InvalidOperationException($"You cannot add items to a non resizable structure.");
 #endif
         }
-        private void throwCheckStructure(DataStructures structure)
+        private void throwCheckStructure(DataStructure structure)
         {
 
 #if !DEBUG
@@ -370,11 +377,11 @@ namespace NETGraph.Data
         public override string ToString()
         {
             string toString = string.Empty;
-            if (this.structure == DataStructures.Scalar)
+            if (this.structure == DataStructure.Scalar)
                 toString = $"{scalar}";
-            else if (this.structure == DataStructures.Array || this.structure == DataStructures.List)
+            else if (this.structure == DataStructure.List)
                 toString = $"[{string.Join(", ", list)}]";
-            else if (this.structure == DataStructures.Named)
+            else if (this.structure == DataStructure.Named)
                 toString = $"[{string.Join(", ", dict)}]";
 
             return base.ToString() + $"[{this.structure}] = " + toString;
