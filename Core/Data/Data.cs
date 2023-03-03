@@ -6,11 +6,36 @@ using NETGraph.Core;
 namespace NETGraph.Data
 {
 
-    public abstract class DataBase : IDataProvider
+    public interface IData
     {
-        // ToDo: Add implementation for IDataProvider interface to allow DataBase to provide itself to queries?!
-        //      Return type of Access may be changed to T (where T can be DataBase of course) to allow typed return of scalar, index or key based values
+        DataStructures Structure { get; }
+        int TypeIndex { get; }
+        int Count { get; }
 
+
+        object getValueScalar();
+        object getValueAt(int index);
+        object getValueAt(string key);
+
+
+        IData access(DataAccessor accessor);
+        V resolve<V>(DataAccessor accessor);
+        bool resolve<V>(DataAccessor accessor, out V value);
+
+        void assign(object scalar);
+        void assign(int index, object scalar);
+        void assign(string name, object scalar);
+
+        public static bool match(IData lh, IData rh) => lh.TypeIndex == rh.TypeIndex;
+        // checks for match with structure
+        public static bool matchStructure(IData lh, IData rh) => lh.TypeIndex == rh.TypeIndex && lh.Structure == rh.Structure;
+        public static bool matchStructureAndSize(IData lh, IData rh) => lh.TypeIndex == rh.TypeIndex && lh.Structure == rh.Structure && lh.Count == rh.Count;
+
+    }
+
+
+    public abstract class DataBase : IData
+    {
         protected DataStructures structure = DataStructures.Scalar;
         protected int typeIndex;
         protected bool isResizable;
@@ -29,25 +54,21 @@ namespace NETGraph.Data
             this.isResizable = structure == DataStructures.Scalar ? false : isResizable;
         }
 
-
-        //public abstract void Add(object item);
-        //public abstract void Add(string key, object item);
-
-        //public abstract void RemoveAt(int index);
-        //public abstract void RemoveRange(int index, int count);
-        //public abstract void RemoveAt(string key);
-        //public abstract void RemoveRange(params string[] keys);
-
+        public abstract object getValueScalar();
+        public abstract object getValueAt(int index);
+        public abstract object getValueAt(string key);
+        public abstract void assign(object scalar);
+        public abstract void assign(int index, object scalar);
+        public abstract void assign(string name, object scalar);
 
         protected bool canCast(int typeIndex) => this.typeIndex == typeIndex;
         protected bool canCopy(int typeIndex, DataStructures structure) => (this.structure == structure && this.typeIndex == typeIndex); // does not check for size as this is left to copy function
 
-        public virtual bool match(DataBase lh, DataBase rh) => lh.TypeIndex == rh.TypeIndex;
-        // checks for match with structure
-        public virtual bool matchStructure(DataBase lh, DataBase rh) => lh.TypeIndex == rh.TypeIndex && lh.Structure == rh.Structure;
-        public virtual bool matchStructureAndSize(DataBase lh, DataBase rh) => lh.TypeIndex == rh.TypeIndex && lh.Structure == rh.Structure && lh.Count == rh.Count;
+        // accessing nested DataBase objects and resolving to actual types
+        public abstract IData access(DataAccessor accessor);
+        public abstract V resolve<V>(DataAccessor accessor);
+        public abstract bool resolve<V>(DataAccessor accessor, out V value);
 
-        public abstract DataBase Access(DataAccessor accessor);
     }
 
     public abstract class DataBase<T> : DataBase
@@ -58,8 +79,13 @@ namespace NETGraph.Data
 
 
         protected DataBase(DataTypes type, DataStructures structure, bool isResizable) : base(type, structure, isResizable)
-        { }
-        protected DataBase(int typeIndex, DataStructures structure, bool isResizable) : base(typeIndex, structure, isResizable)
+        {
+            if (structure == DataStructures.Array || structure == DataStructures.List)
+                this.list = new List<T>();
+            else if (structure == DataStructures.Named)
+                this.dict = new Dictionary<string, T>();
+        }
+        protected DataBase(int typeIndex, DataStructures structure, bool isResizable) : this((DataTypes)typeIndex, structure, isResizable)
         { }
 
 
@@ -72,19 +98,19 @@ namespace NETGraph.Data
             }
             set => list[index] = value;
         }
-        protected T this[string key]
+        protected T this[string name]
         {
             get
             {
                 throwCheckAccessByKey();
-                return dict[key];
+                return dict[name];
             }
             set
             {
-                if (!dict.ContainsKey(key))
-                    dict.Add(key, value);
+                if (!dict.ContainsKey(name))
+                    dict.Add(name, value);
                 else
-                    dict[key] = value;
+                    dict[name] = value;
             }
         }
         protected T Scalar
@@ -113,45 +139,100 @@ namespace NETGraph.Data
 
 
 
-        protected DataBase<T> initData(T scalar)
+        protected DataBase<T> initScalar(T scalar)
         {
             this.Scalar = scalar;
             return this;
         }
-        protected DataBase<T> initData(IEnumerable<T> values)
+        protected DataBase<T> initList(IEnumerable<T> values)
         {
-            if (this.list == null)
+            if (this.list.Count == 0)
             {
                 this.list = new List<T>(values);
                 return this;
             }
             else
-                throw new InvalidOperationException($"Cannot initialize data on assigned {this.structure} structure. Please init data only once.");
+                throw new InvalidOperationException($"Cannot initialize data on {this.structure} structure that contains data. Please clear the structure beforee re-init.");
         }
-        protected DataBase<T> initData(IEnumerable<KeyValuePair<string, T>> keyedValues)
+        protected DataBase<T> initNamed(IEnumerable<KeyValuePair<string, T>> namedValues)
         {
-            if (this.dict == null)
+            if (this.dict.Count == 0)
             {
-                this.dict = new Dictionary<string, T>(keyedValues);
+                this.dict = new Dictionary<string, T>(namedValues);
                 return this;
             }
             else
-                throw new InvalidOperationException($"Cannot initialize data on assigned {this.structure} structure. Please init data only once.");
+                throw new InvalidOperationException($"Cannot initialize data on {this.structure} structure that contains data. Please clear the structure beforee re-init.");
         }
 
-        public override DataBase Access(DataAccessor accessor)
+        public override IData access(DataAccessor accessor)
         {
+            // ToDo: add check if accesssor resolve would 
             switch (accessor.accessType)
             {
                 case DataAccessor.AccessTypes.Key:
-                    return this[accessor.key] as DataBase;
+                    return this[accessor.key] as IData;
                 case DataAccessor.AccessTypes.Index:
-                    return this[accessor.index] as DataBase;
+                    return this[accessor.index] as IData;
                 case DataAccessor.AccessTypes.Scalar:
                 default:
                     return this;
             }
         }
+        public override V resolve<V>(DataAccessor accessor)
+        {
+            if (resolve<V>(accessor, out V value))
+                return value;
+            return default(V);
+
+        }
+        public override bool resolve<V>(DataAccessor accessor, out V value)
+        {
+            switch (accessor.accessType)
+            {
+                case DataAccessor.AccessTypes.Scalar:
+                    value = (V)this.getValueScalar();
+                    return true;
+                case DataAccessor.AccessTypes.Index:
+                    value = (V)this.getValueAt(accessor.index);
+                    return true;
+                case DataAccessor.AccessTypes.Key:
+                    value = (V)this.getValueAt(accessor.key);
+                    return true;
+                default:
+                    value = default(V);
+                    return false;
+            }
+        }
+
+        public override object getValueScalar() => this.Scalar;
+        public override object getValueAt(int index) => this[index];
+        public override object getValueAt(string name) => this[name];
+        public override void assign(object scalar) => this.Scalar = (T)scalar;
+        public override void assign(int index, object scalar) => this[index] = (T)scalar;
+        public override void assign(string name, object scalar) => this[name] = (T)scalar;
+
+
+        #region Data<T> get and set implementations
+        public virtual T getScalar() => this.Scalar;
+        public virtual T getAt(int index) => this[index];
+        public virtual T getAt(string name) => this[name];
+        public virtual void setScalar(T scalarValue) => this.Scalar = scalarValue;
+        public virtual void setAt(int index, T value) => this[index] = value;
+        public virtual void setAt(string name, T value) => this[name] = value;
+        #endregion
+
+        //public override object Resolve(Type type, DataAccessor accessor)
+        //{
+        //    DataQuery query = new DataQuery(this, accessor);
+        //    query.Evaluate();
+        //    return 
+        //}
+        //public override V Resolve<V>(DataAccessor accessor) where V
+        //{
+        //    if (accessor.accessType == DataAccessor.AccessTypes.Scalar)
+        //        return (V)(this.GetScalar() as V);
+        //}
 
         //#region Data Add & Remove implementations
         //public override void Add(object item)
@@ -201,21 +282,13 @@ namespace NETGraph.Data
         //#endregion
 
 
-        #region Data<T> get and set implementations
-        public virtual T GetScalar() => this.Scalar;
-        public virtual T GetAt(int index) => this[index];
-        public virtual T GetAt(string key) => this[key];
-        public virtual void SetScalar(T scalarValue) => this.Scalar = scalarValue;
-        public virtual void SetAt(int index, T value) => this[index] = value;
-        public virtual void SetAt(string key, T value) => this[key] = value;
-        #endregion
 
         public virtual bool matchExact(DataBase<T> rh)
         {
             // if self reference, return early true
             if (this == rh)
                 return true;
-            if (matchStructureAndSize(this, rh))
+            if (IData.matchStructureAndSize(this, rh))
             {
                 if (this.Structure == DataStructures.Named)
                 {
@@ -232,7 +305,7 @@ namespace NETGraph.Data
             // if self reference, return early true
             if (this == rh)
                 return true;
-            if (matchStructureAndSize(this, rh))
+            if (IData.matchStructureAndSize(this, rh))
             {
                 if (this.Structure == DataStructures.Named)
                 {
@@ -258,36 +331,49 @@ namespace NETGraph.Data
         }
 
 
-
         private void throwCheckResizable()
         {
+#if !DEBUG
             if (!this.isResizable)
                 throw new InvalidOperationException($"You cannot add items to a non resizable structure.");
+#endif
         }
         private void throwCheckStructure(DataStructures structure)
         {
+
+#if !DEBUG
             if (this.Structure != structure)
                 throw new InvalidOperationException($"You cannot add items to a non collection structure. Consider using a {structure} structure.");
+#endif
         }
         private void throwCheckGenericType(object item)
         {
+
+#if !DEBUG
             if (!(item is T))
                 throw new InvalidCastException($"{nameof(item)} has missmatching type.");
+#endif
         }
         private void throwCheckAccessByIndex()
         {
+#if !DEBUG
             if (this.structure != DataStructures.Array && this.structure != DataStructures.List)
                 throw new InvalidCastException($"{typeof(DataBase<T>)} cannot be accessed by index.");
+#endif
         }
         private void throwCheckAccessByKey()
         {
+#if !DEBUG
             if (this.structure != DataStructures.Named)
                 throw new InvalidCastException($"{typeof(DataBase<T>)} cannot be accessed by key.");
+#endif
         }
         private void throwCheckAccessByScalar()
         {
+#if !DEBUG
             if (this.structure != DataStructures.Scalar)
                 throw new InvalidCastException($"{typeof(DataBase<T>)} cannot be accessed as scalar.");
+#endif
         }
 
 

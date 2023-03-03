@@ -12,30 +12,38 @@ namespace NETGraph.Core
     //  a type implementing method provision only can be used independent from own data access
 
 
-    // ToDo: add constructor overload to create accessor from string accessPath passinng it into the Accessor ctor
     public struct DataQuery
     {
         DataAccessor accessor;
-        IDataProvider provider;
+        IData provider;
 
-        public DataQuery(IDataProvider provider, DataAccessor accessor)
+        public DataQuery(IData provider, DataAccessor accessor)
         {
             this.accessor = accessor;
             this.provider = provider;
         }
-        public DataQuery(IDataProvider provider, string accessPath)
+        public DataQuery(IData provider, string accessPath)
         {
             this.accessor = new DataAccessor(accessPath);
             this.provider = provider;
         }
 
-        public DataBase Evaluate() => provider.Access(accessor);
+        public IData access() => provider.access(accessor);
+        public V resolve<V>() => provider.resolve<V>(accessor);
+        public bool resolve<V>(out V value) => provider.resolve<V>(accessor, out value);
+
+        public void assign<V>(V value)
+        {
+            if (accessor.accessType == DataAccessor.AccessTypes.Index)
+                provider.assign(accessor.index, value);
+            else if (accessor.accessType == DataAccessor.AccessTypes.Key)
+                provider.assign(accessor.key, value);
+            else if (accessor.accessType == DataAccessor.AccessTypes.Scalar)
+                provider.assign(value);
+        }
+
     }
 
-    public interface IDataProvider
-    {
-        DataBase Access(DataAccessor accessor);
-    }
     public struct DataAccessor
     {
         public enum AccessTypes
@@ -50,6 +58,9 @@ namespace NETGraph.Core
         private const string SplitMark_Index = "#";
 
         public static readonly DataAccessor Void = new DataAccessor(string.Empty);
+        public static readonly DataAccessor Scalar = new DataAccessor("-");
+        public static DataAccessor Named(string key) => new DataAccessor($".{key}");
+        public static DataAccessor Index(int index) => new DataAccessor($"{index}");
 
 
         public string dataName { get; private set; }

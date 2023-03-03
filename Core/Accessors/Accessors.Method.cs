@@ -31,13 +31,13 @@ namespace NETGraph.Core
         public MethodQuery(IMethodProvider provider, string accessPath, DataQuery resultQuery, params DataQuery[] inputQueries) : this(provider, new MethodAccessor(accessPath), resultQuery, inputQueries)
         { }
 
-        public bool Evaluate() => provider.Invoke(accessor, resultQuery.Evaluate(), inputQueries.Select(q => q.Evaluate()));
+        public bool Evaluate() => provider.Invoke(accessor, resultQuery, inputQueries);
     }
 
     public interface IMethodProvider
     {
-        bool Invoke(MethodAccessor accessor, DataBase result, params DataBase[] inputs);
-        bool Invoke(MethodAccessor accessor, DataBase result, IEnumerable<DataBase> inputs);
+        bool Invoke(MethodAccessor accessor, DataQuery result, params DataQuery[] inputs);
+        bool Invoke(MethodAccessor accessor, DataQuery result, IEnumerable<DataQuery> inputs);
     }
     public struct MethodAccessor
     {
