@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using NETGraph.Core;
+using NETGraph.Core.Meta;
 
 namespace NETGraph.Data
 {

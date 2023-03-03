@@ -1,7 +1,7 @@
 ﻿using System;
 using NETGraph.Data;
 
-namespace NETGraph.Core
+namespace NETGraph.Core.Meta
 {
     public interface IDataResolver
     {

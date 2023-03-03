@@ -63,14 +63,18 @@ namespace NETGraph.Data
         };
         // reversed lookup for type to DataTypes
         public static Dictionary<Type, DataTypes> MapReveresed = new Dictionary<Type, DataTypes>(Map.Select(x => new KeyValuePair<Type, DataTypes>(x.Value, x.Key)));
+        static Dictionary<DataTypes, IDataGenerator> generators = new Dictionary<DataTypes, IDataGenerator>();
 
 
-        public static bool RegisterDataType(DataTypes dataType, Type type)
+        public static bool RegisterDataType(DataTypes dataType, Type type, IDataGenerator generator)
         {
             if (!Map.ContainsKey(dataType))
             {
                 if (!MapReveresed.ContainsKey(type))
                 {
+                    // try add and ignore case if generator already exists
+                    generators.TryAdd(dataType, generator);
+
                     Map.Add(dataType, type);
                     MapReveresed.Add(type, dataType);
                     return true;
@@ -81,17 +85,6 @@ namespace NETGraph.Data
         }
 
 
-        // ToDo: merge generator registraion with type registration
-        static Dictionary<DataTypes, IDataGenerator> generators = new Dictionary<DataTypes, IDataGenerator>();
-        public static bool Register(DataTypes type, IDataGenerator generator)
-        {
-            if (!generators.ContainsKey(type))
-            {
-                generators.Add(type, generator);
-                return true;
-            }
-            return false;
-        }
 
         public DataBase generateScalar<T>(DataTypes type, object scalar) => generators[type].Scalar(scalar);
         public DataBase generateList<T>(DataTypes type, int size, bool isResizable) => generators[type].List(size, isResizable);

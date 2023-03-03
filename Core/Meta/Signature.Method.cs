@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text.RegularExpressions;
 using NETGraph.Data;
 
-namespace NETGraph.Core
+namespace NETGraph.Core.Meta
 {
 
     public interface IMethodProvider
