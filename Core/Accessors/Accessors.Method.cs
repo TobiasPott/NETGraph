@@ -44,27 +44,21 @@ namespace NETGraph.Core
         // Regex for method path parssing
         private static readonly Regex regEx = new Regex("(?:(?:\\b[a-zA-Z]{1}(?:[\\w.\\[\\]]+))+,{0})", RegexOptions.Compiled | RegexOptions.IgnoreCase);
 
-        DataAccessor result;
         public string method { get; private set; }
-        DataAccessor[] inputs;
+        
+        //DataAccessor result;
+        //DataAccessor[] inputs;
 
         public MethodAccessor(string methodPath)
         {
-            inputs = null;
+            //inputs = null;
             MatchCollection matches = regEx.Matches(methodPath);
             if (matches.Count >= 2)
             {
                 // proces matches for result and name parts
-                result = new DataAccessor(matches[0].Value);
                 method = matches[1].Value;
-
-                if (matches.Count > 2)
-                {
-                    inputs = new DataAccessor[matches.Count - 2];
-                    // process matches for input argument parts
-                    for (int i = 2; i < matches.Count; i++)
-                        inputs[i - 2] = new DataAccessor(matches[i].Value);
-                }
+                // ToDo: all matches beyond index = 1 are signatures of input types
+                //      these can be parsed and stored as meta info for a method signature
             }
             else
                 throw new ArgumentException($"No valid method pass found in {methodPath}. Please check your input.");
