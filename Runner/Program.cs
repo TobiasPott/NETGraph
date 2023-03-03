@@ -51,6 +51,8 @@ public class Program
                             new Node(VEnd),
                             new Node(VEnd)
                         };
+
+        #region Old Code
         //UnweightedGraph<Node> g = new UnweightedGraph<Node>();
         //int iStart = g.addVertex(new Node(VStart));
         //int iMid = g.addVertex(new Node(VMid));
@@ -118,36 +120,44 @@ public class Program
 
         Console.WriteLine($"{floatArray} == {floatArray2} : {floatArray.matchWithValue(floatArray2)}");
         */
+        #endregion
 
         Stopwatch sw = new Stopwatch();
         sw.Start();
 
-        AddDataProvider addData = new AddDataProvider(2, 10);
+        MathOpDataProvider addData = new MathOpDataProvider(1, 10);
         MathProvider math = MathProvider.Instance;
 
-        DataQuery sumQuery = new DataQuery(addData, "sum");
-        DataQuery lhQuery = new DataQuery(addData, "lh");
-        DataQuery rhQuery = new DataQuery(addData, "rh");
 
+        DataQuery sumQuery = new DataQuery(addData, ".sum");
+        DataQuery lhQuery = new DataQuery(addData, ".lh");
+        DataQuery rhQuery = new DataQuery(addData, ".rh");
 
-        MethodQuery addQuery = new MethodQuery(math, "sum add << lh rh", sumQuery, lhQuery, rhQuery);
-        Console.WriteLine(sw.ElapsedMilliseconds.ToString("0000") + ": " + addData);
+        MethodQuery addQuery = new MethodQuery(math, "sum add(lh,rh)", sumQuery, lhQuery, rhQuery);
+        TimeStamp(sw, addData.ToString());
 
         addQuery.Evaluate();
-        Console.WriteLine(sw.ElapsedMilliseconds.ToString("0000") + ": " + addData);
+        TimeStamp(sw, addData.ToString());
 
-        addQuery = new MethodQuery(math, "sum add << lh rh", sumQuery, sumQuery, rhQuery);
+        addData.setAt("rh", 5);
+        addQuery = new MethodQuery(math, "sum add(sum,rh)", sumQuery, sumQuery, rhQuery);
+        for (int i = 0; i < 10; i++)
+            addQuery.Evaluate();
+        TimeStamp(sw, addData.ToString());
+
+        //addQuery = new MethodQuery(math, "sum subtract(sum,rh)", sumQuery, sumQuery, rhQuery);
+        addData.setAt("rh", 12);
         for (int i = 0; i < 5; i++)
             addQuery.Evaluate();
-        Console.WriteLine(sw.ElapsedMilliseconds.ToString("0000") + ": " + addData);
 
+        TimeStamp(sw, addData.ToString());
 
-        IntData rhData = rhQuery.Evaluate() as IntData;
-        rhData.SetScalar(-5);
-        for (int i = 0; i < 5; i++)
-            addQuery.Evaluate();
-        Console.WriteLine(sw.ElapsedMilliseconds.ToString("0000") + ": " + addData);
+        Console.WriteLine();
+    }
 
+    public static void TimeStamp(Stopwatch sw, string additional)
+    {
+        Console.WriteLine(sw.Elapsed.TotalMicroseconds.ToString("0000000") + ": " + additional);
 
     }
 
