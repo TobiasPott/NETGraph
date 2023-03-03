@@ -128,27 +128,30 @@ public class Program
         MathOpDataProvider addData = new MathOpDataProvider(1, 10);
         MathProvider math = MathProvider.Instance;
 
+        // binding to actual data objeect => reesults in resolvable DataQuery
+        DataResolver sumQuery = new DataResolver(addData, ".sum");
+        DataResolver lhQuery = new DataResolver(addData, ".lh");
+        DataResolver rhQuery = new DataResolver(addData, ".rh");
 
-        DataQuery sumQuery = new DataQuery(addData, ".sum");
-        DataQuery lhQuery = new DataQuery(addData, ".lh");
-        DataQuery rhQuery = new DataQuery(addData, ".rh");
-
-        MethodQuery addQuery = new MethodQuery(math, "sum add(lh,rh)", sumQuery, lhQuery, rhQuery);
+        // ToDo: Ponder abount changing the method query parsing to parse into generic signature
+        //      e.g.: result add(arg, arg, arg, arg) as passing the data queries into as well
+        //              makes resolving them redundant
+        MethodResolver addQuery = new MethodResolver(math, "int add(int, int, int)", sumQuery, lhQuery, rhQuery);
         TimeStamp(sw, addData.ToString());
 
-        addQuery.Evaluate();
+        addQuery.evaluate();
         TimeStamp(sw, addData.ToString());
 
         addData.setAt("rh", 5);
-        addQuery = new MethodQuery(math, "sum add(sum,rh)", sumQuery, sumQuery, rhQuery);
+        addQuery = new MethodResolver(math, "int add(int, int, int)", sumQuery, sumQuery, rhQuery);
         for (int i = 0; i < 10; i++)
-            addQuery.Evaluate();
+            addQuery.evaluate();
         TimeStamp(sw, addData.ToString());
 
         //addQuery = new MethodQuery(math, "sum subtract(sum,rh)", sumQuery, sumQuery, rhQuery);
         addData.setAt("rh", 12);
         for (int i = 0; i < 5; i++)
-            addQuery.Evaluate();
+            addQuery.evaluate();
 
         TimeStamp(sw, addData.ToString());
 

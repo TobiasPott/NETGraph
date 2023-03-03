@@ -18,9 +18,9 @@ namespace NETGraph.Data
         object getValueAt(string key);
 
 
-        IData access(DataAccessor accessor);
-        V resolve<V>(DataAccessor accessor);
-        bool resolve<V>(DataAccessor accessor, out V value);
+        IData access(DataSignature signature);
+        V resolve<V>(DataSignature signature);
+        bool resolve<V>(DataSignature signature, out V value);
 
         void assign(object scalar);
         void assign(int index, object scalar);
@@ -65,9 +65,9 @@ namespace NETGraph.Data
         protected bool canCopy(int typeIndex, DataStructures structure) => (this.structure == structure && this.typeIndex == typeIndex); // does not check for size as this is left to copy function
 
         // accessing nested DataBase objects and resolving to actual types
-        public abstract IData access(DataAccessor accessor);
-        public abstract V resolve<V>(DataAccessor accessor);
-        public abstract bool resolve<V>(DataAccessor accessor, out V value);
+        public abstract IData access(DataSignature signature);
+        public abstract V resolve<V>(DataSignature signature);
+        public abstract bool resolve<V>(DataSignature signature, out V value);
 
     }
 
@@ -165,39 +165,39 @@ namespace NETGraph.Data
                 throw new InvalidOperationException($"Cannot initialize data on {this.structure} structure that contains data. Please clear the structure beforee re-init.");
         }
 
-        public override IData access(DataAccessor accessor)
+        public override IData access(DataSignature signature)
         {
             // ToDo: add check if accesssor resolve would 
-            switch (accessor.accessType)
+            switch (signature.accessType)
             {
-                case DataAccessor.AccessTypes.Key:
-                    return this[accessor.key] as IData;
-                case DataAccessor.AccessTypes.Index:
-                    return this[accessor.index] as IData;
-                case DataAccessor.AccessTypes.Scalar:
+                case DataSignature.AccessTypes.Key:
+                    return this[signature.key] as IData;
+                case DataSignature.AccessTypes.Index:
+                    return this[signature.index] as IData;
+                case DataSignature.AccessTypes.Scalar:
                 default:
                     return this;
             }
         }
-        public override V resolve<V>(DataAccessor accessor)
+        public override V resolve<V>(DataSignature signature)
         {
-            if (resolve<V>(accessor, out V value))
+            if (resolve<V>(signature, out V value))
                 return value;
             return default(V);
 
         }
-        public override bool resolve<V>(DataAccessor accessor, out V value)
+        public override bool resolve<V>(DataSignature signature, out V value)
         {
-            switch (accessor.accessType)
+            switch (signature.accessType)
             {
-                case DataAccessor.AccessTypes.Scalar:
+                case DataSignature.AccessTypes.Scalar:
                     value = (V)this.getValueScalar();
                     return true;
-                case DataAccessor.AccessTypes.Index:
-                    value = (V)this.getValueAt(accessor.index);
+                case DataSignature.AccessTypes.Index:
+                    value = (V)this.getValueAt(signature.index);
                     return true;
-                case DataAccessor.AccessTypes.Key:
-                    value = (V)this.getValueAt(accessor.key);
+                case DataSignature.AccessTypes.Key:
+                    value = (V)this.getValueAt(signature.key);
                     return true;
                 default:
                     value = default(V);
@@ -222,18 +222,7 @@ namespace NETGraph.Data
         public virtual void setAt(string name, T value) => this[name] = value;
         #endregion
 
-        //public override object Resolve(Type type, DataAccessor accessor)
-        //{
-        //    DataQuery query = new DataQuery(this, accessor);
-        //    query.Evaluate();
-        //    return 
-        //}
-        //public override V Resolve<V>(DataAccessor accessor) where V
-        //{
-        //    if (accessor.accessType == DataAccessor.AccessTypes.Scalar)
-        //        return (V)(this.GetScalar() as V);
-        //}
-
+        
         //#region Data Add & Remove implementations
         //public override void Add(object item)
         //{

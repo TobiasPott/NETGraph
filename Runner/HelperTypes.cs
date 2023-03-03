@@ -33,29 +33,29 @@ namespace NETGraph.Runner
     {
         public static MathProvider Instance { get; private set; } = new MathProvider();
 
-        public bool Invoke(MethodAccessor accessor, DataQuery result, params DataQuery[] inputs) => Invoke(accessor, result, inputs as IEnumerable<DataQuery>);
-        public bool Invoke(MethodAccessor accessor, DataQuery result, IEnumerable<DataQuery> inputs)
+        public bool Invoke(MethodSignature signature, DataResolver result, params DataResolver[] inputs) => Invoke(signature, result, inputs as IEnumerable<DataResolver>);
+        public bool Invoke(MethodSignature signature, DataResolver result, IEnumerable<DataResolver> inputs)
         {
-            if (accessor.method.Equals("add"))
+            if (signature.method.Equals("add"))
             {
-                Add(accessor, result, inputs);
+                Add(signature, result, inputs);
                 return true;
             }
-            else if (accessor.method.Equals("subtract"))
+            else if (signature.method.Equals("subtract"))
             {
-                Subtract(accessor, result, inputs);
+                Subtract(signature, result, inputs);
                 Console.WriteLine("Subtract");
                 return true;
             }
             return false;
         }
 
-        private void Add(MethodAccessor accessor, DataQuery result, IEnumerable<DataQuery> inputs)
+        private void Add(MethodSignature signature, DataResolver result, IEnumerable<DataResolver> inputs)
         {
             int sum = inputs.Sum(q => q.resolve<int>());
             result.assign<int>(sum);
         }
-        private void Subtract(MethodAccessor accessor, DataQuery result, IEnumerable<DataQuery> inputs)
+        private void Subtract(MethodSignature signature, DataResolver result, IEnumerable<DataResolver> inputs)
         {
             int subtrahends = inputs.Skip(1).Sum(q => q.resolve<int>());
             result.assign<int>(result.resolve<int>() - subtrahends);

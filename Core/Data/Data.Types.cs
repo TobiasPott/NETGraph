@@ -27,8 +27,8 @@ namespace NETGraph.Data
         String,
         // internal library types (e.g. node, data, method
         IData,
-        MethodQuery, IMethodProvider, MethodAccessor,
-        DataQuery, IDataProvider, DataAccessor,
+        MethodQuery, IMethodProvider, MethodSignature,
+        DataQuery, IDataProvider, DataSignature,
 
     }
 
