@@ -8,74 +8,59 @@ using NETGraph.Data.Simple;
 namespace NETGraph.Runner
 {
 
-    public class AddDataProvider : IDataProvider
+    public class MathOpDataProvider : DataBase<int>
     {
-        Dictionary<string, DataBase> datas;
+        private static string[] keys = new[] { "lh", "rh", "sum" };
 
-        public AddDataProvider(int lh, int rh)
+        public MathOpDataProvider(int lh, int rh) : base(DataTypes.Int, DataStructures.Named, false)
         {
-            GeneratorDefinition intGen = IntData.Generator;
-            
-            datas = new Dictionary<string, DataBase>()
-            {
-                { "lh", IntData.Generator.Scalar(lh) },
-                { "rh", IntData.Generator.Scalar(rh) },
-                { "sum", IntData.Generator.Scalar(0) },
-            };
-        }
-
-        public DataBase Access(DataAccessor accessor)
-        {
-            // ToDo: a base implementation for the 'Access' method may include type check by index and other validations to avoid runtime errors
-            return datas[accessor.dataName];
+            initNamed(keys.Select(k => new KeyValuePair<string, int>(k, 0)));
+            this.setAt(keys[0], lh);
+            this.setAt(keys[1], rh);
         }
 
         public override string ToString()
         {
-            return $"{((IntData)datas["lh"]).GetScalar()} + {((IntData)datas["rh"]).GetScalar()} = {((IntData)datas["sum"]).GetScalar()}";
+            return $"{this["lh"]} + {this["rh"]} = {this["sum"]}";
         }
 
     }
 
-    // regex: ^(?:(.*)?[$(]+)               // match return and name part (no ())
-    //          ([$(]{1}(?<args>.*)?[$)]{1})        // match argument list (no ())
-    //          (?:[$(]{1}(?<args>(((?:[\w.]+)+),?).*)[$)]{1})      // match down to first argument name (not repeated)
-
-    //      (?:[$(]{1}(?<args>(?:[\w.]+).*)( >> insert , split here << )[$)]{1}) // outer
-
+    // regex: 
     //      (?:(?:\b[a-zA-Z]{1}(?:[\w.\[\]]+))+,{0})    // final regex to separate everything into
 
     public class MathProvider : IMethodProvider
     {
         public static MathProvider Instance { get; private set; } = new MathProvider();
 
-
-        public bool Invoke(MethodAccessor accessor, DataBase result, params DataBase[] inputs)
-        {
-            return Invoke(accessor, result, inputs as IEnumerable<DataBase>);
-        }
-
-        public bool Invoke(MethodAccessor accessor, DataBase result, IEnumerable<DataBase> inputs)
+        public bool Invoke(MethodAccessor accessor, DataQuery result, params DataQuery[] inputs) => Invoke(accessor, result, inputs as IEnumerable<DataQuery>);
+        public bool Invoke(MethodAccessor accessor, DataQuery result, IEnumerable<DataQuery> inputs)
         {
             if (accessor.method.Equals("add"))
             {
-                Add(result, inputs);
+                Add(accessor, result, inputs);
+                return true;
+            }
+            else if (accessor.method.Equals("subtract"))
+            {
+                Subtract(accessor, result, inputs);
+                Console.WriteLine("Subtract");
                 return true;
             }
             return false;
         }
 
-        // ToDo: add a unpacker to try to recieve Data and Data<T> objects
-        //      The unpacker recieves DataAcessors and IDataProvider (paired in tuples or new type)
-        //      The unpacker returns a result Data object from provider using the accessor (use IDataProvider.Access)
-        //      The unpacker also returns an array of Data objects passed to actual methods
-
-        private void Add(DataBase rawResult, IEnumerable<DataBase> inputs)
+        private void Add(MethodAccessor accessor, DataQuery result, IEnumerable<DataQuery> inputs)
         {
-            DataBase<int> result = rawResult as DataBase<int>;
-            int sum = inputs.Where(x => x.TypeIndex == (int)DataTypes.Int).Sum(x => (x as DataBase<int>).GetScalar());
-            result.SetScalar(sum);
+            int sum = inputs.Sum(q => q.resolve<int>());
+            result.assign<int>(sum);
         }
+        private void Subtract(MethodAccessor accessor, DataQuery result, IEnumerable<DataQuery> inputs)
+        {
+            int subtrahends = inputs.Skip(1).Sum(q => q.resolve<int>());
+            result.assign<int>(result.resolve<int>() - subtrahends);
+        }
+
 
     }
 

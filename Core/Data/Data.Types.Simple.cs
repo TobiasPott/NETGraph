@@ -44,7 +44,7 @@ namespace NETGraph.Data.Simple
         { }
 
         public static GeneratorDefinition Generator { get; } = new GeneratorDefinition(
-            (s) => (IntData)new IntData((int)DataTypes.Int, DataStructures.Scalar, false).initData((int)s),
+            (s) => (IntData)new IntData((int)DataTypes.Int, DataStructures.Scalar, false).initScalar((int)s),
             (s, r) => (IntData)new IntData((int)DataTypes.Int, r ? DataStructures.List : DataStructures.Array, r),
             (r) => (IntData)new IntData((int)DataTypes.Int, DataStructures.Named, r)
         );

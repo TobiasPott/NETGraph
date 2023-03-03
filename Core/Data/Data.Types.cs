@@ -26,6 +26,7 @@ namespace NETGraph.Data
         Float, Double, Decimal,
         String,
         // internal library types (e.g. node, data, method
+        IData,
         MethodQuery, IMethodProvider, MethodAccessor,
         DataQuery, IDataProvider, DataAccessor,
 
@@ -57,6 +58,8 @@ namespace NETGraph.Data
             { DataTypes.Double, typeof(double) },
             { DataTypes.Decimal, typeof(decimal) },
             { DataTypes.String, typeof(string) },
+            // internal library types
+            { DataTypes.IData, typeof(IData) },
         };
         // reversed lookup for type to DataTypes
         public static Dictionary<Type, DataTypes> MapReveresed = new Dictionary<Type, DataTypes>(Map.Select(x => new KeyValuePair<Type, DataTypes>(x.Value, x.Key)));
@@ -78,13 +81,8 @@ namespace NETGraph.Data
         }
 
 
-        // ToDo: Implement Func<DataBase> based generators which allow passing Data constructor parameters
-        //      Wrap generator into simple type/interface which provides all methods to generate:
-        //          scalar data
-        //          array/list data
-        //          dict data
+        // ToDo: merge generator registraion with type registration
         static Dictionary<DataTypes, IDataGenerator> generators = new Dictionary<DataTypes, IDataGenerator>();
-
         public static bool Register(DataTypes type, IDataGenerator generator)
         {
             if (!generators.ContainsKey(type))
