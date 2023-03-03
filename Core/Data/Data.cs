@@ -168,7 +168,6 @@ namespace NETGraph.Data
 
         public override IData access(DataSignature signature)
         {
-            // ToDo: add check if accesssor resolve would 
             switch (signature.accessType)
             {
                 case DataSignature.AccessTypes.Key:

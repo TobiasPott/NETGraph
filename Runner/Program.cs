@@ -8,8 +8,6 @@ using NETGraph.Core.Meta;
 using NETGraph.Data;
 using NETGraph.Data.Simple;
 using NETGraph.Graphs;
-using NETGraph.Impl;
-using NETGraph.Impl.Generics;
 using NETGraph.Runner;
 
 public class Node : IEquatable<Node>
@@ -134,9 +132,6 @@ public class Program
         DataResolver lhQuery = new DataResolver(addData, ".lh");
         DataResolver rhQuery = new DataResolver(addData, ".rh");
 
-        // ToDo: Ponder abount changing the method query parsing to parse into generic signature
-        //      e.g.: result add(arg, arg, arg, arg) as passing the data queries into as well
-        //              makes resolving them redundant
         MethodResolver addQuery = new MethodResolver(math, "int add(int, int, int)", sumQuery, lhQuery, rhQuery);
         TimeStamp(sw, addData.ToString());
 

@@ -10,7 +10,9 @@ namespace NETGraph.Core.Meta
         bool resolve<V>(out V value);
         void assign<V>(V value);
     }
+
     // ToDo: Implement connstant value resolver which ignores assignments and returns a scalar copy/instance of the genric type
+    // ToDo: Implement reference value resolver which allows assignments (see DataResolver)
 
     public struct DataResolver : IDataResolver
     {
