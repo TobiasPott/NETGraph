@@ -45,6 +45,8 @@ public class Program
 
     public static void Main(string[] args)
     {
+        //TypeRegistry.RegisterBuiltIn();
+
         Node[] vertices = { new Node(VStart),
                             new Node(VMid),
                             new Node(VEnd),
@@ -132,14 +134,14 @@ public class Program
         DataResolver lhQuery = new DataResolver(addData, ".lh");
         DataResolver rhQuery = new DataResolver(addData, ".rh");
 
-        MethodResolver addQuery = new MethodResolver(math, "int add(int, int, int)", sumQuery, lhQuery, rhQuery);
+        MethodResolver addQuery = new MethodResolver(math, "Int add(int, int, int)", sumQuery, lhQuery, rhQuery);
         TimeStamp(sw, addData.ToString());
 
         addQuery.evaluate();
         TimeStamp(sw, addData.ToString());
 
         addData.setAt("rh", 5);
-        addQuery = new MethodResolver(math, "int add(int, int, int)", sumQuery, sumQuery, rhQuery);
+        addQuery = new MethodResolver(math, "Int add(int, int, int)", sumQuery, sumQuery, rhQuery);
         for (int i = 0; i < 10; i++)
             addQuery.evaluate();
         TimeStamp(sw, addData.ToString());
