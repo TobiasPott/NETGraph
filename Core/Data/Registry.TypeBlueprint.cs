@@ -118,23 +118,23 @@ namespace NETGraph.Data
         }
         public static void RegisterBuiltIn()
         {
-            RegisterDataType(new TypeBlueprint(DataTypes.Void, DataBase<Void>.Generator()));
-            RegisterDataType(new TypeBlueprint(DataTypes.Object, DataBase<object>.Generator()));
-            RegisterDataType(new TypeBlueprint(DataTypes.Bool, DataBase<bool>.Generator()));
-            RegisterDataType(new TypeBlueprint(DataTypes.Byte, DataBase<byte>.Generator()));
-            RegisterDataType(new TypeBlueprint(DataTypes.SByte, DataBase<sbyte>.Generator()));
-            RegisterDataType(new TypeBlueprint(DataTypes.Short, DataBase<short>.Generator()));
-            RegisterDataType(new TypeBlueprint(DataTypes.UShort, DataBase<ushort>.Generator()));
-            RegisterDataType(new TypeBlueprint(DataTypes.Char, DataBase<char>.Generator()));
-            RegisterDataType(new TypeBlueprint(DataTypes.Int, DataBase<int>.Generator()));
-            RegisterDataType(new TypeBlueprint(DataTypes.UInt, DataBase<uint>.Generator()));
-            RegisterDataType(new TypeBlueprint(DataTypes.Long, DataBase<long>.Generator()));
-            RegisterDataType(new TypeBlueprint(DataTypes.ULong, DataBase<ulong>.Generator()));
-            RegisterDataType(new TypeBlueprint(DataTypes.Float, DataBase<float>.Generator()));
-            RegisterDataType(new TypeBlueprint(DataTypes.Double, DataBase<double>.Generator()));
-            RegisterDataType(new TypeBlueprint(DataTypes.Decimal, DataBase<decimal>.Generator()));
-            RegisterDataType(new TypeBlueprint(DataTypes.String, DataBase<string>.Generator()));
-            RegisterDataType(new TypeBlueprint(DataTypes.IData, DataBase<IData>.Generator()));
+            RegisterDataType(new TypeBlueprint(DataTypes.Void, Data<Void>.Generator()));
+            RegisterDataType(new TypeBlueprint(DataTypes.Object, Data<object>.Generator()));
+            RegisterDataType(new TypeBlueprint(DataTypes.Bool, Data<bool>.Generator()));
+            RegisterDataType(new TypeBlueprint(DataTypes.Byte, Data<byte>.Generator()));
+            RegisterDataType(new TypeBlueprint(DataTypes.SByte, Data<sbyte>.Generator()));
+            RegisterDataType(new TypeBlueprint(DataTypes.Short, Data<short>.Generator()));
+            RegisterDataType(new TypeBlueprint(DataTypes.UShort, Data<ushort>.Generator()));
+            RegisterDataType(new TypeBlueprint(DataTypes.Char, Data<char>.Generator()));
+            RegisterDataType(new TypeBlueprint(DataTypes.Int, Data<int>.Generator()));
+            RegisterDataType(new TypeBlueprint(DataTypes.UInt, Data<uint>.Generator()));
+            RegisterDataType(new TypeBlueprint(DataTypes.Long, Data<long>.Generator()));
+            RegisterDataType(new TypeBlueprint(DataTypes.ULong, Data<ulong>.Generator()));
+            RegisterDataType(new TypeBlueprint(DataTypes.Float, Data<float>.Generator()));
+            RegisterDataType(new TypeBlueprint(DataTypes.Double, Data<double>.Generator()));
+            RegisterDataType(new TypeBlueprint(DataTypes.Decimal, Data<decimal>.Generator()));
+            RegisterDataType(new TypeBlueprint(DataTypes.String, Data<string>.Generator()));
+            RegisterDataType(new TypeBlueprint(DataTypes.IData, Data<IData>.Generator()));
         }
 
 

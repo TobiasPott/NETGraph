@@ -8,7 +8,7 @@ using NETGraph.Data;
 namespace NETGraph.Runner
 {
 
-    public class MathOpDataProvider : DataBase<int>
+    public class MathOpDataProvider : Data<int>
     {
         private static string[] keys = new[] { "lh", "rh", "sum" };
 

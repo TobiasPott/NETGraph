@@ -6,7 +6,6 @@ using NETGraph;
 using NETGraph.Core;
 using NETGraph.Core.Meta;
 using NETGraph.Data;
-using NETGraph.Data.Simple;
 using NETGraph.Graphs;
 using NETGraph.Runner;
 
@@ -45,15 +44,15 @@ public class Program
 
     public static void Main(string[] args)
     {
-        //TypeRegistry.RegisterBuiltIn();
-
-        Node[] vertices = { new Node(VStart),
-                            new Node(VMid),
-                            new Node(VEnd),
-                            new Node(VEnd)
-                        };
+        TypeRegistry.RegisterBuiltIn();
 
         #region Old Code
+        //Node[] vertices = { new Node(VStart),
+        //                    new Node(VMid),
+        //                    new Node(VEnd),
+        //                    new Node(VEnd)
+        //                };
+
         //UnweightedGraph<Node> g = new UnweightedGraph<Node>();
         //int iStart = g.addVertex(new Node(VStart));
         //int iMid = g.addVertex(new Node(VMid));
@@ -130,9 +129,9 @@ public class Program
         MathProvider math = MathProvider.Instance;
 
         // binding to actual data objeect => reesults in resolvable DataQuery
-        DataResolver sumQuery = new DataResolver(addData, ".sum");
-        DataResolver lhQuery = new DataResolver(addData, ".lh");
-        DataResolver rhQuery = new DataResolver(addData, ".rh");
+        DataResolver sumQuery = addData.resolver("sum");
+        DataResolver lhQuery = addData.resolver("lh");
+        DataResolver rhQuery = addData.resolver("rh");
 
         MethodResolver addQuery = new MethodResolver(math, "Int add(int, int, int)", sumQuery, lhQuery, rhQuery);
         TimeStamp(sw, addData.ToString());
