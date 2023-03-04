@@ -38,27 +38,28 @@ namespace NETGraph.Data
         {
             this.typeName = dataType.ToString().ToLowerInvariant();
             this.typeIndex = (int)dataType;
-            this.type = TypeRegistry.BuiltInTypeFor(dataType);
+            this.type = TypeMapping.instance.BuiltInTypeFor(dataType);
             this.generator = generator;
 
         }
-        public TypeBlueprint(string name, Type type, IDataGenerator generator)
+        public TypeBlueprint(Type type, IDataGenerator generator)
         {
             this.typeIndex = _runningIndex++;
-            this.typeName = name;
+            this.typeName = type.Name;
             this.type = type;
             this.generator = generator;
         }
+
     }
 
-    public struct Void
-    { }
-
-    public class TypeRegistry
+    public class TypeMapping
     {
-        // reversed lookup for type to DataTypes
-        private static Dictionary<Type, DataTypes> builtInTypesMapRev = new Dictionary<Type, DataTypes>(builtInTypesMap.Select(x => new KeyValuePair<Type, DataTypes>(x.Value, x.Key)));
-        private static Dictionary<DataTypes, Type> builtInTypesMap = new Dictionary<DataTypes, Type>()
+        public static TypeMapping instance => new TypeMapping();
+
+        private TypeMapping()
+        { }
+
+        private Dictionary<DataTypes, Type> builtInTypesMap = new Dictionary<DataTypes, Type>()
         {
             { DataTypes.Void, typeof(Void) },
             { DataTypes.Object, typeof(object) },
@@ -79,56 +80,67 @@ namespace NETGraph.Data
             // internal library types
             { DataTypes.IData, typeof(IData) },
         };
-        private static Dictionary<DataTypes, TypeBlueprint> blueprints = new Dictionary<DataTypes, TypeBlueprint>();
 
-        // ToDo: transform to operate on blueprints dictionary and auto-init if required
-        //      
-        public static Type BuiltInTypeFor(DataTypes dataType) => builtInTypesMap[dataType];
+        public void Register(DataTypes dataType, Type type)
+        {
+            if (!builtInTypesMap.ContainsKey(dataType))
+                builtInTypesMap.Add(dataType, type);
+            else if (!builtInTypesMap[dataType].Equals(type))
+                Console.WriteLine($"{dataType} is already registered with {builtInTypesMap[dataType]} and cannot be registeered again. Try using a different data type for {type}.");
+        }
+
+        public Type BuiltInTypeFor(DataTypes dataType) => builtInTypesMap[dataType];
+        public DataTypes BuiltInDataTypeFor(Type type) => builtInTypesMap.First(x => x.Value.Equals(type)).Key;
+
+    }
+
+    public struct Void
+    { }
+
+    public class TypeRegistry
+    {
+        private static Dictionary<DataTypes, TypeBlueprint> blueprints = new Dictionary<DataTypes, TypeBlueprint>();
 
 
         public static DataTypes GetDataTypeFor(string dataName)
         {
-            TypeRegistry.AutoInit();
             return blueprints.Values.Where(x => x.typeName.Equals(dataName.ToLowerInvariant())).Select(x => x.dataType).First();
         }
-
 
         public static bool RegisterDataType(TypeBlueprint blueprint)
         {
             if (!blueprints.ContainsKey(blueprint.dataType))
+            {
                 blueprints.Add(blueprint.dataType, blueprint);
+                TypeMapping.instance.Register(blueprint.dataType, blueprint.type);
+            }
             return false;
         }
-        private static void AutoInit()
+        public static void RegisterBuiltIn()
         {
-            if (blueprints.Count == 0)
-                RegisterBuiltIn();
-        }
-        private static void RegisterBuiltIn()
-        {
-            RegisterDataType(new TypeBlueprint(DataTypes.Void, null));
-            RegisterDataType(new TypeBlueprint(DataTypes.Object, null));
-            RegisterDataType(new TypeBlueprint(DataTypes.Bool, null));
-            RegisterDataType(new TypeBlueprint(DataTypes.Byte, null));
-            RegisterDataType(new TypeBlueprint(DataTypes.SByte, null));
-            RegisterDataType(new TypeBlueprint(DataTypes.Short, null));
-            RegisterDataType(new TypeBlueprint(DataTypes.UShort, null));
-            RegisterDataType(new TypeBlueprint(DataTypes.Char, null));
-            RegisterDataType(new TypeBlueprint(DataTypes.Int, Simple.IntData.Generator));
-            RegisterDataType(new TypeBlueprint(DataTypes.UInt, null));
-            RegisterDataType(new TypeBlueprint(DataTypes.Long, null));
-            RegisterDataType(new TypeBlueprint(DataTypes.ULong, null));
-            RegisterDataType(new TypeBlueprint(DataTypes.Float, null));
-            RegisterDataType(new TypeBlueprint(DataTypes.Double, null));
-            RegisterDataType(new TypeBlueprint(DataTypes.Decimal, null));
-            RegisterDataType(new TypeBlueprint(DataTypes.String, null));
-            RegisterDataType(new TypeBlueprint(DataTypes.IData, null));
+            RegisterDataType(new TypeBlueprint(DataTypes.Void, DataBase<Void>.Generator()));
+            RegisterDataType(new TypeBlueprint(DataTypes.Object, DataBase<object>.Generator()));
+            RegisterDataType(new TypeBlueprint(DataTypes.Bool, DataBase<bool>.Generator()));
+            RegisterDataType(new TypeBlueprint(DataTypes.Byte, DataBase<byte>.Generator()));
+            RegisterDataType(new TypeBlueprint(DataTypes.SByte, DataBase<sbyte>.Generator()));
+            RegisterDataType(new TypeBlueprint(DataTypes.Short, DataBase<short>.Generator()));
+            RegisterDataType(new TypeBlueprint(DataTypes.UShort, DataBase<ushort>.Generator()));
+            RegisterDataType(new TypeBlueprint(DataTypes.Char, DataBase<char>.Generator()));
+            RegisterDataType(new TypeBlueprint(DataTypes.Int, DataBase<int>.Generator()));
+            RegisterDataType(new TypeBlueprint(DataTypes.UInt, DataBase<uint>.Generator()));
+            RegisterDataType(new TypeBlueprint(DataTypes.Long, DataBase<long>.Generator()));
+            RegisterDataType(new TypeBlueprint(DataTypes.ULong, DataBase<ulong>.Generator()));
+            RegisterDataType(new TypeBlueprint(DataTypes.Float, DataBase<float>.Generator()));
+            RegisterDataType(new TypeBlueprint(DataTypes.Double, DataBase<double>.Generator()));
+            RegisterDataType(new TypeBlueprint(DataTypes.Decimal, DataBase<decimal>.Generator()));
+            RegisterDataType(new TypeBlueprint(DataTypes.String, DataBase<string>.Generator()));
+            RegisterDataType(new TypeBlueprint(DataTypes.IData, DataBase<IData>.Generator()));
         }
 
 
-        public DataBase generateScalar<T>(DataTypes type, object scalar) => blueprints[type].generator.Scalar(scalar);
-        public DataBase generateList<T>(DataTypes type, int size, bool isResizable) => blueprints[type].generator.List(size, isResizable);
-        public DataBase generateDict<T>(DataTypes type, bool isResizable) => blueprints[type].generator.Dict(isResizable);
+        public static DataBase generateScalar<T>(DataTypes type, object scalar) => blueprints[type].generator.Scalar(scalar);
+        public static DataBase generateList<T>(DataTypes type, int size, bool isResizable) => blueprints[type].generator.List(size, isResizable);
+        public static DataBase generateDict<T>(DataTypes type, bool isResizable) => blueprints[type].generator.Dict(isResizable);
 
 
 

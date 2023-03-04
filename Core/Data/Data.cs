@@ -35,6 +35,10 @@ namespace NETGraph.Data
         void assign(int index, object scalar);
         void assign(string name, object scalar);
 
+        DataResolver resolver();
+        DataResolver resolver(string key);
+        DataResolver resolver(int index);
+
         public static bool match(IData lh, IData rh) => lh.TypeIndex == rh.TypeIndex;
         // checks for match with structure
         public static bool matchStructure(IData lh, IData rh) => lh.TypeIndex == rh.TypeIndex && lh.Structure == rh.Structure;
@@ -70,6 +74,10 @@ namespace NETGraph.Data
         public abstract void assign(int index, object scalar);
         public abstract void assign(string name, object scalar);
 
+        public DataResolver resolver() => new DataResolver(this, string.Empty);
+        public DataResolver resolver(string key) => new DataResolver(this, "." + key);
+        public DataResolver resolver(int index) => new DataResolver(this, $"[{index}]");
+
         protected bool canCast(int typeIndex) => this.typeIndex == typeIndex;
         protected bool canCopy(int typeIndex, DataStructure structure) => (this.structure == structure && this.typeIndex == typeIndex);
 
@@ -80,21 +88,32 @@ namespace NETGraph.Data
 
     }
 
-    public abstract class DataBase<T> : DataBase
+    public class Data<T> : DataBase
     {
+        public static GeneratorDefinition Generator()
+        {
+            return new GeneratorDefinition(
+            (s) => new Data<T>(typeof(T), DataStructure.Scalar, false).initScalar((T)s),
+            (s, r) => new Data<T>(typeof(T), DataStructure.List, r),
+            (r) => new Data<T>(typeof(T), DataStructure.Named, r)
+        );
+        }
+
         private T scalar;
         private List<T> list;
         private Dictionary<string, T> dict;
 
 
-        protected DataBase(DataTypes type, DataStructure structure, bool isResizable) : base(type, structure, isResizable)
+        protected Data(Type type, DataStructure structure, bool isResizable) : base(TypeMapping.instance.BuiltInDataTypeFor(type), structure, isResizable)
+        { }
+        protected Data(DataTypes type, DataStructure structure, bool isResizable) : base(type, structure, isResizable)
         {
             if (structure == DataStructure.List)
                 this.list = new List<T>();
             else if (structure == DataStructure.Named)
                 this.dict = new Dictionary<string, T>();
         }
-        protected DataBase(int typeIndex, DataStructure structure, bool isResizable) : this((DataTypes)typeIndex, structure, isResizable)
+        protected Data(int typeIndex, DataStructure structure, bool isResizable) : this((DataTypes)typeIndex, structure, isResizable)
         { }
 
 
@@ -147,12 +166,12 @@ namespace NETGraph.Data
 
 
 
-        protected DataBase<T> initScalar(T scalar)
+        protected Data<T> initScalar(T scalar)
         {
             this.Scalar = scalar;
             return this;
         }
-        protected DataBase<T> initList(IEnumerable<T> values)
+        protected Data<T> initList(IEnumerable<T> values)
         {
             if (this.list.Count == 0)
             {
@@ -162,7 +181,7 @@ namespace NETGraph.Data
             else
                 throw new InvalidOperationException($"Cannot initialize data on {this.structure} structure that contains data. Please clear the structure beforee re-init.");
         }
-        protected DataBase<T> initNamed(IEnumerable<KeyValuePair<string, T>> namedValues)
+        protected Data<T> initNamed(IEnumerable<KeyValuePair<string, T>> namedValues)
         {
             if (this.dict.Count == 0)
             {
@@ -277,9 +296,7 @@ namespace NETGraph.Data
         //}
         //#endregion
 
-
-
-        public virtual bool matchExact(DataBase<T> rh)
+        public virtual bool matchExact(Data<T> rh)
         {
             // if self reference, return early true
             if (this == rh)
@@ -296,7 +313,7 @@ namespace NETGraph.Data
             }
             return false;
         }
-        public virtual bool matchWithValue(DataBase<T> rh)
+        public virtual bool matchWithValue(Data<T> rh)
         {
             // if self reference, return early true
             if (this == rh)
@@ -329,47 +346,33 @@ namespace NETGraph.Data
 
         private void throwCheckResizable()
         {
-#if !DEBUG
             if (!this.isResizable)
                 throw new InvalidOperationException($"You cannot add items to a non resizable structure.");
-#endif
         }
         private void throwCheckStructure(DataStructure structure)
         {
-
-#if !DEBUG
             if (this.Structure != structure)
                 throw new InvalidOperationException($"You cannot add items to a non collection structure. Consider using a {structure} structure.");
-#endif
         }
         private void throwCheckGenericType(object item)
         {
-
-#if !DEBUG
             if (!(item is T))
                 throw new InvalidCastException($"{nameof(item)} has missmatching type.");
-#endif
         }
         private void throwCheckAccessByIndex()
         {
-#if !DEBUG
-            if (this.structure != DataStructures.Array && this.structure != DataStructures.List)
-                throw new InvalidCastException($"{typeof(DataBase<T>)} cannot be accessed by index.");
-#endif
+            if (this.structure != DataStructure.List)
+                throw new InvalidCastException($"{typeof(Data<T>)} cannot be accessed by index.");
         }
         private void throwCheckAccessByKey()
         {
-#if !DEBUG
-            if (this.structure != DataStructures.Named)
-                throw new InvalidCastException($"{typeof(DataBase<T>)} cannot be accessed by key.");
-#endif
+            if (this.structure != DataStructure.Named)
+                throw new InvalidCastException($"{typeof(Data<T>)} cannot be accessed by key.");
         }
         private void throwCheckAccessByScalar()
         {
-#if !DEBUG
-            if (this.structure != DataStructures.Scalar)
-                throw new InvalidCastException($"{typeof(DataBase<T>)} cannot be accessed as scalar.");
-#endif
+            if (this.structure != DataStructure.Scalar)
+                throw new InvalidCastException($"{typeof(Data<T>)} cannot be accessed as scalar.");
         }
 
 
