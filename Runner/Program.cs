@@ -129,9 +129,9 @@ public class Program
         MathProvider math = MathProvider.Instance;
 
         // binding to actual data objeect => reesults in resolvable DataQuery
-        DataResolver sumQuery = addData.resolver("sum");
-        DataResolver lhQuery = addData.resolver("lh");
-        DataResolver rhQuery = addData.resolver("rh");
+        DataResolver sumQuery = addData.resolver(new DataSignature("sum"));
+        DataResolver lhQuery = addData.resolver(new DataSignature("lh"));
+        DataResolver rhQuery = addData.resolver(new DataSignature("rh"));
 
         MethodResolver addQuery = new MethodResolver(math, "int add(int, int, int)", sumQuery, lhQuery, rhQuery);
         TimeStamp(sw, addData.ToString());
@@ -139,14 +139,13 @@ public class Program
         addQuery.resolve();
         TimeStamp(sw, addData.ToString());
 
-        addData.setAt("rh", 5);
+        addData.assign("rh", 5);
         addQuery = new MethodResolver(math, "int add(int, int, int)", sumQuery, sumQuery, rhQuery);
         for (int i = 0; i < 10; i++)
             addQuery.resolve();
         TimeStamp(sw, addData.ToString());
 
-        //addQuery = new MethodQuery(math, "sum subtract(sum,rh)", sumQuery, sumQuery, rhQuery);
-        addData.setAt("rh", 12);
+        addData.assign("rh", 12);
         for (int i = 0; i < 5; i++)
             addQuery.resolve();
 

@@ -18,8 +18,7 @@ namespace NETGraph.Core.Meta
         //  ToDo: add nested as IDataBlueprint[] for neested data types
         string Name { get; }
         int TypeIndex { get; }
-        DataStructure Structure { get; }
-        bool IsResizable { get; }
+        DataOptions Options { get; }
         string[] Keys { get; }
     }
 
@@ -28,18 +27,16 @@ namespace NETGraph.Core.Meta
     {
         public string Name { get; private set; }
         public int TypeIndex { get; private set; }
-        public DataStructure Structure { get; private set; }
-        public bool IsResizable { get; private set; }
+        public DataOptions Options { get; private set; }
         public string[] Keys { get; private set; }
 
-        public DataBlueprint(string name, DataTypes type, DataStructure structure = DataStructure.Scalar, bool isResizable = false, params string[] keys) : this(name, (int)type, structure, isResizable, keys)
+        public DataBlueprint(string name, DataTypes type, DataOptions options = DataOptions.Scalar, bool isResizable = false, params string[] keys) : this(name, (int)type, options, isResizable, keys)
         { }
-        public DataBlueprint(string name, int typeIndex, DataStructure structure = DataStructure.Scalar, bool isResizable = false, params string[] keys)
+        public DataBlueprint(string name, int typeIndex, DataOptions options = DataOptions.Scalar, bool isResizable = false, params string[] keys)
         {
             this.Name = name;
             this.TypeIndex = typeIndex;
-            this.Structure = structure;
-            this.IsResizable = isResizable;
+            this.Options = options;
             this.Keys = (keys.Length > 0) ? keys : null;
         }
 

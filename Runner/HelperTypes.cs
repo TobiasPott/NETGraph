@@ -12,11 +12,11 @@ namespace NETGraph.Runner
     {
         private static string[] keys = new[] { "lh", "rh", "sum" };
 
-        public MathOpDataProvider(int lh, int rh) : base(DataTypes.Int, DataStructure.Named, false)
+        public MathOpDataProvider(int lh, int rh) : base(DataTypes.Int, DataOptions.Named)
         {
             initNamed(keys.Select(k => new KeyValuePair<string, int>(k, 0)));
-            this.setAt(keys[0], lh);
-            this.setAt(keys[1], rh);
+            this.assign(keys[0], lh);
+            this.assign(keys[1], rh);
         }
 
         public override string ToString()

@@ -6,13 +6,13 @@ namespace NETGraph.Core.Meta
     public interface IDataResolver
     {
         V resolve<V>();
-        bool resolve<V>(out V value);
         void assign<V>(V value);
     }
 
-    // ToDo: Implement connstant value resolver which ignores assignments and returns a scalar copy/instance of the genric type
-    // ToDo: Implement reference value resolver which allows assignments (see DataResolver)
-
+    /// <summary>
+    /// Provides an actual handle to a data reference and data signature to resolve into an underlying type instance
+    /// </summary>
+    // ToDo: Ponder about a way to extend resolver to resolve IEnumerable<T> for index or key ranges (e.g. 0 - 3 as index range)
     public struct DataResolver : IDataResolver
     {
         DataSignature signature;
@@ -30,17 +30,7 @@ namespace NETGraph.Core.Meta
         }
 
         public V resolve<V>() => data.resolve<V>(signature);
-        public bool resolve<V>(out V value) => data.resolve<V>(signature, out value);
-
-        public void assign<V>(V value)
-        {
-            if (signature.accessType == DataSignature.AccessTypes.Index)
-                data.assign(signature.index, value);
-            else if (signature.accessType == DataSignature.AccessTypes.Key)
-                data.assign(signature.key, value);
-            else if (signature.accessType == DataSignature.AccessTypes.Scalar)
-                data.assign(value);
-        }
+        public void assign<V>(V value) => data.assign(signature, value);
 
     }
 

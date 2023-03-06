@@ -6,20 +6,25 @@ using NETGraph.Core.Meta;
 
 namespace NETGraph.Data
 {
-
-    public enum DataStructure
+    [Flags()]
+    public enum DataOptions
     {
         Scalar = 1,
         List = 2,
         Named = 4,
+        Resizable = 8,
+
     }
 
     public static class DataExtensions
     {
 
-        public static bool match(IData lh, IData rh) => lh.TypeIndex == rh.TypeIndex;
-        public static bool matchStructure(IData lh, IData rh) => lh.TypeIndex == rh.TypeIndex && lh.Structure == rh.Structure;
-        public static bool matchStructureAndSize(IData lh, IData rh) => lh.TypeIndex == rh.TypeIndex && lh.Structure == rh.Structure && lh.Count == rh.Count;
+        public static void assign<V>(this IData data, string signature, V value) => data.assign(new DataSignature(signature), value);
+        public static DataResolver resolver(this IData data, string signature) => data.resolver(new DataSignature(signature));
+
+        public static bool match(IData lh, IData rh) => lh.typeIndex == rh.typeIndex;
+        public static bool matchStructure(IData lh, IData rh) => lh.typeIndex == rh.typeIndex && lh.options == rh.options;
+        public static bool matchStructureAndSize(IData lh, IData rh) => lh.typeIndex == rh.typeIndex && lh.options == rh.options && lh.count == rh.count;
 
 
         //public static bool matchExact<T>(Data<T> lh, Data<T> rh)
@@ -73,66 +78,38 @@ namespace NETGraph.Data
 
     public interface IData
     {
-        DataStructure Structure { get; }
-        int TypeIndex { get; }
-        int Count { get; }
+        DataOptions options { get; }
+        int typeIndex { get; }
+        int count { get; }
 
+        // ToDo: further implement accessing nested data (e.g. on complect object mapped data types like UnityEngine.Transform individiual parts mappings)
+        // IData access(string dataPath);
 
-        object getValueScalar();
-        object getValueAt(int index);
-        object getValueAt(string key);
-
-        IData access(DataSignature signature);
         V resolve<V>(DataSignature signature);
-        bool resolve<V>(DataSignature signature, out V value);
+        void assign(DataSignature signature, object scalar);
 
-        void assign(object scalar);
-        void assign(int index, object scalar);
-        void assign(string name, object scalar);
-
-        DataResolver resolver();
-        DataResolver resolver(string key);
-        DataResolver resolver(int index);
-
+        DataResolver resolver(DataSignature signature);
     }
 
 
     public abstract class DataBase : IData
     {
-        protected DataStructure structure = DataStructure.Scalar;
-        protected int typeIndex;
-        protected bool isResizable;
-
-        public DataStructure Structure { get => structure; }
-        public int TypeIndex { get => typeIndex; }
-        public virtual int Count { get; } = 1;
+        public DataOptions options { get; protected set; }
+        public int typeIndex { get; protected set; }
+        public virtual int count { get; } = 1;
 
 
-        protected DataBase(DataTypes type, DataStructure structure, bool isResizable = true) : this((int)type, structure, isResizable)
+        protected DataBase(DataTypes type, DataOptions options, bool isResizable = true) : this((int)type, options, isResizable)
         { }
-        protected DataBase(int typeIndex, DataStructure structure, bool isResizable = true)
+        protected DataBase(int typeIndex, DataOptions options, bool isResizable = true)
         {
             this.typeIndex = typeIndex;
-            this.structure = structure;
-            this.isResizable = structure == DataStructure.Scalar ? false : isResizable;
+            this.options = options;
         }
 
-        public abstract object getValueScalar();
-        public abstract object getValueAt(int index);
-        public abstract object getValueAt(string key);
-        public abstract void assign(object scalar);
-        public abstract void assign(int index, object scalar);
-        public abstract void assign(string name, object scalar);
-
-        public DataResolver resolver() => new DataResolver(this, string.Empty);
-        public DataResolver resolver(string key) => new DataResolver(this, "." + key);
-        public DataResolver resolver(int index) => new DataResolver(this, $"[{index}]");
-
-        // accessing nested DataBase objects and resolving to actual types
-        public abstract IData access(DataSignature signature);
+        public abstract void assign(DataSignature signature, object scalar);
         public abstract V resolve<V>(DataSignature signature);
-        public abstract bool resolve<V>(DataSignature signature, out V value);
-
+        public DataResolver resolver(DataSignature signature) => new DataResolver(this, signature);
     }
 
     public class Data<T> : DataBase
@@ -140,9 +117,9 @@ namespace NETGraph.Data
         public static GeneratorDefinition Generator()
         {
             return new GeneratorDefinition(
-            (s) => new Data<T>(typeof(T), DataStructure.Scalar, false).initScalar((T)s),
-            (s, r) => new Data<T>(typeof(T), DataStructure.List, r),
-            (r) => new Data<T>(typeof(T), DataStructure.Named, r)
+            (s) => new Data<T>(typeof(T), DataOptions.Scalar).initScalar((T)s),
+            (s, r) => new Data<T>(typeof(T), DataOptions.List | DataOptions.Resizable),
+            (r) => new Data<T>(typeof(T), DataOptions.Named | DataOptions.Resizable)
         );
         }
 
@@ -151,16 +128,16 @@ namespace NETGraph.Data
         private Dictionary<string, T> dict;
 
 
-        protected Data(Type type, DataStructure structure, bool isResizable) : base(TypeMapping.instance.BuiltInDataTypeFor(type), structure, isResizable)
+        protected Data(Type type, DataOptions options) : base(TypeMapping.instance.BuiltInDataTypeFor(type), options)
         { }
-        protected Data(DataTypes type, DataStructure structure, bool isResizable) : base(type, structure, isResizable)
+        protected Data(DataTypes type, DataOptions options) : base(type, options)
         {
-            if (structure == DataStructure.List)
+            if (options.HasFlag(DataOptions.List))
                 this.list = new List<T>();
-            else if (structure == DataStructure.Named)
+            else if (options.HasFlag(DataOptions.Named))
                 this.dict = new Dictionary<string, T>();
         }
-        protected Data(int typeIndex, DataStructure structure, bool isResizable) : this((DataTypes)typeIndex, structure, isResizable)
+        protected Data(int typeIndex, DataOptions structure) : this((DataTypes)typeIndex, structure)
         { }
 
 
@@ -168,7 +145,7 @@ namespace NETGraph.Data
         {
             get
             {
-                throwCheckAccessByIndex();
+                //throwCheckAccessByIndex();
                 return list[index];
             }
             set => list[index] = value;
@@ -177,7 +154,7 @@ namespace NETGraph.Data
         {
             get
             {
-                throwCheckAccessByKey();
+                //throwCheckAccessByKey();
                 return dict[name];
             }
             set
@@ -192,20 +169,20 @@ namespace NETGraph.Data
         {
             get
             {
-                throwCheckAccessByScalar();
+                //throwCheckAccessByScalar();
                 return scalar;
             }
-            set { if (this.structure == DataStructure.Scalar) scalar = value; }
+            set { if (this.options == DataOptions.Scalar) scalar = value; }
         }
 
-        public override int Count
+        public override int count
         {
             get
             {
-                switch (this.structure)
+                switch (this.options)
                 {
-                    case DataStructure.List: return list.Count;
-                    case DataStructure.Named: return dict.Count;
+                    case DataOptions.List: return list.Count;
+                    case DataOptions.Named: return dict.Count;
                 }
                 return 1;
             }
@@ -226,7 +203,7 @@ namespace NETGraph.Data
                 return this;
             }
             else
-                throw new InvalidOperationException($"Cannot initialize data on {this.structure} structure that contains data. Please clear the structure beforee re-init.");
+                throw new InvalidOperationException($"Cannot initialize data on {this.options} structure that contains data. Please clear the structure beforee re-init.");
         }
         protected Data<T> initNamed(IEnumerable<KeyValuePair<string, T>> namedValues)
         {
@@ -236,121 +213,54 @@ namespace NETGraph.Data
                 return this;
             }
             else
-                throw new InvalidOperationException($"Cannot initialize data on {this.structure} structure that contains data. Please clear the structure beforee re-init.");
+                throw new InvalidOperationException($"Cannot initialize data on {this.options} structure that contains data. Please clear the structure beforee re-init.");
         }
 
-        public override IData access(DataSignature signature)
-        {
-            switch (signature.accessType)
-            {
-                case DataSignature.AccessTypes.Key:
-                    return this[signature.key] as IData;
-                case DataSignature.AccessTypes.Index:
-                    return this[signature.index] as IData;
-                case DataSignature.AccessTypes.Scalar:
-                default:
-                    return this;
-            }
-        }
+
+        protected object getValueScalar() => this.Scalar;
+        protected object getValueAt(int index) => this[index];
+        protected object getValueAt(string name) => this[name];
+
         public override V resolve<V>(DataSignature signature)
         {
-            if (resolve<V>(signature, out V value))
-                return value;
-            return default(V);
-
+            switch (signature.accessType)
+            {
+                case DataSignature.AccessTypes.Scalar:
+                    return (V)this.getValueScalar();
+                case DataSignature.AccessTypes.Index:
+                    return (V)this.getValueAt(signature.index);
+                case DataSignature.AccessTypes.Key:
+                    return (V)this.getValueAt(signature.key);
+                default:
+                    return default(V);
+            }
         }
-        public override bool resolve<V>(DataSignature signature, out V value)
+        public override void assign(DataSignature signature, object value)
         {
             switch (signature.accessType)
             {
                 case DataSignature.AccessTypes.Scalar:
-                    value = (V)this.getValueScalar();
-                    return true;
+                    this.Scalar = (T)value;
+                    break;
                 case DataSignature.AccessTypes.Index:
-                    value = (V)this.getValueAt(signature.index);
-                    return true;
+                    this[signature.index] = (T)value;
+                    break;
                 case DataSignature.AccessTypes.Key:
-                    value = (V)this.getValueAt(signature.key);
-                    return true;
+                    this[signature.key] = (T)value;
+                    break;
                 default:
-                    value = default(V);
-                    return false;
+                    break;
             }
         }
-
-        public override object getValueScalar() => this.Scalar;
-        public override object getValueAt(int index) => this[index];
-        public override object getValueAt(string name) => this[name];
-        public override void assign(object scalar) => this.Scalar = (T)scalar;
-        public override void assign(int index, object scalar) => this[index] = (T)scalar;
-        public override void assign(string name, object scalar) => this[name] = (T)scalar;
-
-
-        #region Data<T> get and set implementations
-        public virtual T getScalar() => this.Scalar;
-        public virtual T getAt(int index) => this[index];
-        public virtual T getAt(string name) => this[name];
-        public virtual void setScalar(T scalarValue) => this.Scalar = scalarValue;
-        public virtual void setAt(int index, T value) => this[index] = value;
-        public virtual void setAt(string name, T value) => this[name] = value;
-        #endregion
-
-
-        //#region Data Add & Remove implementations
-        //public override void Add(object item)
-        //{
-        //    throwCheckResizable();
-        //    throwCheckStructure(DataStructures.List);
-        //    // typecheck
-        //    throwCheckGenericType(item);
-
-        //    this.list.Add((T)item);
-        //}
-        //public override void Add(string key, object item)
-        //{
-        //    throwCheckResizable();
-        //    throwCheckStructure(DataStructures.Named);
-        //    // typecheck
-        //    throwCheckGenericType(item);
-
-        //    this.dict.Add(key, (T)item);
-        //}
-
-        //public override void RemoveAt(int index)
-        //{
-        //    throwCheckResizable();
-        //    throwCheckStructure(DataStructures.List);
-        //    this.list.RemoveAt(index);
-        //}
-        //public override void RemoveAt(string key)
-        //{
-        //    throwCheckResizable();
-        //    throwCheckStructure(DataStructures.Named);
-        //    this.dict.Remove(key);
-        //}
-        //public override void RemoveRange(int index, int count)
-        //{
-        //    throwCheckResizable();
-        //    throwCheckStructure(DataStructures.List);
-        //    this.list.RemoveRange(index, count);
-        //}
-        //public override void RemoveRange(params string[] keys)
-        //{
-        //    throwCheckResizable();
-        //    throwCheckStructure(DataStructures.Named);
-        //    foreach (string key in keys)
-        //        this.dict.Remove(key);
-        //}
-        //#endregion
 
         private void throwCheckResizable()
         {
-            if (!this.isResizable)
+            if (!this.options.HasFlag(DataOptions.Resizable))
                 throw new InvalidOperationException($"You cannot add items to a non resizable structure.");
         }
-        private void throwCheckStructure(DataStructure structure)
+        private void throwCheckStructure(DataOptions structure)
         {
-            if (this.Structure != structure)
+            if (!this.options.HasFlag(structure))
                 throw new InvalidOperationException($"You cannot add items to a non collection structure. Consider using a {structure} structure.");
         }
         private void throwCheckGenericType(object item)
@@ -360,17 +270,17 @@ namespace NETGraph.Data
         }
         private void throwCheckAccessByIndex()
         {
-            if (this.structure != DataStructure.List)
+            if (!this.options.HasFlag(DataOptions.List))
                 throw new InvalidCastException($"{typeof(Data<T>)} cannot be accessed by index.");
         }
         private void throwCheckAccessByKey()
         {
-            if (this.structure != DataStructure.Named)
+            if (!this.options.HasFlag(DataOptions.Named))
                 throw new InvalidCastException($"{typeof(Data<T>)} cannot be accessed by key.");
         }
         private void throwCheckAccessByScalar()
         {
-            if (this.structure != DataStructure.Scalar)
+            if (!this.options.HasFlag(DataOptions.Scalar))
                 throw new InvalidCastException($"{typeof(Data<T>)} cannot be accessed as scalar.");
         }
 
@@ -379,14 +289,14 @@ namespace NETGraph.Data
         public override string ToString()
         {
             string toString = string.Empty;
-            if (this.structure == DataStructure.Scalar)
+            if (this.options == DataOptions.Scalar)
                 toString = $"{scalar}";
-            else if (this.structure == DataStructure.List)
+            else if (this.options == DataOptions.List)
                 toString = $"[{string.Join(", ", list)}]";
-            else if (this.structure == DataStructure.Named)
+            else if (this.options == DataOptions.Named)
                 toString = $"[{string.Join(", ", dict)}]";
 
-            return base.ToString() + $"[{this.structure}] = " + toString;
+            return base.ToString() + $"[{this.options}] = " + toString;
         }
 
     }
