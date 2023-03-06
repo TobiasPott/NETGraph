@@ -120,7 +120,7 @@ namespace NETGraph.Core.Meta
         public static GeneratorDefinition Generator()
         {
             return new GeneratorDefinition(
-            (s) => new Data<T>(typeof(T), DataOptions.Scalar).initScalar((T)s),
+            () => new Data<T>(typeof(T), DataOptions.Scalar),
             (r) => new Data<T>(typeof(T), DataOptions.List | DataOptions.Resizable),
             (r) => new Data<T>(typeof(T), DataOptions.Named | DataOptions.Resizable)
         );

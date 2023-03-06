@@ -44,7 +44,7 @@ public class Program
 
     public static void Main(string[] args)
     {
-        TypeRegistry.RegisterBuiltIn();
+        MetaTypeRegistry.RegisterBuiltIn();
 
         #region Old Code
         //Node[] vertices = { new Node(VStart),
@@ -128,10 +128,11 @@ public class Program
         MathOpDataProvider addData = new MathOpDataProvider(1, 10);
         MathProvider math = MathProvider.Instance;
 
-        DataBase intData = TypeRegistry.Generator(DataTypes.Int).Scalar((int)10);
+        DataBase intData = MetaTypeRegistry.Generator(DataTypes.Int).Scalar();
         intData.assign<int>(string.Empty, -10);
 
-        DataBase int2Data = TypeRegistry.Generator(DataTypes.Int).Named(false);
+        DataBase int2Data = MetaTypeRegistry.Generator(DataTypes.Int).Named(false);
+        
 
         // binding to actual data objeect => reesults in resolvable DataQuery
         DataResolver sumQuery = addData.resolver(new DataSignature("sum"));

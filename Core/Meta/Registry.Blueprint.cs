@@ -23,38 +23,6 @@ namespace NETGraph.Core.Meta
         IData,
     }
 
-    public struct Void
-    { }
-
-    public struct TypeBlueprint
-    {
-        private static int _runningIndex = 1024;    // reserved 1024 indices for builtin/internal types
-                                                    // may add additional reserved ranges for other purposes (e.g. Unity range)
-
-        public DataTypes dataType => (DataTypes)typeIndex;
-        public int typeIndex { get; private set; }
-        public string typeName { get; private set; }
-        public Type type { get; private set; }
-        public IDataGenerator generator { get; private set; }
-
-        public TypeBlueprint(DataTypes dataType, IDataGenerator generator)
-        {
-            this.typeName = dataType.ToString().ToLowerInvariant();
-            this.typeIndex = (int)dataType;
-            this.type = TypeMapping.instance.BuiltInTypeFor(dataType);
-            this.generator = generator;
-
-        }
-        public TypeBlueprint(Type type, IDataGenerator generator)
-        {
-            this.typeIndex = _runningIndex++;
-            this.typeName = type.Name;
-            this.type = type;
-            this.generator = generator;
-        }
-
-    }
-
     public class TypeMapping
     {
         public static TypeMapping instance => new TypeMapping();
@@ -97,9 +65,9 @@ namespace NETGraph.Core.Meta
 
     }
 
-    public class TypeRegistry
+    public class MetaTypeRegistry
     {
-        private static Dictionary<DataTypes, TypeBlueprint> blueprints = new Dictionary<DataTypes, TypeBlueprint>();
+        private static Dictionary<DataTypes, MetaTypeBlueprint> blueprints = new Dictionary<DataTypes, MetaTypeBlueprint>();
 
 
         public static DataTypes GetDataTypeFor(string dataName)
@@ -107,34 +75,36 @@ namespace NETGraph.Core.Meta
             return blueprints.Values.Where(x => x.typeName.Equals(dataName.ToLowerInvariant())).Select(x => x.dataType).First();
         }
 
-        public static bool RegisterDataType(TypeBlueprint blueprint)
+        public static bool RegisterDataType(MetaTypeBlueprint blueprint)
         {
             if (!blueprints.ContainsKey(blueprint.dataType))
             {
+                // query for typeIndex of generate new from blueprint running index
                 blueprints.Add(blueprint.dataType, blueprint);
                 TypeMapping.instance.Register(blueprint.dataType, blueprint.type);
             }
             return false;
         }
+
         public static void RegisterBuiltIn()
         {
-            RegisterDataType(new TypeBlueprint(DataTypes.Void, Data<Void>.Generator()));
-            RegisterDataType(new TypeBlueprint(DataTypes.Object, Data<object>.Generator()));
-            RegisterDataType(new TypeBlueprint(DataTypes.Bool, Data<bool>.Generator()));
-            RegisterDataType(new TypeBlueprint(DataTypes.Byte, Data<byte>.Generator()));
-            RegisterDataType(new TypeBlueprint(DataTypes.SByte, Data<sbyte>.Generator()));
-            RegisterDataType(new TypeBlueprint(DataTypes.Short, Data<short>.Generator()));
-            RegisterDataType(new TypeBlueprint(DataTypes.UShort, Data<ushort>.Generator()));
-            RegisterDataType(new TypeBlueprint(DataTypes.Char, Data<char>.Generator()));
-            RegisterDataType(new TypeBlueprint(DataTypes.Int, Data<int>.Generator()));
-            RegisterDataType(new TypeBlueprint(DataTypes.UInt, Data<uint>.Generator()));
-            RegisterDataType(new TypeBlueprint(DataTypes.Long, Data<long>.Generator()));
-            RegisterDataType(new TypeBlueprint(DataTypes.ULong, Data<ulong>.Generator()));
-            RegisterDataType(new TypeBlueprint(DataTypes.Float, Data<float>.Generator()));
-            RegisterDataType(new TypeBlueprint(DataTypes.Double, Data<double>.Generator()));
-            RegisterDataType(new TypeBlueprint(DataTypes.Decimal, Data<decimal>.Generator()));
-            RegisterDataType(new TypeBlueprint(DataTypes.String, Data<string>.Generator()));
-            RegisterDataType(new TypeBlueprint(DataTypes.IData, Data<IData>.Generator()));
+            RegisterDataType(new MetaTypeBlueprint(DataTypes.Void, Data<Void>.Generator()));
+            RegisterDataType(new MetaTypeBlueprint(DataTypes.Object, Data<object>.Generator()));
+            RegisterDataType(new MetaTypeBlueprint(DataTypes.Bool, Data<bool>.Generator()));
+            RegisterDataType(new MetaTypeBlueprint(DataTypes.Byte, Data<byte>.Generator()));
+            RegisterDataType(new MetaTypeBlueprint(DataTypes.SByte, Data<sbyte>.Generator()));
+            RegisterDataType(new MetaTypeBlueprint(DataTypes.Short, Data<short>.Generator()));
+            RegisterDataType(new MetaTypeBlueprint(DataTypes.UShort, Data<ushort>.Generator()));
+            RegisterDataType(new MetaTypeBlueprint(DataTypes.Char, Data<char>.Generator()));
+            RegisterDataType(new MetaTypeBlueprint(DataTypes.Int, Data<int>.Generator()));
+            RegisterDataType(new MetaTypeBlueprint(DataTypes.UInt, Data<uint>.Generator()));
+            RegisterDataType(new MetaTypeBlueprint(DataTypes.Long, Data<long>.Generator()));
+            RegisterDataType(new MetaTypeBlueprint(DataTypes.ULong, Data<ulong>.Generator()));
+            RegisterDataType(new MetaTypeBlueprint(DataTypes.Float, Data<float>.Generator()));
+            RegisterDataType(new MetaTypeBlueprint(DataTypes.Double, Data<double>.Generator()));
+            RegisterDataType(new MetaTypeBlueprint(DataTypes.Decimal, Data<decimal>.Generator()));
+            RegisterDataType(new MetaTypeBlueprint(DataTypes.String, Data<string>.Generator()));
+            RegisterDataType(new MetaTypeBlueprint(DataTypes.IData, Data<IData>.Generator()));
         }
 
         public static IDataGenerator Generator(DataTypes dataType) => blueprints[dataType].generator;

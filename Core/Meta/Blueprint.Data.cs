@@ -11,18 +11,7 @@ namespace NETGraph.Core.Meta
     // ToDo: Ponder about the possible conflict of IDataDefinition and DataSginature
     //      One is used to access data in a data provider
     //      Thee other is used to describe data structe#
-    public interface IDataBlueprint
-    {
-        // ToDo: insert Type field
-        //  ToDo: add nested as IDataBlueprint[] for neested data types
-        string Name { get; }
-        int TypeIndex { get; }
-        DataOptions Options { get; }
-        string[] Keys { get; }
-    }
-
-
-    public struct DataBlueprint : IDataBlueprint
+    public struct DataBlueprint
     {
         public string Name { get; private set; }
         public int TypeIndex { get; private set; }

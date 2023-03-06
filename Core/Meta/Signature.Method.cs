@@ -26,7 +26,7 @@ namespace NETGraph.Core.Meta
                 string resultTypeStr = matches[0].Value;
                 // ToDo: implement type index lookup by typename through the TypeRegistry
                 //      May require auto-init of TypeRegistry for built in type info
-                resultType = TypeRegistry.GetDataTypeFor(resultTypeStr);
+                resultType = MetaTypeRegistry.GetDataTypeFor(resultTypeStr);
 
                 // ToDo: all matches beyond index = 1 are signatures of input types
                 //      these can be parsed and stored as meta info for a method signature
