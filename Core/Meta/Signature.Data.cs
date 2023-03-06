@@ -43,7 +43,7 @@ namespace NETGraph.Core.Meta
                 if (int.TryParse(indexString, out int value))
                     index = value;
                 else
-                    throw new ArgumentException($"You need to include a valid index to access data by index. Remember to use the {SplitMark_Index} notation for {AccessTypes.Index} access.");
+                    throw new ArgumentException($"You need to include a valid index to access data by index. Remember to use the [] notation for {AccessTypes.Index} access.");
             }
             else
             {

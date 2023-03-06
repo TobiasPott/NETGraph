@@ -24,7 +24,7 @@ namespace NETGraph.Data
 
         public static bool match(IData lh, IData rh) => lh.typeIndex == rh.typeIndex;
         public static bool matchStructure(IData lh, IData rh) => lh.typeIndex == rh.typeIndex && lh.options == rh.options;
-        public static bool matchStructureAndSize(IData lh, IData rh) => lh.typeIndex == rh.typeIndex && lh.options == rh.options && lh.count == rh.count;
+        //public static bool matchStructureAndSize(IData lh, IData rh) => lh.typeIndex == rh.typeIndex && lh.options == rh.options && lh.count == rh.count;
 
 
         //public static bool matchExact<T>(Data<T> lh, Data<T> rh)
@@ -80,11 +80,12 @@ namespace NETGraph.Data
     {
         DataOptions options { get; }
         int typeIndex { get; }
-        int count { get; }
 
-        // ToDo: further implement accessing nested data (e.g. on complect object mapped data types like UnityEngine.Transform individiual parts mappings)
-        // IData access(string dataPath);
+        // methods for accessing nested or dynamic data instances
+        IData access(string dataPath);
 
+
+        //method to resolve data object into underlying type instances
         V resolve<V>(DataSignature signature);
         void assign(DataSignature signature, object scalar);
 
@@ -96,7 +97,6 @@ namespace NETGraph.Data
     {
         public DataOptions options { get; protected set; }
         public int typeIndex { get; protected set; }
-        public virtual int count { get; } = 1;
 
 
         protected DataBase(DataTypes type, DataOptions options, bool isResizable = true) : this((int)type, options, isResizable)
@@ -107,6 +107,10 @@ namespace NETGraph.Data
             this.options = options;
         }
 
+
+        // methods for accessing nested or dynamic data instances
+        public abstract IData access(string dataPath);
+        //method to resolve data object into underlying type instances
         public abstract void assign(DataSignature signature, object scalar);
         public abstract V resolve<V>(DataSignature signature);
         public DataResolver resolver(DataSignature signature) => new DataResolver(this, signature);
@@ -126,6 +130,9 @@ namespace NETGraph.Data
         private T scalar;
         private List<T> list;
         private Dictionary<string, T> dict;
+
+        // should be part of a type blueprint as it is static but changeable data (e.g. programmer defined access maps to custom types)
+        private Dictionary<string, Func<IData>> accessMap = new Dictionary<string, Func<IData>>();
 
 
         protected Data(Type type, DataOptions options) : base(TypeMapping.instance.BuiltInDataTypeFor(type), options)
@@ -175,19 +182,6 @@ namespace NETGraph.Data
             set { if (this.options == DataOptions.Scalar) scalar = value; }
         }
 
-        public override int count
-        {
-            get
-            {
-                switch (this.options)
-                {
-                    case DataOptions.List: return list.Count;
-                    case DataOptions.Named: return dict.Count;
-                }
-                return 1;
-            }
-        }
-
 
 
         protected Data<T> initScalar(T scalar)
@@ -214,6 +208,12 @@ namespace NETGraph.Data
             }
             else
                 throw new InvalidOperationException($"Cannot initialize data on {this.options} structure that contains data. Please clear the structure beforee re-init.");
+        }
+
+
+        public override IData access(string dataPath)
+        {
+            throw new InvalidOperationException($"{nameof(Data<T>)} does not support accessing nested or dynamic data. Implement your own type to support arbitrary data access with dynamic data.");
         }
 
 
