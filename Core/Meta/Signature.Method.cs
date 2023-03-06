@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
-using NETGraph.Data;
 
 namespace NETGraph.Core.Meta
 {

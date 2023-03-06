@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using NETGraph.Core;
 using NETGraph.Core.Meta;
-using NETGraph.Data;
 
 namespace NETGraph.Runner
 {
@@ -45,7 +44,16 @@ namespace NETGraph.Runner
             else if (signature.method.Equals("subtract"))
             {
                 Subtract(signature, result, inputs);
-                Console.WriteLine("Subtract");
+                return true;
+            }
+            else if (signature.method.Equals("multiply"))
+            {
+                Multiply(signature, result, inputs);
+                return true;
+            }
+            else if (signature.method.Equals("divide"))
+            {
+                Divide(signature, result, inputs);
                 return true;
             }
             return false;
@@ -58,10 +66,23 @@ namespace NETGraph.Runner
         }
         private void Subtract(MethodSignature signature, DataResolver result, IEnumerable<DataResolver> inputs)
         {
-            int subtrahends = inputs.Skip(1).Sum(q => q.resolve<int>());
+            int subtrahends = inputs.Sum(q => q.resolve<int>());
             result.assign<int>(result.resolve<int>() - subtrahends);
         }
-
+        private void Multiply(MethodSignature signature, DataResolver result, IEnumerable<DataResolver> inputs)
+        {
+            int product = 1;
+            foreach (DataResolver input in inputs)
+                product *= input.resolve<int>();
+            result.assign<int>(product);
+        }
+        private void Divide(MethodSignature signature, DataResolver result, IEnumerable<DataResolver> inputs)
+        {
+            int dividend = inputs.First().resolve<int>();
+            foreach (DataResolver input in inputs.Skip(1))
+                dividend /= input.resolve<int>();
+            result.assign<int>(dividend);
+        }
 
     }
 

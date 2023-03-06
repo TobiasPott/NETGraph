@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using NETGraph.Data;
 
 namespace NETGraph.Core.Meta
 {

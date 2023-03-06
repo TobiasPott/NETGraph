@@ -2,9 +2,8 @@
 using System.Collections.Generic;
 using System.Linq;
 using NETGraph.Core;
-using NETGraph.Core.Meta;
 
-namespace NETGraph.Data
+namespace NETGraph.Core.Meta
 {
     [Flags()]
     public enum DataOptions
@@ -90,6 +89,7 @@ namespace NETGraph.Data
         void assign(DataSignature signature, object scalar);
 
         DataResolver resolver(DataSignature signature);
+
     }
 
 
@@ -97,7 +97,6 @@ namespace NETGraph.Data
     {
         public DataOptions options { get; protected set; }
         public int typeIndex { get; protected set; }
-
 
         protected DataBase(DataTypes type, DataOptions options, bool isResizable = true) : this((int)type, options, isResizable)
         { }
@@ -122,7 +121,7 @@ namespace NETGraph.Data
         {
             return new GeneratorDefinition(
             (s) => new Data<T>(typeof(T), DataOptions.Scalar).initScalar((T)s),
-            (s, r) => new Data<T>(typeof(T), DataOptions.List | DataOptions.Resizable),
+            (r) => new Data<T>(typeof(T), DataOptions.List | DataOptions.Resizable),
             (r) => new Data<T>(typeof(T), DataOptions.Named | DataOptions.Resizable)
         );
         }
@@ -131,11 +130,10 @@ namespace NETGraph.Data
         private List<T> list;
         private Dictionary<string, T> dict;
 
-        // should be part of a type blueprint as it is static but changeable data (e.g. programmer defined access maps to custom types)
-        private Dictionary<string, Func<IData>> accessMap = new Dictionary<string, Func<IData>>();
 
-
-        protected Data(Type type, DataOptions options) : base(TypeMapping.instance.BuiltInDataTypeFor(type), options)
+        protected Data(Type type, DataOptions options) : this(TypeMapping.instance.BuiltInDataTypeFor(type), options)
+        { }
+        protected Data(int typeIndex, DataOptions structure) : this((DataTypes)typeIndex, structure)
         { }
         protected Data(DataTypes type, DataOptions options) : base(type, options)
         {
@@ -144,8 +142,6 @@ namespace NETGraph.Data
             else if (options.HasFlag(DataOptions.Named))
                 this.dict = new Dictionary<string, T>();
         }
-        protected Data(int typeIndex, DataOptions structure) : this((DataTypes)typeIndex, structure)
-        { }
 
 
         protected T this[int index]

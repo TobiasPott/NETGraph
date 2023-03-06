@@ -5,9 +5,9 @@ using System.Linq;
 using NETGraph;
 using NETGraph.Core;
 using NETGraph.Core.Meta;
-using NETGraph.Data;
 using NETGraph.Graphs;
 using NETGraph.Runner;
+
 
 public class Node : IEquatable<Node>
 {
@@ -127,6 +127,11 @@ public class Program
 
         MathOpDataProvider addData = new MathOpDataProvider(1, 10);
         MathProvider math = MathProvider.Instance;
+
+        DataBase intData = TypeRegistry.Generator(DataTypes.Int).Scalar((int)10);
+        intData.assign<int>(string.Empty, -10);
+
+        DataBase int2Data = TypeRegistry.Generator(DataTypes.Int).Named(false);
 
         // binding to actual data objeect => reesults in resolvable DataQuery
         DataResolver sumQuery = addData.resolver(new DataSignature("sum"));

@@ -5,7 +5,7 @@ using System.Runtime.CompilerServices;
 using NETGraph.Core;
 using NETGraph.Core.Meta;
 
-namespace NETGraph.Data
+namespace NETGraph.Core.Meta
 {
 
     public enum DataTypes : int
@@ -23,10 +23,13 @@ namespace NETGraph.Data
         IData,
     }
 
+    public struct Void
+    { }
 
     public struct TypeBlueprint
     {
-        private static int _runningIndex = 1024;
+        private static int _runningIndex = 1024;    // reserved 1024 indices for builtin/internal types
+                                                    // may add additional reserved ranges for other purposes (e.g. Unity range)
 
         public DataTypes dataType => (DataTypes)typeIndex;
         public int typeIndex { get; private set; }
@@ -94,9 +97,6 @@ namespace NETGraph.Data
 
     }
 
-    public struct Void
-    { }
-
     public class TypeRegistry
     {
         private static Dictionary<DataTypes, TypeBlueprint> blueprints = new Dictionary<DataTypes, TypeBlueprint>();
@@ -137,12 +137,7 @@ namespace NETGraph.Data
             RegisterDataType(new TypeBlueprint(DataTypes.IData, Data<IData>.Generator()));
         }
 
-
-        public static DataBase generateScalar<T>(DataTypes type, object scalar) => blueprints[type].generator.Scalar(scalar);
-        public static DataBase generateList<T>(DataTypes type, int size, bool isResizable) => blueprints[type].generator.List(size, isResizable);
-        public static DataBase generateDict<T>(DataTypes type, bool isResizable) => blueprints[type].generator.Dict(isResizable);
-
-
+        public static IDataGenerator Generator(DataTypes dataType) => blueprints[dataType].generator;
 
     }
 }

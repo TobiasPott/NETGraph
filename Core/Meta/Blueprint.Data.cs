@@ -1,5 +1,4 @@
 ﻿using System;
-using NETGraph.Data;
 
 namespace NETGraph.Core.Meta
 {
