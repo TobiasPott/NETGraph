@@ -4,12 +4,18 @@ using NETGraph.Data;
 namespace NETGraph.Core.Meta
 {
 
+    // ToDo: Implement IDynamicData type
+    //      IDynamicData holds a method referencee returning an IData reference or sth like that
+    // Todo: change resolver path parser to parse nested keys/scalar/index access
+
+    //
     // ToDo: Ponder about the possible conflict of IDataDefinition and DataSginature
     //      One is used to access data in a data provider
     //      Thee other is used to describe data structe#
-    // ToDo:    Rename IDataStructure and DataDefinition to DataBlueprint and IDataBlueprint respectively
     public interface IDataBlueprint
     {
+        // ToDo: insert Type field
+        //  ToDo: add nested as IDataBlueprint[] for neested data types
         string Name { get; }
         int TypeIndex { get; }
         DataStructure Structure { get; }

@@ -27,14 +27,15 @@ namespace NETGraph.Runner
     }
 
     // regex: 
-    //      (?:(?:\b[a-zA-Z]{1}(?:[\w.\[\]]+))+,{0})    // final regex to separate everything into
+    //      (?:(?:[a-zA-Z]{1}(?:[\w.\[\]]+))+),{0}      // split by , (for method signature)
+    //      (?:(?:[a-zA-Z]{1}(?:[\w\[\]]?))+).{0}       // split by . (for data path)
 
     public class MathProvider : IMethodProvider
     {
         public static MathProvider Instance { get; private set; } = new MathProvider();
 
-        public bool Invoke(MethodSignature signature, DataResolver result, params DataResolver[] inputs) => Invoke(signature, result, inputs as IEnumerable<DataResolver>);
-        public bool Invoke(MethodSignature signature, DataResolver result, IEnumerable<DataResolver> inputs)
+        public bool invoke(MethodSignature signature, DataResolver result, params DataResolver[] inputs) => invoke(signature, result, inputs as IEnumerable<DataResolver>);
+        public bool invoke(MethodSignature signature, DataResolver result, IEnumerable<DataResolver> inputs)
         {
             if (signature.method.Equals("add"))
             {

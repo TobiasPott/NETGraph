@@ -5,7 +5,6 @@ namespace NETGraph.Core.Meta
 {
     public interface IDataResolver
     {
-        IData access();
         V resolve<V>();
         bool resolve<V>(out V value);
         void assign<V>(V value);
@@ -30,7 +29,6 @@ namespace NETGraph.Core.Meta
             this.data = data;
         }
 
-        public IData access() => data.access(signature);
         public V resolve<V>() => data.resolve<V>(signature);
         public bool resolve<V>(out V value) => data.resolve<V>(signature, out value);
 

@@ -133,22 +133,22 @@ public class Program
         DataResolver lhQuery = addData.resolver("lh");
         DataResolver rhQuery = addData.resolver("rh");
 
-        MethodResolver addQuery = new MethodResolver(math, "Int add(int, int, int)", sumQuery, lhQuery, rhQuery);
+        MethodResolver addQuery = new MethodResolver(math, "int add(int, int, int)", sumQuery, lhQuery, rhQuery);
         TimeStamp(sw, addData.ToString());
 
-        addQuery.evaluate();
+        addQuery.resolve();
         TimeStamp(sw, addData.ToString());
 
         addData.setAt("rh", 5);
-        addQuery = new MethodResolver(math, "Int add(int, int, int)", sumQuery, sumQuery, rhQuery);
+        addQuery = new MethodResolver(math, "int add(int, int, int)", sumQuery, sumQuery, rhQuery);
         for (int i = 0; i < 10; i++)
-            addQuery.evaluate();
+            addQuery.resolve();
         TimeStamp(sw, addData.ToString());
 
         //addQuery = new MethodQuery(math, "sum subtract(sum,rh)", sumQuery, sumQuery, rhQuery);
         addData.setAt("rh", 12);
         for (int i = 0; i < 5; i++)
-            addQuery.evaluate();
+            addQuery.resolve();
 
         TimeStamp(sw, addData.ToString());
 

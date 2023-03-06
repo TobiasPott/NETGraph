@@ -9,11 +9,67 @@ namespace NETGraph.Data
 
     public enum DataStructure
     {
-        Scalar,
-        List,
-        Named,
+        Scalar = 1,
+        List = 2,
+        Named = 4,
     }
 
+    public static class DataExtensions
+    {
+
+        public static bool match(IData lh, IData rh) => lh.TypeIndex == rh.TypeIndex;
+        public static bool matchStructure(IData lh, IData rh) => lh.TypeIndex == rh.TypeIndex && lh.Structure == rh.Structure;
+        public static bool matchStructureAndSize(IData lh, IData rh) => lh.TypeIndex == rh.TypeIndex && lh.Structure == rh.Structure && lh.Count == rh.Count;
+
+
+        //public static bool matchExact<T>(Data<T> lh, Data<T> rh)
+        //{
+        //    // if self reference, return early true
+        //    if (lh == rh)
+        //        return true;
+        //    if (matchStructureAndSize(lh, rh))
+        //    {
+        //        if (lh.Structure == DataStructure.Named)
+        //        {
+        //            foreach (string key in lh.dict.Keys)
+        //                if (!rh.dict.ContainsKey(key)) return false;
+        //            return true;
+        //        }
+        //        return true;
+        //    }
+        //    return false;
+        //}
+        //public virtual bool matchWithValue<T>(Data<T> lh, Data<T> rh)
+        //{
+        //    // if self reference, return early true
+        //    if (lh == rh)
+        //        return true;
+        //    if (matchStructureAndSize(lh, rh))
+        //    {
+        //        if (lh.Structure == DataStructure.Named)
+        //        {
+        //            foreach (string key in this.dict.Keys)
+        //            {
+        //                if (!rh.dict.ContainsKey(key)) return false;
+        //                if (rh.dict.TryGetValue(key, out T rhValue))
+        //                    if (!lh[key].Equals(rhValue)) return false;
+        //            }
+        //            return true;
+        //        }
+        //        if (lh.Structure == DataStructure.List)
+        //        {
+        //            for (int i = 0; i < lh.Count; i++)
+        //                if (!lh[i].Equals(rh[i]))
+        //                    return false;
+        //            return true;
+        //        }
+        //        if (lh.Structure == DataStructure.Scalar)
+        //            return lh.scalar.Equals(rh.scalar);
+        //    }
+        //    return false;
+        //}
+
+    }
 
     public interface IData
     {
@@ -26,7 +82,6 @@ namespace NETGraph.Data
         object getValueAt(int index);
         object getValueAt(string key);
 
-
         IData access(DataSignature signature);
         V resolve<V>(DataSignature signature);
         bool resolve<V>(DataSignature signature, out V value);
@@ -38,11 +93,6 @@ namespace NETGraph.Data
         DataResolver resolver();
         DataResolver resolver(string key);
         DataResolver resolver(int index);
-
-        public static bool match(IData lh, IData rh) => lh.TypeIndex == rh.TypeIndex;
-        // checks for match with structure
-        public static bool matchStructure(IData lh, IData rh) => lh.TypeIndex == rh.TypeIndex && lh.Structure == rh.Structure;
-        public static bool matchStructureAndSize(IData lh, IData rh) => lh.TypeIndex == rh.TypeIndex && lh.Structure == rh.Structure && lh.Count == rh.Count;
 
     }
 
@@ -77,9 +127,6 @@ namespace NETGraph.Data
         public DataResolver resolver() => new DataResolver(this, string.Empty);
         public DataResolver resolver(string key) => new DataResolver(this, "." + key);
         public DataResolver resolver(int index) => new DataResolver(this, $"[{index}]");
-
-        protected bool canCast(int typeIndex) => this.typeIndex == typeIndex;
-        protected bool canCopy(int typeIndex, DataStructure structure) => (this.structure == structure && this.typeIndex == typeIndex);
 
         // accessing nested DataBase objects and resolving to actual types
         public abstract IData access(DataSignature signature);
@@ -295,54 +342,6 @@ namespace NETGraph.Data
         //        this.dict.Remove(key);
         //}
         //#endregion
-
-        public virtual bool matchExact(Data<T> rh)
-        {
-            // if self reference, return early true
-            if (this == rh)
-                return true;
-            if (IData.matchStructureAndSize(this, rh))
-            {
-                if (this.Structure == DataStructure.Named)
-                {
-                    foreach (string key in this.dict.Keys)
-                        if (!rh.dict.ContainsKey(key)) return false;
-                    return true;
-                }
-                return true;
-            }
-            return false;
-        }
-        public virtual bool matchWithValue(Data<T> rh)
-        {
-            // if self reference, return early true
-            if (this == rh)
-                return true;
-            if (IData.matchStructureAndSize(this, rh))
-            {
-                if (this.Structure == DataStructure.Named)
-                {
-                    foreach (string key in this.dict.Keys)
-                    {
-                        if (!rh.dict.ContainsKey(key)) return false;
-                        if (rh.dict.TryGetValue(key, out T rhValue))
-                            if (!this[key].Equals(rhValue)) return false;
-                    }
-                    return true;
-                }
-                if (this.Structure == DataStructure.List)
-                {
-                    for (int i = 0; i < this.Count; i++)
-                        if (!this[i].Equals(rh[i]))
-                            return false;
-                    return true;
-                }
-                if (this.Structure == DataStructure.Scalar)
-                    return this.scalar.Equals(rh.scalar);
-            }
-            return false;
-        }
-
 
         private void throwCheckResizable()
         {

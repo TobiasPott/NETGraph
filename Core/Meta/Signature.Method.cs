@@ -7,15 +7,10 @@ using NETGraph.Data;
 namespace NETGraph.Core.Meta
 {
 
-    public interface IMethodProvider
-    {
-        bool Invoke(MethodSignature signature, DataResolver result, params DataResolver[] inputs);
-        bool Invoke(MethodSignature signature, DataResolver result, IEnumerable<DataResolver> inputs);
-    }
     public struct MethodSignature
     {
         // Regex for method path parssing
-        private static readonly Regex regEx = new Regex("(?:(?:\\b[a-zA-Z]{1}(?:[\\w.\\[\\]]+))+,{0})", RegexOptions.Compiled | RegexOptions.IgnoreCase);
+        private static readonly Regex regEx = new Regex("(?:(?:[a-zA-Z]{1}(?:[\\w.\\[\\]]+))+),{0}", RegexOptions.Compiled | RegexOptions.IgnoreCase);
 
         public string method { get; private set; }
         public DataTypes resultType { get; private set; }
