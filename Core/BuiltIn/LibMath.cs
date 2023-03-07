@@ -1,37 +1,22 @@
 ﻿using System;
+using NETGraph.Core.Meta;
 using System.Collections.Generic;
 using System.Linq;
-using NETGraph.Core;
-using NETGraph.Core.Meta;
 
-namespace NETGraph.Runner
+namespace NETGraph.Core.BuiltIn
 {
 
-    public class MathOpDataProvider : Data<int>
+
+    public class LibMath : IMethodProvider
     {
-        private static string[] keys = new[] { "lh", "rh", "sum" };
+        public static LibMath Instance { get; private set; } = new LibMath();
 
-        public MathOpDataProvider(int lh, int rh) : base(DataTypes.Int, DataOptions.Named)
-        {
-            initNamed(keys.Select(k => new KeyValuePair<string, int>(k, 0)));
-            this.assign(keys[0], lh);
-            this.assign(keys[1], rh);
-        }
+        public static MethodSignature add = new MethodSignature("any add(any, any)");
+        public static MethodSignature subtract = new MethodSignature("any subtract(any, any)");
+        public static MethodSignature multiply = new MethodSignature("any multiply(any, any)");
+        public static MethodSignature divide = new MethodSignature("any divide(any, any)");
 
-        public override string ToString()
-        {
-            return $"{this["lh"]} + {this["rh"]} = {this["sum"]}";
-        }
 
-    }
-
-    // regex: 
-    //      (?:(?:[a-zA-Z]{1}(?:[\w.\[\]]+))+),{0}      // split by , (for method signature)
-    //      (?:(?:[a-zA-Z]{1}(?:[\w\[\]]?))+).{0}       // split by . (for data path)
-
-    public class MathProvider : IMethodProvider
-    {
-        public static MathProvider Instance { get; private set; } = new MathProvider();
 
         public bool invoke(MethodSignature signature, DataResolver result, params DataResolver[] inputs) => invoke(signature, result, inputs as IEnumerable<DataResolver>);
         public bool invoke(MethodSignature signature, DataResolver result, IEnumerable<DataResolver> inputs)
@@ -85,7 +70,6 @@ namespace NETGraph.Runner
         }
 
     }
-
 
 }
 

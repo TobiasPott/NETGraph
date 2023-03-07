@@ -8,6 +8,10 @@ namespace NETGraph.Core.Meta
 
     public struct MethodSignature
     {
+        // regex: 
+        //      (?:(?:[a-zA-Z]{1}(?:[\w.\[\]]+))+),{0}      // split by , (for method signature)
+        //      (?:(?:[a-zA-Z]{1}(?:[\w\[\]]?))+).{0}       // split by . (for data path)
+
         // Regex for method path parssing
         private static readonly Regex regEx = new Regex("(?:(?:[a-zA-Z]{1}(?:[\\w.\\[\\]]+))+),{0}", RegexOptions.Compiled | RegexOptions.IgnoreCase);
 

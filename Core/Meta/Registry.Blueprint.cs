@@ -18,6 +18,7 @@ namespace NETGraph.Core.Meta
 
         private Dictionary<DataTypes, Type> builtInTypesMap = new Dictionary<DataTypes, Type>()
         {
+            { DataTypes.Any, typeof(Any) },
             { DataTypes.Void, typeof(Void) },
             { DataTypes.Object, typeof(object) },
             { DataTypes.Bool, typeof(bool) },
@@ -74,6 +75,7 @@ namespace NETGraph.Core.Meta
 
         public static void RegisterBuiltIn()
         {
+            RegisterDataType(new MetaTypeBlueprint((int)DataTypes.Any, typeof(Any), Data<Any>.Generator()));
             RegisterDataType(new MetaTypeBlueprint((int)DataTypes.Void, typeof(Void), Data<Void>.Generator()));
             RegisterDataType(new MetaTypeBlueprint((int)DataTypes.Object, typeof(object), Data<object>.Generator()));
             RegisterDataType(new MetaTypeBlueprint((int)DataTypes.Bool, typeof(bool), Data<bool>.Generator()));

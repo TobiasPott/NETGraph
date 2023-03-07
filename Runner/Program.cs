@@ -4,9 +4,9 @@ using System.Diagnostics;
 using System.Linq;
 using NETGraph;
 using NETGraph.Core;
+using NETGraph.Core.BuiltIn;
 using NETGraph.Core.Meta;
 using NETGraph.Graphs;
-using NETGraph.Runner;
 
 
 public class Node : IEquatable<Node>
@@ -125,37 +125,28 @@ public class Program
         Stopwatch sw = new Stopwatch();
         sw.Start();
 
-        MathOpDataProvider addData = new MathOpDataProvider(1, 10);
-        MathProvider math = MathProvider.Instance;
+        Vector3IntData vec3IntData = new Vector3IntData(1, 10, 0);
+        LibMath libMath = LibMath.Instance;
 
-        DataBase intData = MetaTypeRegistry.Generator(DataTypes.Int).Scalar();
-        intData.assign<int>(string.Empty, -10);
-
-        DataBase int2Data = MetaTypeRegistry.Generator(DataTypes.Int).List(false);
-        
 
         // binding to actual data objeect => reesults in resolvable DataQuery
-        DataResolver sumQuery = addData.resolver(new DataSignature("sum"));
-        DataResolver lhQuery = addData.resolver(new DataSignature("lh"));
-        DataResolver rhQuery = addData.resolver(new DataSignature("rh"));
+        MethodResolver addQuery = new MethodResolver(libMath, "int32 add(int32, int32, int32)", vec3IntData.z, vec3IntData.x, vec3IntData.y);
+        TimeStamp(sw, vec3IntData.ToString());
 
-        MethodResolver addQuery = new MethodResolver(math, "int32 add(int32, int32, int32)", sumQuery, lhQuery, rhQuery);
-        TimeStamp(sw, addData.ToString());
+        addQuery.resolve(); // execute method
+        TimeStamp(sw, vec3IntData.ToString());
 
-        addQuery.resolve();
-        TimeStamp(sw, addData.ToString());
-
-        addData.assign("rh", 5);
-        addQuery = new MethodResolver(math, "int32 add(int32, int32, int32)", sumQuery, sumQuery, rhQuery);
+        vec3IntData.assign("x", 5);
+        addQuery = new MethodResolver(libMath, "int32 add(int32, int32, int32)", vec3IntData.z, vec3IntData.x, vec3IntData.z);
         for (int i = 0; i < 10; i++)
-            addQuery.resolve();
-        TimeStamp(sw, addData.ToString());
+            addQuery.resolve(); // execute method
+        TimeStamp(sw, vec3IntData.ToString());
 
-        addData.assign("rh", 12);
+        vec3IntData.assign("x", 12);
         for (int i = 0; i < 5; i++)
-            addQuery.resolve();
+            addQuery.resolve(); // execute method
 
-        TimeStamp(sw, addData.ToString());
+        TimeStamp(sw, vec3IntData.ToString());
 
         Console.WriteLine();
     }

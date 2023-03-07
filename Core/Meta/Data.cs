@@ -8,8 +8,9 @@ namespace NETGraph.Core.Meta
 
     public enum DataTypes : int
     {
-        Void = -1,
-        Object = 0,
+        Any = -1,
+        Void = 0,
+        Object,
         Bool,
         Byte, SByte,
         Short, UShort,
