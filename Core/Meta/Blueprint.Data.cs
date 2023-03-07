@@ -6,11 +6,6 @@ namespace NETGraph.Core.Meta
     // ToDo: Implement IDynamicData type
     //      IDynamicData holds a method referencee returning an IData reference or sth like that
     // Todo: change resolver path parser to parse nested keys/scalar/index access
-
-    //
-    // ToDo: Ponder about the possible conflict of IDataDefinition and DataSginature
-    //      One is used to access data in a data provider
-    //      Thee other is used to describe data structe#
     public struct DataBlueprint
     {
         public string Name { get; private set; }

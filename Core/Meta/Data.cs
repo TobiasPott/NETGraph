@@ -5,6 +5,22 @@ using NETGraph.Core;
 
 namespace NETGraph.Core.Meta
 {
+
+    public enum DataTypes : int
+    {
+        Void = -1,
+        Object = 0,
+        Bool,
+        Byte, SByte,
+        Short, UShort,
+        Int, UInt, Char,
+        Long, ULong,
+        Float, Double, Decimal,
+        String,
+        // internal library types (e.g. node, data, method
+        IData,
+    }
+
     [Flags()]
     public enum DataOptions
     {

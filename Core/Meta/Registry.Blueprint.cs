@@ -8,20 +8,6 @@ using NETGraph.Core.Meta;
 namespace NETGraph.Core.Meta
 {
 
-    public enum DataTypes : int
-    {
-        Void = -1,
-        Object = 0,
-        Bool,
-        Byte, SByte,
-        Short, UShort,
-        Int, UInt, Char,
-        Long, ULong,
-        Float, Double, Decimal,
-        String,
-        // internal library types (e.g. node, data, method
-        IData,
-    }
 
     public class TypeMapping
     {
@@ -88,23 +74,23 @@ namespace NETGraph.Core.Meta
 
         public static void RegisterBuiltIn()
         {
-            RegisterDataType(new MetaTypeBlueprint(DataTypes.Void, Data<Void>.Generator()));
-            RegisterDataType(new MetaTypeBlueprint(DataTypes.Object, Data<object>.Generator()));
-            RegisterDataType(new MetaTypeBlueprint(DataTypes.Bool, Data<bool>.Generator()));
-            RegisterDataType(new MetaTypeBlueprint(DataTypes.Byte, Data<byte>.Generator()));
-            RegisterDataType(new MetaTypeBlueprint(DataTypes.SByte, Data<sbyte>.Generator()));
-            RegisterDataType(new MetaTypeBlueprint(DataTypes.Short, Data<short>.Generator()));
-            RegisterDataType(new MetaTypeBlueprint(DataTypes.UShort, Data<ushort>.Generator()));
-            RegisterDataType(new MetaTypeBlueprint(DataTypes.Char, Data<char>.Generator()));
-            RegisterDataType(new MetaTypeBlueprint(DataTypes.Int, Data<int>.Generator()));
-            RegisterDataType(new MetaTypeBlueprint(DataTypes.UInt, Data<uint>.Generator()));
-            RegisterDataType(new MetaTypeBlueprint(DataTypes.Long, Data<long>.Generator()));
-            RegisterDataType(new MetaTypeBlueprint(DataTypes.ULong, Data<ulong>.Generator()));
-            RegisterDataType(new MetaTypeBlueprint(DataTypes.Float, Data<float>.Generator()));
-            RegisterDataType(new MetaTypeBlueprint(DataTypes.Double, Data<double>.Generator()));
-            RegisterDataType(new MetaTypeBlueprint(DataTypes.Decimal, Data<decimal>.Generator()));
-            RegisterDataType(new MetaTypeBlueprint(DataTypes.String, Data<string>.Generator()));
-            RegisterDataType(new MetaTypeBlueprint(DataTypes.IData, Data<IData>.Generator()));
+            RegisterDataType(new MetaTypeBlueprint((int)DataTypes.Void, typeof(Void), Data<Void>.Generator()));
+            RegisterDataType(new MetaTypeBlueprint((int)DataTypes.Object, typeof(object), Data<object>.Generator()));
+            RegisterDataType(new MetaTypeBlueprint((int)DataTypes.Bool, typeof(bool), Data<bool>.Generator()));
+            RegisterDataType(new MetaTypeBlueprint((int)DataTypes.Byte, typeof(byte), Data<byte>.Generator()));
+            RegisterDataType(new MetaTypeBlueprint((int)DataTypes.SByte, typeof(sbyte), Data<sbyte>.Generator()));
+            RegisterDataType(new MetaTypeBlueprint((int)DataTypes.Short, typeof(short), Data<short>.Generator()));
+            RegisterDataType(new MetaTypeBlueprint((int)DataTypes.UShort, typeof(ushort), Data<ushort>.Generator()));
+            RegisterDataType(new MetaTypeBlueprint((int)DataTypes.Char, typeof(char), Data<char>.Generator()));
+            RegisterDataType(new MetaTypeBlueprint((int)DataTypes.Int, typeof(int), Data<int>.Generator()));
+            RegisterDataType(new MetaTypeBlueprint((int)DataTypes.UInt, typeof(uint), Data<uint>.Generator()));
+            RegisterDataType(new MetaTypeBlueprint((int)DataTypes.Long, typeof(long), Data<long>.Generator()));
+            RegisterDataType(new MetaTypeBlueprint((int)DataTypes.ULong, typeof(ulong), Data<ulong>.Generator()));
+            RegisterDataType(new MetaTypeBlueprint((int)DataTypes.Float, typeof(float), Data<float>.Generator()));
+            RegisterDataType(new MetaTypeBlueprint((int)DataTypes.Double, typeof(double), Data<double>.Generator()));
+            RegisterDataType(new MetaTypeBlueprint((int)DataTypes.Decimal, typeof(decimal), Data<decimal>.Generator()));
+            RegisterDataType(new MetaTypeBlueprint((int)DataTypes.String, typeof(string), Data<string>.Generator()));
+            RegisterDataType(new MetaTypeBlueprint((int)DataTypes.IData, typeof(IData), Data<IData>.Generator()));
         }
 
         public static IDataGenerator Generator(DataTypes dataType) => blueprints[dataType].generator;

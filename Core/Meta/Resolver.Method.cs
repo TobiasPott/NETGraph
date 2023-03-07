@@ -3,12 +3,6 @@ using System.Collections.Generic;
 
 namespace NETGraph.Core.Meta
 {
-
-    //ToDo: implement a IDataProvider which is based around MethodResolver
-    //      this should resolve to T as expected but holds a MethodResolver (and possibly temporary DataResolver) to execute a method
-    //  ToDo:   May require implementation of ConstantDataResolver type
-
-
     public interface IMethodProvider
     {
         bool invoke(MethodSignature signature, DataResolver result, params DataResolver[] inputs);

@@ -26,7 +26,6 @@ namespace NETGraph.Core.Meta
         }
 
         public DataBase Scalar() => this.scalar.Invoke();
-        // ToDo: List does not seem to work correctly, got broken during simplification it seems
         public DataBase List(bool isResizable) => this.list.Invoke(isResizable);
         public DataBase Named(bool isRezisable) => this.dict.Invoke(isRezisable);
 

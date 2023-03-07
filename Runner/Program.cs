@@ -131,7 +131,7 @@ public class Program
         DataBase intData = MetaTypeRegistry.Generator(DataTypes.Int).Scalar();
         intData.assign<int>(string.Empty, -10);
 
-        DataBase int2Data = MetaTypeRegistry.Generator(DataTypes.Int).Named(false);
+        DataBase int2Data = MetaTypeRegistry.Generator(DataTypes.Int).List(false);
         
 
         // binding to actual data objeect => reesults in resolvable DataQuery
@@ -139,14 +139,14 @@ public class Program
         DataResolver lhQuery = addData.resolver(new DataSignature("lh"));
         DataResolver rhQuery = addData.resolver(new DataSignature("rh"));
 
-        MethodResolver addQuery = new MethodResolver(math, "int add(int, int, int)", sumQuery, lhQuery, rhQuery);
+        MethodResolver addQuery = new MethodResolver(math, "int32 add(int32, int32, int32)", sumQuery, lhQuery, rhQuery);
         TimeStamp(sw, addData.ToString());
 
         addQuery.resolve();
         TimeStamp(sw, addData.ToString());
 
         addData.assign("rh", 5);
-        addQuery = new MethodResolver(math, "int add(int, int, int)", sumQuery, sumQuery, rhQuery);
+        addQuery = new MethodResolver(math, "int32 add(int32, int32, int32)", sumQuery, sumQuery, rhQuery);
         for (int i = 0; i < 10; i++)
             addQuery.resolve();
         TimeStamp(sw, addData.ToString());
