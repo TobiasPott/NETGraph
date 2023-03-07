@@ -33,15 +33,21 @@ namespace NETGraph.Core.BuiltIn
     }
 
 
+    public class Vector3ByteData : Vector3DataBase<byte>
+    {
+        public Vector3ByteData(byte x, byte y, byte z) : base(x, y, z) { }
+    }
+    public class Vector3DoubleData : Vector3DataBase<double>
+    {
+        public Vector3DoubleData(double x, double y, double z) : base(x, y, z) { }
+    }
     public class Vector3IntData : Vector3DataBase<int>
     {
-        public Vector3IntData(int x, int y, int z) : base(x, y, z)
-        { }
+        public Vector3IntData(int x, int y, int z) : base(x, y, z) { }
     }
     public class Vector3Data : Vector3DataBase<float>
     {
-        public Vector3Data(float x, float y, float z) : base(x, y, z)
-        { }
+        public Vector3Data(float x, float y, float z) : base(x, y, z) { }
     }
 
 }
