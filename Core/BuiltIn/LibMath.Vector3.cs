@@ -6,7 +6,7 @@ using System.Collections.Generic;
 namespace NETGraph.Core.BuiltIn
 {
 
-    public abstract class Vector3DataBase<T> : Data<T>
+    public abstract class Vector3Base<T> : Data<T>
     {
         private static string[] keys = new[] { "x", "y", "z" };
 
@@ -14,16 +14,15 @@ namespace NETGraph.Core.BuiltIn
         public DataResolver y { get; private set; }
         public DataResolver z { get; private set; }
 
-        public Vector3DataBase(T x, T y, T z) : base(MetaTypeRegistry.GetDataTypeFor(typeof(T).Name), DataOptions.Named)
+        public Vector3Base(T x, T y, T z) : base(MetaTypeRegistry.GetDataTypeFor(typeof(T).Name), DataOptions.Named)
         {
             initNamed(keys.Select(k => new KeyValuePair<string, T>(k, default)));
             this.assign(keys[0], x);
             this.assign(keys[1], y);
-            this.assign(keys[2], z);
 
-            this.x = new DataResolver(this, "x");
-            this.y = new DataResolver(this, "y");
-            this.z = new DataResolver(this, "z");
+            this.x = new DataResolver(this, keys[0]);
+            this.y = new DataResolver(this, keys[1]);
+            this.z = new DataResolver(this, keys[2]);
         }
 
         public override string ToString()
@@ -33,21 +32,21 @@ namespace NETGraph.Core.BuiltIn
     }
 
 
-    public class Vector3ByteData : Vector3DataBase<byte>
+    public class Vector3Byte : Vector3Base<byte>
     {
-        public Vector3ByteData(byte x, byte y, byte z) : base(x, y, z) { }
+        public Vector3Byte(byte x, byte y, byte z) : base(x, y, z) { }
     }
-    public class Vector3DoubleData : Vector3DataBase<double>
+    public class Vector3Double : Vector3Base<double>
     {
-        public Vector3DoubleData(double x, double y, double z) : base(x, y, z) { }
+        public Vector3Double(double x, double y, double z) : base(x, y, z) { }
     }
-    public class Vector3IntData : Vector3DataBase<int>
+    public class Vector3Int : Vector3Base<int>
     {
-        public Vector3IntData(int x, int y, int z) : base(x, y, z) { }
+        public Vector3Int(int x, int y, int z) : base(x, y, z) { }
     }
-    public class Vector3Data : Vector3DataBase<float>
+    public class Vector3 : Vector3Base<float>
     {
-        public Vector3Data(float x, float y, float z) : base(x, y, z) { }
+        public Vector3(float x, float y, float z) : base(x, y, z) { }
     }
 
 }

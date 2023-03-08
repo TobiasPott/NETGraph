@@ -40,20 +40,20 @@ namespace NETGraph.Core.BuiltIn
         {
             // register LibMath types e.g. Vector3Data as additional types
             // 2 component vector type
-            MetaTypeRegistry.RegisterDataType(new MetaTypeBlueprint((int)DataTypes.Vector2, typeof(Vector2Data), Vector2Data.Generator()));
-            MetaTypeRegistry.RegisterDataType(new MetaTypeBlueprint((int)DataTypes.Vector2Double, typeof(Vector2DoubleData), Vector2DoubleData.Generator()));
-            MetaTypeRegistry.RegisterDataType(new MetaTypeBlueprint((int)DataTypes.Vector2Byte, typeof(Vector2ByteData), Vector2ByteData.Generator()));
-            MetaTypeRegistry.RegisterDataType(new MetaTypeBlueprint((int)DataTypes.Vector2Int, typeof(Vector2IntData), Vector2IntData.Generator()));
+            MetaTypeRegistry.RegisterDataType(new MetaTypeBlueprint((int)DataTypes.Vector2, typeof(Vector2), Vector2.Generator()));
+            MetaTypeRegistry.RegisterDataType(new MetaTypeBlueprint((int)DataTypes.Vector2Double, typeof(Vector2Double), Vector2Double.Generator()));
+            MetaTypeRegistry.RegisterDataType(new MetaTypeBlueprint((int)DataTypes.Vector2Byte, typeof(Vector2Byte), Vector2Byte.Generator()));
+            MetaTypeRegistry.RegisterDataType(new MetaTypeBlueprint((int)DataTypes.Vector2Int, typeof(Vector2Int), Vector2Int.Generator()));
             // 3 component vector type
-            MetaTypeRegistry.RegisterDataType(new MetaTypeBlueprint((int)DataTypes.Vector3, typeof(Vector3Data), Vector3Data.Generator()));
-            MetaTypeRegistry.RegisterDataType(new MetaTypeBlueprint((int)DataTypes.Vector3Double, typeof(Vector3DoubleData), Vector3DoubleData.Generator()));
-            MetaTypeRegistry.RegisterDataType(new MetaTypeBlueprint((int)DataTypes.Vector3Byte, typeof(Vector3ByteData), Vector3ByteData.Generator()));
-            MetaTypeRegistry.RegisterDataType(new MetaTypeBlueprint((int)DataTypes.Vector3Int, typeof(Vector3IntData), Vector3IntData.Generator()));
+            MetaTypeRegistry.RegisterDataType(new MetaTypeBlueprint((int)DataTypes.Vector3, typeof(Vector3), Vector3.Generator()));
+            MetaTypeRegistry.RegisterDataType(new MetaTypeBlueprint((int)DataTypes.Vector3Double, typeof(Vector3Double), Vector3Double.Generator()));
+            MetaTypeRegistry.RegisterDataType(new MetaTypeBlueprint((int)DataTypes.Vector3Byte, typeof(Vector3Byte), Vector3Byte.Generator()));
+            MetaTypeRegistry.RegisterDataType(new MetaTypeBlueprint((int)DataTypes.Vector3Int, typeof(Vector3Int), Vector3Int.Generator()));
             // 4 component vector typee
-            MetaTypeRegistry.RegisterDataType(new MetaTypeBlueprint((int)DataTypes.Vector4, typeof(Vector4Data), Vector4Data.Generator()));
-            MetaTypeRegistry.RegisterDataType(new MetaTypeBlueprint((int)DataTypes.Vector4Double, typeof(Vector4DoubleData), Vector4DoubleData.Generator()));
-            MetaTypeRegistry.RegisterDataType(new MetaTypeBlueprint((int)DataTypes.Vector4Byte, typeof(Vector4ByteData), Vector4ByteData.Generator()));
-            MetaTypeRegistry.RegisterDataType(new MetaTypeBlueprint((int)DataTypes.Vector4Int, typeof(Vector4IntData), Vector4IntData.Generator()));
+            MetaTypeRegistry.RegisterDataType(new MetaTypeBlueprint((int)DataTypes.Vector4, typeof(Vector4), Vector4.Generator()));
+            MetaTypeRegistry.RegisterDataType(new MetaTypeBlueprint((int)DataTypes.Vector4Double, typeof(Vector4Double), Vector4Double.Generator()));
+            MetaTypeRegistry.RegisterDataType(new MetaTypeBlueprint((int)DataTypes.Vector4Byte, typeof(Vector4Byte), Vector4Byte.Generator()));
+            MetaTypeRegistry.RegisterDataType(new MetaTypeBlueprint((int)DataTypes.Vector4Int, typeof(Vector4Int), Vector4Int.Generator()));
         }
 
 

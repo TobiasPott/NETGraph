@@ -125,7 +125,7 @@ public class Program
         Stopwatch sw = new Stopwatch();
         sw.Start();
 
-        Vector3IntData vec3IntData = new Vector3IntData(1, 10, 0);
+        Vector3Int vec3IntData = new Vector3Int(1, 10, 0);
         LibMath libMath = LibMath.Instance;
 
 

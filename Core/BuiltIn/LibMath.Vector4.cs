@@ -6,7 +6,7 @@ using System.Collections.Generic;
 namespace NETGraph.Core.BuiltIn
 {
 
-    public abstract class Vector4DataBase<T> : Data<T>
+    public abstract class Vector4Base<T> : Data<T>
     {
         private static string[] keys = new[] { "x", "y", "z", "w" };
 
@@ -15,7 +15,7 @@ namespace NETGraph.Core.BuiltIn
         public DataResolver z { get; private set; }
         public DataResolver w { get; private set; }
 
-        public Vector4DataBase(T x, T y, T z, T w) : base(MetaTypeRegistry.GetDataTypeFor(typeof(T).Name), DataOptions.Named)
+        public Vector4Base(T x, T y, T z, T w) : base(MetaTypeRegistry.GetDataTypeFor(typeof(T).Name), DataOptions.Named)
         {
             initNamed(keys.Select(k => new KeyValuePair<string, T>(k, default)));
             this.assign(keys[0], x);
@@ -36,21 +36,21 @@ namespace NETGraph.Core.BuiltIn
     }
 
 
-    public class Vector4ByteData : Vector4DataBase<byte>
+    public class Vector4Byte : Vector4Base<byte>
     {
-        public Vector4ByteData(byte x, byte y, byte z, byte w) : base(x, y, z, w) { }
+        public Vector4Byte(byte x, byte y, byte z, byte w) : base(x, y, z, w) { }
     }
-    public class Vector4DoubleData : Vector4DataBase<double>
+    public class Vector4Double : Vector4Base<double>
     {
-        public Vector4DoubleData(double x, double y, double z, double w) : base(x, y, z, w) { }
+        public Vector4Double(double x, double y, double z, double w) : base(x, y, z, w) { }
     }
-    public class Vector4IntData : Vector4DataBase<int>
+    public class Vector4Int : Vector4Base<int>
     {
-        public Vector4IntData(int x, int y, int z, int w) : base(x, y, z, w) { }
+        public Vector4Int(int x, int y, int z, int w) : base(x, y, z, w) { }
     }
-    public class Vector4Data : Vector4DataBase<float>
+    public class Vector4 : Vector4Base<float>
     {
-        public Vector4Data(float x, float y, float z, float w) : base(x, y, z, w) { }
+        public Vector4(float x, float y, float z, float w) : base(x, y, z, w) { }
     }
 
 }
