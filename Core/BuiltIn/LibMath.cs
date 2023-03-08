@@ -6,7 +6,6 @@ using System.Linq;
 namespace NETGraph.Core.BuiltIn
 {
 
-
     // ToDo: implement a library base type to allow inheriting the registration progress with the meta type system
     //      base class should provide singleton instance
     //      base class should identify itself as registered or not
