@@ -5,7 +5,6 @@ using System.Linq;
 
 namespace NETGraph.Core.BuiltIn
 {
-
     // ToDo: implement a library base type to allow inheriting the registration progress with the meta type system
     //      base class should provide singleton instance
     //      base class should identify itself as registered or not
@@ -13,7 +12,7 @@ namespace NETGraph.Core.BuiltIn
     //      base class constructor should register all blueprints of a library
     //      base class should hold a field for a namespace definition (which can be used for global access or unique identification)
     //      base class should hold a field for a library name (which can be used for global access or unique identification)
-    public class LibMath : IMethodProvider
+    public class LibMath : LibBase
     {
         public static LibMath Instance { get; private set; } = new LibMath();
 
@@ -53,65 +52,41 @@ namespace NETGraph.Core.BuiltIn
             MetaTypeRegistry.RegisterDataType(new MetaTypeBlueprint((int)DataTypes.Vector4Double, typeof(Vector4Double), Vector4Double.Generator()));
             MetaTypeRegistry.RegisterDataType(new MetaTypeBlueprint((int)DataTypes.Vector4Byte, typeof(Vector4Byte), Vector4Byte.Generator()));
             MetaTypeRegistry.RegisterDataType(new MetaTypeBlueprint((int)DataTypes.Vector4Int, typeof(Vector4Int), Vector4Int.Generator()));
+
+
+            methods.Add("add", new Call(Add, null));
+            methods.Add("subtract", new Call(Subtract, null));
+            methods.Add("multiply", new Call(Multiply, null));
+            methods.Add("divide", new Call(Divide, null));
         }
 
 
-        public static MethodSignature add = new MethodSignature("any add(any, any)");
-        public static MethodSignature subtract = new MethodSignature("any subtract(any, any)");
-        public static MethodSignature multiply = new MethodSignature("any multiply(any, any)");
-        public static MethodSignature divide = new MethodSignature("any divide(any, any)");
-
-
-
-        public bool invoke(MethodSignature signature, DataResolver result, params DataResolver[] inputs) => invoke(signature, result, inputs as IEnumerable<DataResolver>);
-        public bool invoke(MethodSignature signature, DataResolver result, IEnumerable<DataResolver> inputs)
-        {
-            if (signature.method.Equals("add"))
-            {
-                Add(signature, result, inputs);
-                return true;
-            }
-            else if (signature.method.Equals("subtract"))
-            {
-                Subtract(signature, result, inputs);
-                return true;
-            }
-            else if (signature.method.Equals("multiply"))
-            {
-                Multiply(signature, result, inputs);
-                return true;
-            }
-            else if (signature.method.Equals("divide"))
-            {
-                Divide(signature, result, inputs);
-                return true;
-            }
-            return false;
-        }
-
-        private void Add(MethodSignature signature, DataResolver result, IEnumerable<DataResolver> inputs)
+        private void Add(IDataResolver reference, IDataResolver assignTo, IEnumerable<IDataResolver> inputs)
         {
             int sum = inputs.Sum(q => q.resolve<int>());
-            result.assign<int>(sum);
+            // check if reference is given and add it's value to sum;
+            if (reference != null)
+                sum += reference.resolve<int>();
+            assignTo.assign<int>(sum);
         }
-        private void Subtract(MethodSignature signature, DataResolver result, IEnumerable<DataResolver> inputs)
+        private void Subtract(IDataResolver reference, IDataResolver assignTo, IEnumerable<IDataResolver> inputs)
         {
             int subtrahends = inputs.Sum(q => q.resolve<int>());
-            result.assign<int>(result.resolve<int>() - subtrahends);
+            assignTo.assign<int>(assignTo.resolve<int>() - subtrahends);
         }
-        private void Multiply(MethodSignature signature, DataResolver result, IEnumerable<DataResolver> inputs)
+        private void Multiply(IDataResolver reference, IDataResolver assignTo, IEnumerable<IDataResolver> inputs)
         {
             int product = 1;
             foreach (DataResolver input in inputs)
                 product *= input.resolve<int>();
-            result.assign<int>(product);
+            assignTo.assign<int>(product);
         }
-        private void Divide(MethodSignature signature, DataResolver result, IEnumerable<DataResolver> inputs)
+        private void Divide(IDataResolver reference, IDataResolver assignTo, IEnumerable<IDataResolver> inputs)
         {
             int dividend = inputs.First().resolve<int>();
             foreach (DataResolver input in inputs.Skip(1))
                 dividend /= input.resolve<int>();
-            result.assign<int>(dividend);
+            assignTo.assign<int>(dividend);
         }
 
     }

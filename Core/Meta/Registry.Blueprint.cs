@@ -54,7 +54,7 @@ namespace NETGraph.Core.Meta
 
     public class MetaTypeRegistry
     {
-        private static Dictionary<DataTypes, MetaTypeBlueprint> blueprints = new Dictionary<DataTypes, MetaTypeBlueprint>();
+        private static Dictionary<int, MetaTypeBlueprint> blueprints = new Dictionary<int, MetaTypeBlueprint>();
 
 
         public static DataTypes GetDataTypeFor(string dataName)
@@ -64,10 +64,10 @@ namespace NETGraph.Core.Meta
 
         public static bool RegisterDataType(MetaTypeBlueprint blueprint)
         {
-            if (!blueprints.ContainsKey(blueprint.dataType))
+            if (!blueprints.ContainsKey(blueprint.typeIndex))
             {
                 // query for typeIndex of generate new from blueprint running index
-                blueprints.Add(blueprint.dataType, blueprint);
+                blueprints.Add(blueprint.typeIndex, blueprint);
                 TypeMapping.instance.Register(blueprint.dataType, blueprint.type);
             }
             return false;
@@ -95,7 +95,7 @@ namespace NETGraph.Core.Meta
             RegisterDataType(new MetaTypeBlueprint((int)DataTypes.IData, typeof(IData), Data<IData>.Generator()));
         }
 
-        public static IDataGenerator Generator(DataTypes dataType) => blueprints[dataType].generator;
+        public static IDataGenerator Generator(int typeIndex) => blueprints[typeIndex].generator;
 
     }
 }

@@ -15,7 +15,7 @@ namespace NETGraph.Core.BuiltIn
 
         public override string ToString()
         {
-            return $"{this.Scalar.ToString()}";
+            return $"{this.scalar.ToString()}";
         }
     }
 

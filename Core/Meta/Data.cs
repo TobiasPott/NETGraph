@@ -36,59 +36,10 @@ namespace NETGraph.Core.Meta
     {
 
         public static void assign<V>(this IData data, string signature, V value) => data.assign(new DataSignature(signature), value);
-        public static DataResolver resolver(this IData data, string signature) => data.resolver(new DataSignature(signature));
+        public static IDataResolver resolver(this IData data, string signature) => data.resolver(new DataSignature(signature));
 
         public static bool match(IData lh, IData rh) => lh.typeIndex == rh.typeIndex;
         public static bool matchStructure(IData lh, IData rh) => lh.typeIndex == rh.typeIndex && lh.options == rh.options;
-        //public static bool matchStructureAndSize(IData lh, IData rh) => lh.typeIndex == rh.typeIndex && lh.options == rh.options && lh.count == rh.count;
-
-
-        //public static bool matchExact<T>(Data<T> lh, Data<T> rh)
-        //{
-        //    // if self reference, return early true
-        //    if (lh == rh)
-        //        return true;
-        //    if (matchStructureAndSize(lh, rh))
-        //    {
-        //        if (lh.Structure == DataStructure.Named)
-        //        {
-        //            foreach (string key in lh.dict.Keys)
-        //                if (!rh.dict.ContainsKey(key)) return false;
-        //            return true;
-        //        }
-        //        return true;
-        //    }
-        //    return false;
-        //}
-        //public virtual bool matchWithValue<T>(Data<T> lh, Data<T> rh)
-        //{
-        //    // if self reference, return early true
-        //    if (lh == rh)
-        //        return true;
-        //    if (matchStructureAndSize(lh, rh))
-        //    {
-        //        if (lh.Structure == DataStructure.Named)
-        //        {
-        //            foreach (string key in this.dict.Keys)
-        //            {
-        //                if (!rh.dict.ContainsKey(key)) return false;
-        //                if (rh.dict.TryGetValue(key, out T rhValue))
-        //                    if (!lh[key].Equals(rhValue)) return false;
-        //            }
-        //            return true;
-        //        }
-        //        if (lh.Structure == DataStructure.List)
-        //        {
-        //            for (int i = 0; i < lh.Count; i++)
-        //                if (!lh[i].Equals(rh[i]))
-        //                    return false;
-        //            return true;
-        //        }
-        //        if (lh.Structure == DataStructure.Scalar)
-        //            return lh.scalar.Equals(rh.scalar);
-        //    }
-        //    return false;
-        //}
 
     }
 
@@ -105,8 +56,7 @@ namespace NETGraph.Core.Meta
         V resolve<V>(DataSignature signature);
         void assign(DataSignature signature, object scalar);
 
-        DataResolver resolver(DataSignature signature);
-
+        IDataResolver resolver(DataSignature signature);
     }
 
 
@@ -129,7 +79,7 @@ namespace NETGraph.Core.Meta
         //method to resolve data object into underlying type instances
         public abstract void assign(DataSignature signature, object scalar);
         public abstract V resolve<V>(DataSignature signature);
-        public DataResolver resolver(DataSignature signature) => new DataResolver(this, signature);
+        public IDataResolver resolver(DataSignature signature) => new DataResolver(this, signature);
     }
 
     public class Data<T> : DataBase
@@ -143,7 +93,7 @@ namespace NETGraph.Core.Meta
         );
         }
 
-        private T scalar;
+        protected T scalar { get; set; }
         private List<T> list;
         private Dictionary<string, T> dict;
 
@@ -163,20 +113,12 @@ namespace NETGraph.Core.Meta
 
         protected T this[int index]
         {
-            get
-            {
-                //throwCheckAccessByIndex();
-                return list[index];
-            }
+            get => list[index];
             set => list[index] = value;
         }
         protected T this[string name]
         {
-            get
-            {
-                //throwCheckAccessByKey();
-                return dict[name];
-            }
+            get => dict[name];
             set
             {
                 if (!dict.ContainsKey(name))
@@ -185,21 +127,12 @@ namespace NETGraph.Core.Meta
                     dict[name] = value;
             }
         }
-        protected T Scalar
-        {
-            get
-            {
-                //throwCheckAccessByScalar();
-                return scalar;
-            }
-            set { if (this.options == DataOptions.Scalar) scalar = value; }
-        }
 
 
 
         protected Data<T> initScalar(T scalar)
         {
-            this.Scalar = scalar;
+            this.scalar = scalar;
             return this;
         }
         protected Data<T> initList(IEnumerable<T> values)
@@ -230,7 +163,7 @@ namespace NETGraph.Core.Meta
         }
 
 
-        protected object getValueScalar() => this.Scalar;
+        protected object getValueScalar() => this.scalar;
         protected object getValueAt(int index) => this[index];
         protected object getValueAt(string name) => this[name];
 
@@ -253,7 +186,7 @@ namespace NETGraph.Core.Meta
             switch (signature.accessType)
             {
                 case DataSignature.AccessTypes.Scalar:
-                    this.Scalar = (T)value;
+                    this.scalar = (T)value;
                     break;
                 case DataSignature.AccessTypes.Index:
                     this[signature.index] = (T)value;

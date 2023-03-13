@@ -3,33 +3,33 @@ using System.Collections.Generic;
 
 namespace NETGraph.Core.Meta
 {
-    public interface IMethodProvider
+    public struct Call
     {
-        bool invoke(MethodSignature signature, DataResolver result, params DataResolver[] inputs);
-        bool invoke(MethodSignature signature, DataResolver result, IEnumerable<DataResolver> inputs);
+        public Assignment assign { get; private set; }
+        public Invokation invoke { get; private set; }
+
+        public Call(Assignment assign, Invokation invoke)
+        {
+            this.assign = assign;
+            this.invoke = invoke;
+        }
     }
 
-    public struct MethodResolver
+    public delegate IDataResolver Invokation(IDataResolver reference, IEnumerable<IDataResolver> inputs);
+    public delegate void Assignment(IDataResolver reference, IDataResolver assignTo, IEnumerable<IDataResolver> inputs);
+
+    public interface IMethodProvider
     {
-        IMethodProvider target;
-        MethodSignature signature;
-        DataResolver result;
-        DataResolver[] inputs;
+        // delegate void Procedure(IDataResolver reference, IEnumerable<IDataResolver> inputs)
+        // delegate void StaticProcedure(IEnumerable<IDataResolver> inputs)
 
-        public MethodResolver(IMethodProvider target, MethodSignature signature, DataResolver result, params DataResolver[] inputs)
-        {
-            this.target = target;
-            this.signature = signature;
-            this.result = result;
-            this.inputs = inputs;
-        }
-        public MethodResolver(IMethodProvider target, string signature, DataResolver result, params DataResolver[] inputs) : this(target, new MethodSignature(signature), result, inputs)
-        { }
-        // ToDo: change signature to evaluate(DataResolver resolut) and add evaluate with DataResolver return type
-        //      this will allow to detach the method resolver from a specific result (may be able to combine both methods in some way)
-        //      
-        public bool resolve() => target.invoke(signature, result, inputs);
+        // delegate IDataResolver Method(IDataResolver reference, IDataResolver assignTo, IEnumerable<IDataResolver> inputs)
+        // delegate IDataResolver StaticMethod(IDataResolver assignTo, IEnumerable<IDataResolver> inputs)
 
+        // reference can be null for static calls, assignTo can be null, inputs can be null/empty
+        void assign(string signature, IDataResolver reference, IDataResolver assignTo, IEnumerable<IDataResolver> inputs);
+        // reference can be null for static calls, result cannot be null, inputs can be null/empty
+        IDataResolver invoke(string signature, IDataResolver reference, IEnumerable<IDataResolver> inputs);
     }
 
 }
