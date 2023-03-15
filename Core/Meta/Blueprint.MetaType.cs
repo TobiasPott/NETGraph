@@ -11,7 +11,7 @@ namespace NETGraph.Core.Meta
         public int typeIndex { get; private set; }
         public string typeName { get; private set; }
         // ToDo: add alias for type names
-        public Type type { get; private set; }
+        public Type type { get; private set; } // maybe null for types without underlying .NET type 
         public IGenerator<IData, IData.Options> generator { get; private set; }
 
         public MetaTypeBlueprint(int dataType, Type type, IGenerator<IData, IData.Options> generator)

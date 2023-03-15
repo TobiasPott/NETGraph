@@ -1,7 +1,9 @@
 ﻿using System;
+using static NETGraph.Core.Meta.IData;
 
 namespace NETGraph.Core.Meta
 {
+
     public struct DataGenerator : IGenerator<IData, IData.Options>
     {
         Func<IData.Options, IData> withOptions;
@@ -12,7 +14,7 @@ namespace NETGraph.Core.Meta
         }
 
         public IData Generate(IData.Options options) => this.withOptions.Invoke(options);
-        public IData Generate() => this.withOptions.Invoke(0);
+        public IData Generate() => this.withOptions.Invoke(IData.Options.Scalar);
 
 
         // ToDo: Consider implementing a runtime Data Factory which builds new DataBase<T> typees by Type parameter
@@ -25,6 +27,21 @@ namespace NETGraph.Core.Meta
           // Convert the result to string & return it
           return (string)res;
         */
+
+        public static DataGenerator Generator<T>()
+        {
+            return new DataGenerator((o) =>
+            {
+                int typeIndex = MetaTypeRegistry.GetTypeIndex(typeof(T));
+                if (o.HasFlag(IData.Options.List))
+                    return new ListData<T>(typeIndex, o);
+                else if (o.HasFlag(IData.Options.Named))
+                    return new DictData<T>(typeIndex, o);
+                else
+                    return new ScalarData<T>(typeIndex, o);
+            });
+        }
+
     }
 }
 

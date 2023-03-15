@@ -35,6 +35,7 @@ namespace NETGraph.Core.Meta
         public static bool match(IData lh, IData rh) => lh.typeIndex == rh.typeIndex;
         public static bool matchStructure(IData lh, IData rh) => lh.typeIndex == rh.typeIndex && lh.options == rh.options;
 
+
     }
 
     public interface IData
@@ -61,38 +62,39 @@ namespace NETGraph.Core.Meta
     }
 
 
-    public class ScalarData<T> : IData
+    public struct ScalarData<T> : IData
     {
         public static DataGenerator Generator()
         {
-            return new DataGenerator((o) => new ScalarData<T>(TypeMapping.instance.BuiltInDataTypeFor(typeof(T)), o));
+            return new DataGenerator((o) => new ScalarData<T>(MetaTypeRegistry.GetTypeIndex(typeof(T)), o));
         }
 
-        public IData.Options options { get; protected set; }
-        public int typeIndex { get; protected set; }
+        public IData.Options options { get; private set; }
+        public int typeIndex { get; private set; }
 
-        protected T scalar { get; set; }
+        internal T scalar { get; set; }
 
 
-        protected ScalarData(Type type, IData.Options options) : this(TypeMapping.instance.BuiltInDataTypeFor(type), options)
+        internal ScalarData(Type type, IData.Options options) : this(MetaTypeRegistry.GetTypeIndex(type), options)
         { }
-        protected ScalarData(int typeIndex, IData.Options options)
+        internal ScalarData(int typeIndex, IData.Options options)
         {
             this.typeIndex = typeIndex;
             this.options = IData.Options.Scalar | options;
+            this.scalar = default(T);
         }
 
 
-        protected ScalarData<T> initScalar(T scalar)
+        internal ScalarData<T> initScalar(T scalar)
         {
             this.scalar = scalar;
             return this;
         }
-      
 
-        protected object getValueScalar() => this.scalar;
 
-        public virtual V resolve<V>(DataAccessor accessor)
+        internal object getValueScalar() => this.scalar;
+
+        public V resolve<V>(DataAccessor accessor)
         {
             switch (accessor.accessType)
             {
@@ -102,7 +104,7 @@ namespace NETGraph.Core.Meta
                     throw new InvalidOperationException($"Cannot acceess {this.GetType()} as {accessor.accessType}.");
             }
         }
-        public virtual void assign(DataAccessor accessor, object value)
+        public void assign(DataAccessor accessor, object value)
         {
             switch (accessor.accessType)
             {
@@ -117,8 +119,8 @@ namespace NETGraph.Core.Meta
         public override string ToString()
         {
             string toString = string.Empty;
-            if (this.options == IData.Options.Scalar)
-                toString = $"{scalar}";
+            if (this.options.HasFlag(IData.Options.Scalar))
+                toString = $"scalar:{scalar}";
             else
                 toString = $"INVALID {this.GetType()}";
 
@@ -126,23 +128,22 @@ namespace NETGraph.Core.Meta
         }
 
     }
-
     public class ListData<T> : IData
     {
         public static DataGenerator Generator()
         {
-            return new DataGenerator((o) => new ListData<T>(TypeMapping.instance.BuiltInDataTypeFor(typeof(T)), o));
+            return new DataGenerator((o) => new ListData<T>(MetaTypeRegistry.GetTypeIndex(typeof(T)), o));
         }
 
-        public IData.Options options { get; protected set; }
-        public int typeIndex { get; protected set; }
+        public IData.Options options { get; private set; }
+        public int typeIndex { get; private set; }
 
         private List<T> list;
 
 
-        protected ListData(Type type, IData.Options options) : this(TypeMapping.instance.BuiltInDataTypeFor(type), options)
+        internal ListData(Type type, IData.Options options) : this(MetaTypeRegistry.GetTypeIndex(type), options)
         { }
-        protected ListData(int typeIndex, IData.Options options)
+        internal ListData(int typeIndex, IData.Options options)
         {
             this.typeIndex = typeIndex;
             this.options = IData.Options.List | options;
@@ -150,7 +151,7 @@ namespace NETGraph.Core.Meta
         }
 
 
-        protected T this[int index]
+        internal T this[int index]
         {
             get => list[index];
             set => list[index] = value;
@@ -158,7 +159,7 @@ namespace NETGraph.Core.Meta
 
 
 
-        protected ListData<T> initList(IEnumerable<T> values)
+        internal ListData<T> initList(IEnumerable<T> values)
         {
             if (this.list.Count == 0)
             {
@@ -170,7 +171,7 @@ namespace NETGraph.Core.Meta
         }
 
 
-        protected object getValueAt(int index) => this[index];
+        internal object getValueAt(int index) => this[index];
 
         public virtual V resolve<V>(DataAccessor accessor)
         {
@@ -197,31 +198,25 @@ namespace NETGraph.Core.Meta
         public override string ToString()
         {
             string toString = string.Empty;
-            if (this.options == IData.Options.List)
-                toString = $"[{string.Join(", ", list)}]";
+            if (this.options.HasFlag(IData.Options.List))
+                toString = $"[list:{string.Join(", ", list)}]";
             else
                 toString = $"INVALID {this.GetType()}";
             return base.ToString() + $"[{this.options}] = " + toString;
         }
 
     }
-
     public class DictData<T> : IData
     {
-        public static DataGenerator Generator()
-        {
-            return new DataGenerator((o) => new DictData<T>(TypeMapping.instance.BuiltInDataTypeFor(typeof(T)), o));
-        }
-
-        public IData.Options options { get; protected set; }
-        public int typeIndex { get; protected set; }
+        public IData.Options options { get; private set; }
+        public int typeIndex { get; private set; }
 
         private Dictionary<string, T> dict;
 
 
-        protected DictData(Type type, IData.Options options) : this(TypeMapping.instance.BuiltInDataTypeFor(type), options)
+        internal DictData(Type type, IData.Options options) : this(MetaTypeRegistry.GetTypeIndex(type), options)
         { }
-        protected DictData(int typeIndex, IData.Options options)
+        internal DictData(int typeIndex, IData.Options options)
         {
             this.typeIndex = typeIndex;
             this.options = IData.Options.Named | options;
@@ -229,7 +224,7 @@ namespace NETGraph.Core.Meta
         }
 
 
-        protected T this[string name]
+        internal T this[string name]
         {
             get => dict[name];
             set
@@ -242,7 +237,7 @@ namespace NETGraph.Core.Meta
         }
 
 
-        protected DictData<T> initNamed(IEnumerable<KeyValuePair<string, T>> namedValues)
+        internal DictData<T> initNamed(IEnumerable<KeyValuePair<string, T>> namedValues)
         {
             if (this.dict.Count == 0)
             {
@@ -254,7 +249,7 @@ namespace NETGraph.Core.Meta
         }
 
 
-        protected object getValueAt(string name) => this[name];
+        internal object getValueAt(string name) => this[name];
 
         public virtual V resolve<V>(DataAccessor accessor)
         {
@@ -282,7 +277,7 @@ namespace NETGraph.Core.Meta
         {
             string toString = string.Empty;
             if (this.options.HasFlag(IData.Options.Named))
-                toString = $"[{string.Join(", ", dict)}]";
+                toString = $"[dict:{string.Join(", ", dict)}]";
             else
                 toString = $"INVALID {this.GetType()}";
             return base.ToString() + $"[{this.options}] = " + toString;
@@ -291,4 +286,3 @@ namespace NETGraph.Core.Meta
     }
 
 }
-

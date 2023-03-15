@@ -7,6 +7,7 @@ namespace NETGraph.Core.Meta
     { }
     public struct Void
     { }
-
+    public struct Custom
+    { }
 }
 

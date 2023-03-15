@@ -8,15 +8,10 @@ using NETGraph.Core.Meta;
 namespace NETGraph.Core.Meta
 {
 
-
-    public class TypeMapping
+    public class MetaTypeRegistry
     {
-        public static TypeMapping instance => new TypeMapping();
-
-        private TypeMapping()
-        { }
-
-        private Dictionary<DataTypes, Type> builtInTypesMap = new Dictionary<DataTypes, Type>()
+        private static Dictionary<int, MetaTypeBlueprint> blueprints = new Dictionary<int, MetaTypeBlueprint>();
+        private static Dictionary<DataTypes, Type> builtInTypesMap = new Dictionary<DataTypes, Type>()
         {
             { DataTypes.Any, typeof(Any) },
             { DataTypes.Void, typeof(Void) },
@@ -39,61 +34,46 @@ namespace NETGraph.Core.Meta
             { DataTypes.IData, typeof(IData) },
         };
 
-        public void Register(DataTypes dataType, Type type)
-        {
-            if (!builtInTypesMap.ContainsKey(dataType))
-                builtInTypesMap.Add(dataType, type);
-            else if (!builtInTypesMap[dataType].Equals(type))
-                Console.WriteLine($"{dataType} is already registered with {builtInTypesMap[dataType]} and cannot be registeered again. Try using a different data type for {type}.");
-        }
-
-        public Type BuiltInTypeFor(DataTypes dataType) => builtInTypesMap[dataType];
-        public int BuiltInDataTypeFor(Type type) => (int)builtInTypesMap.First(x => x.Value.Equals(type)).Key;
-
-    }
-
-    public class MetaTypeRegistry
-    {
-        private static Dictionary<int, MetaTypeBlueprint> blueprints = new Dictionary<int, MetaTypeBlueprint>();
 
 
-        public static DataTypes GetDataTypeFor(string dataName)
-        {
-            return blueprints.Values.Where(x => x.typeName.Equals(dataName.ToLowerInvariant())).Select(x => x.dataType).First();
-        }
-
-        public static bool RegisterDataType(MetaTypeBlueprint blueprint)
+        public static bool Register(MetaTypeBlueprint blueprint)
         {
             if (!blueprints.ContainsKey(blueprint.typeIndex))
             {
                 // query for typeIndex of generate new from blueprint running index
                 blueprints.Add(blueprint.typeIndex, blueprint);
-                TypeMapping.instance.Register(blueprint.dataType, blueprint.type);
+
+                if (!builtInTypesMap.ContainsKey(blueprint.dataType))
+                    builtInTypesMap.Add(blueprint.dataType, blueprint.type);
+                else if (!builtInTypesMap[blueprint.dataType].Equals(blueprint.type))
+                    Console.WriteLine($"{blueprint.dataType} is already registered with {builtInTypesMap[blueprint.dataType]} and cannot be registeered again. Try using a different data type for {blueprint.type} or {typeof(Custom)}.");
             }
             return false;
         }
 
         public static void RegisterBuiltIn()
         {
-            RegisterDataType(new MetaTypeBlueprint((int)DataTypes.Any, typeof(Any), ScalarData<Any>.Generator()));
-            RegisterDataType(new MetaTypeBlueprint((int)DataTypes.Void, typeof(Void), ScalarData<Void>.Generator()));
-            RegisterDataType(new MetaTypeBlueprint((int)DataTypes.Object, typeof(object), ScalarData<object>.Generator()));
-            RegisterDataType(new MetaTypeBlueprint((int)DataTypes.Bool, typeof(bool), ScalarData<bool>.Generator()));
-            RegisterDataType(new MetaTypeBlueprint((int)DataTypes.Byte, typeof(byte), ScalarData<byte>.Generator()));
-            RegisterDataType(new MetaTypeBlueprint((int)DataTypes.SByte, typeof(sbyte), ScalarData<sbyte>.Generator()));
-            RegisterDataType(new MetaTypeBlueprint((int)DataTypes.Short, typeof(short), ScalarData<short>.Generator()));
-            RegisterDataType(new MetaTypeBlueprint((int)DataTypes.UShort, typeof(ushort), ScalarData<ushort>.Generator()));
-            RegisterDataType(new MetaTypeBlueprint((int)DataTypes.Char, typeof(char), ScalarData<char>.Generator()));
-            RegisterDataType(new MetaTypeBlueprint((int)DataTypes.Int, typeof(int), ScalarData<int>.Generator()));
-            RegisterDataType(new MetaTypeBlueprint((int)DataTypes.UInt, typeof(uint), ScalarData<uint>.Generator()));
-            RegisterDataType(new MetaTypeBlueprint((int)DataTypes.Long, typeof(long), ScalarData<long>.Generator()));
-            RegisterDataType(new MetaTypeBlueprint((int)DataTypes.ULong, typeof(ulong), ScalarData<ulong>.Generator()));
-            RegisterDataType(new MetaTypeBlueprint((int)DataTypes.Float, typeof(float), ScalarData<float>.Generator()));
-            RegisterDataType(new MetaTypeBlueprint((int)DataTypes.Double, typeof(double), ScalarData<double>.Generator()));
-            RegisterDataType(new MetaTypeBlueprint((int)DataTypes.Decimal, typeof(decimal), ScalarData<decimal>.Generator()));
-            RegisterDataType(new MetaTypeBlueprint((int)DataTypes.String, typeof(string), ScalarData<string>.Generator()));
-            RegisterDataType(new MetaTypeBlueprint((int)DataTypes.IData, typeof(IData), ScalarData<IData>.Generator()));
+            Register(new MetaTypeBlueprint((int)DataTypes.Any, typeof(Any), DataGenerator.Generator<Any>()));
+            Register(new MetaTypeBlueprint((int)DataTypes.Void, typeof(Void), DataGenerator.Generator<Void>()));
+            Register(new MetaTypeBlueprint((int)DataTypes.Object, typeof(object), DataGenerator.Generator<object>()));
+            Register(new MetaTypeBlueprint((int)DataTypes.Bool, typeof(bool), DataGenerator.Generator<bool>()));
+            Register(new MetaTypeBlueprint((int)DataTypes.Byte, typeof(byte), DataGenerator.Generator<byte>()));
+            Register(new MetaTypeBlueprint((int)DataTypes.SByte, typeof(sbyte), DataGenerator.Generator<sbyte>()));
+            Register(new MetaTypeBlueprint((int)DataTypes.Short, typeof(short), DataGenerator.Generator<short>()));
+            Register(new MetaTypeBlueprint((int)DataTypes.UShort, typeof(ushort), DataGenerator.Generator<ushort>()));
+            Register(new MetaTypeBlueprint((int)DataTypes.Char, typeof(char), DataGenerator.Generator<char>()));
+            Register(new MetaTypeBlueprint((int)DataTypes.Int, typeof(int), DataGenerator.Generator<int>()));
+            Register(new MetaTypeBlueprint((int)DataTypes.UInt, typeof(uint), DataGenerator.Generator<uint>()));
+            Register(new MetaTypeBlueprint((int)DataTypes.Long, typeof(long), DataGenerator.Generator<long>()));
+            Register(new MetaTypeBlueprint((int)DataTypes.ULong, typeof(ulong), DataGenerator.Generator<ulong>()));
+            Register(new MetaTypeBlueprint((int)DataTypes.Float, typeof(float), DataGenerator.Generator<float>()));
+            Register(new MetaTypeBlueprint((int)DataTypes.Double, typeof(double), DataGenerator.Generator<double>()));
+            Register(new MetaTypeBlueprint((int)DataTypes.Decimal, typeof(decimal), DataGenerator.Generator<decimal>()));
+            Register(new MetaTypeBlueprint((int)DataTypes.String, typeof(string), DataGenerator.Generator<string>()));
+            Register(new MetaTypeBlueprint((int)DataTypes.IData, typeof(IData), DataGenerator.Generator<IData>()));
         }
+
+        public static int GetTypeIndex(Type type) => (int)builtInTypesMap.First(x => x.Value.Equals(type)).Key;
 
         public static IGenerator<IData, IData.Options> Generator(int typeIndex) => blueprints[typeIndex].generator;
 
