@@ -8,7 +8,7 @@ namespace NETGraph.Core.BuiltIn
     public class StringBuilderData : Data<StringBuilder>
     {
 
-        public StringBuilderData(string content = "") : base(MetaTypeRegistry.GetDataTypeFor(typeof(StringBuilder).Name), DataOptions.Scalar)
+        public StringBuilderData(string content = "") : base(MetaTypeRegistry.GetDataTypeFor(typeof(StringBuilder).Name), IData.Options.Scalar)
         {
             initScalar(new StringBuilder(content));
         }

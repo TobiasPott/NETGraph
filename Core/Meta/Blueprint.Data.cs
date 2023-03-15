@@ -10,12 +10,12 @@ namespace NETGraph.Core.Meta
     {
         public string Name { get; private set; }
         public int TypeIndex { get; private set; }
-        public DataOptions Options { get; private set; }
+        public IData.Options Options { get; private set; }
         public string[] Keys { get; private set; }
 
-        public DataBlueprint(string name, DataTypes type, DataOptions options = DataOptions.Scalar, bool isResizable = false, params string[] keys) : this(name, (int)type, options, isResizable, keys)
+        public DataBlueprint(string name, DataTypes type, IData.Options options = IData.Options.Scalar, bool isResizable = false, params string[] keys) : this(name, (int)type, options, isResizable, keys)
         { }
-        public DataBlueprint(string name, int typeIndex, DataOptions options = DataOptions.Scalar, bool isResizable = false, params string[] keys)
+        public DataBlueprint(string name, int typeIndex, IData.Options options = IData.Options.Scalar, bool isResizable = false, params string[] keys)
         {
             this.Name = name;
             this.TypeIndex = typeIndex;

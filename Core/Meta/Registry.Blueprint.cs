@@ -95,7 +95,7 @@ namespace NETGraph.Core.Meta
             RegisterDataType(new MetaTypeBlueprint((int)DataTypes.IData, typeof(IData), Data<IData>.Generator()));
         }
 
-        public static IDataGenerator Generator(int typeIndex) => blueprints[typeIndex].generator;
+        public static IGenerator<IData, IData.Options> Generator(int typeIndex) => blueprints[typeIndex].generator;
 
     }
 }

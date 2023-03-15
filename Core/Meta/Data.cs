@@ -22,16 +22,6 @@ namespace NETGraph.Core.Meta
         IData,
     }
 
-    [Flags()]
-    public enum DataOptions
-    {
-        Scalar = 1,
-        List = 2,
-        Named = 4,
-        Resizable = 8,
-
-    }
-
     public static class DataExtensions
     {
 
@@ -45,7 +35,17 @@ namespace NETGraph.Core.Meta
 
     public interface IData
     {
-        DataOptions options { get; }
+        [Flags()]
+        public enum Options
+        {
+            Scalar = 1,
+            List = 2,
+            Named = 4,
+            Resizable = 8,
+
+        }
+
+        Options options { get; }
         int typeIndex { get; }
 
         // methods for accessing nested or dynamic data instances
@@ -62,12 +62,12 @@ namespace NETGraph.Core.Meta
 
     public abstract class DataBase : IData
     {
-        public DataOptions options { get; protected set; }
+        public IData.Options options { get; protected set; }
         public int typeIndex { get; protected set; }
 
-        protected DataBase(DataTypes type, DataOptions options, bool isResizable = true) : this((int)type, options, isResizable)
+        protected DataBase(DataTypes type, IData.Options options, bool isResizable = true) : this((int)type, options, isResizable)
         { }
-        protected DataBase(int typeIndex, DataOptions options, bool isResizable = true)
+        protected DataBase(int typeIndex, IData.Options options, bool isResizable = true)
         {
             this.typeIndex = typeIndex;
             this.options = options;
@@ -84,9 +84,9 @@ namespace NETGraph.Core.Meta
 
     public class Data<T> : DataBase
     {
-        public static GeneratorDefinition Generator()
+        public static DataGenerator Generator()
         {
-            return new GeneratorDefinition((o) => new Data<T>(typeof(T), o));
+            return new DataGenerator((o) => new Data<T>(typeof(T), o));
         }
 
         protected T scalar { get; set; }
@@ -94,15 +94,15 @@ namespace NETGraph.Core.Meta
         private Dictionary<string, T> dict;
 
 
-        protected Data(Type type, DataOptions options) : this(TypeMapping.instance.BuiltInDataTypeFor(type), options)
+        protected Data(Type type, IData.Options options) : this(TypeMapping.instance.BuiltInDataTypeFor(type), options)
         { }
-        protected Data(int typeIndex, DataOptions structure) : this((DataTypes)typeIndex, structure)
+        protected Data(int typeIndex, IData.Options structure) : this((DataTypes)typeIndex, structure)
         { }
-        protected Data(DataTypes type, DataOptions options) : base(type, options)
+        protected Data(DataTypes type, IData.Options options) : base(type, options)
         {
-            if (options.HasFlag(DataOptions.List))
+            if (options.HasFlag(IData.Options.List))
                 this.list = new List<T>();
-            else if (options.HasFlag(DataOptions.Named))
+            else if (options.HasFlag(IData.Options.Named))
                 this.dict = new Dictionary<string, T>();
         }
 
@@ -197,10 +197,10 @@ namespace NETGraph.Core.Meta
 
         private void throwCheckResizable()
         {
-            if (!this.options.HasFlag(DataOptions.Resizable))
+            if (!this.options.HasFlag(IData.Options.Resizable))
                 throw new InvalidOperationException($"You cannot add items to a non resizable structure.");
         }
-        private void throwCheckStructure(DataOptions structure)
+        private void throwCheckStructure(IData.Options structure)
         {
             if (!this.options.HasFlag(structure))
                 throw new InvalidOperationException($"You cannot add items to a non collection structure. Consider using a {structure} structure.");
@@ -212,17 +212,17 @@ namespace NETGraph.Core.Meta
         }
         private void throwCheckAccessByIndex()
         {
-            if (!this.options.HasFlag(DataOptions.List))
+            if (!this.options.HasFlag(IData.Options.List))
                 throw new InvalidCastException($"{typeof(Data<T>)} cannot be accessed by index.");
         }
         private void throwCheckAccessByKey()
         {
-            if (!this.options.HasFlag(DataOptions.Named))
+            if (!this.options.HasFlag(IData.Options.Named))
                 throw new InvalidCastException($"{typeof(Data<T>)} cannot be accessed by key.");
         }
         private void throwCheckAccessByScalar()
         {
-            if (!this.options.HasFlag(DataOptions.Scalar))
+            if (!this.options.HasFlag(IData.Options.Scalar))
                 throw new InvalidCastException($"{typeof(Data<T>)} cannot be accessed as scalar.");
         }
 
@@ -231,11 +231,11 @@ namespace NETGraph.Core.Meta
         public override string ToString()
         {
             string toString = string.Empty;
-            if (this.options == DataOptions.Scalar)
+            if (this.options == IData.Options.Scalar)
                 toString = $"{scalar}";
-            else if (this.options == DataOptions.List)
+            else if (this.options == IData.Options.List)
                 toString = $"[{string.Join(", ", list)}]";
-            else if (this.options == DataOptions.Named)
+            else if (this.options == IData.Options.Named)
                 toString = $"[{string.Join(", ", dict)}]";
 
             return base.ToString() + $"[{this.options}] = " + toString;

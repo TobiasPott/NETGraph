@@ -30,8 +30,10 @@ namespace NETGraph.Core.BuiltIn
         private IDataResolver New(IDataResolver reference, IEnumerable<IDataResolver> inputs)
         {
             int typeIndex = inputs.First().resolve<int>();
-            DataOptions options = (DataOptions)inputs.Skip(1).First().resolve<int>();
-            return new DataResolver(MetaTypeRegistry.Generator(typeIndex).Generate(options), DataSignature.Scalar);
+            string name = inputs.Skip(1).First().resolve<string>();
+
+            Console.WriteLine($"new {(DataTypes)typeIndex} named {name}");
+            return new DataResolver(MetaTypeRegistry.Generator(typeIndex).Generate(IData.Options.Scalar), DataSignature.Scalar);
         }
 
         // ToDo: Add implementation for init methods of data

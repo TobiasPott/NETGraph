@@ -3,21 +3,21 @@
 namespace NETGraph.Core.Meta
 {
 
-    public interface IDataGenerator
+    public interface IGenerator<T, O>
     {
-        DataBase Generate(DataOptions options);
+        T Generate(O options);
     }
 
-    public struct GeneratorDefinition : IDataGenerator
+    public struct DataGenerator : IGenerator<IData, IData.Options>
     {
-        Func<DataOptions, DataBase> withOptions;
+        Func<IData.Options, IData> withOptions;
 
-        public GeneratorDefinition(Func<DataOptions, DataBase> withOptions)
+        public DataGenerator(Func<IData.Options, DataBase> withOptions)
         {
             this.withOptions = withOptions;
         }
 
-        public DataBase Generate(DataOptions options) => this.withOptions.Invoke(options);
+        public IData Generate(IData.Options options) => this.withOptions.Invoke(options);
 
 
         // ToDo: Consider implementing a runtime Data Factory which builds new DataBase<T> typees by Type parameter

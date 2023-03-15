@@ -80,6 +80,15 @@ public class Program
 
 
         TimeStamp(sw, vec3IntData.ToString());
+        
+        // runner test code to create a new 'named' data of data type Int
+        Data<string> name = Data<string>.Generator().Generate(IData.Options.Scalar) as Data<string>;
+        name.assign(DataSignature.Scalar, "blubb");
+
+        Data<int> typeIndex = Data<int>.Generator().Generate(IData.Options.Scalar) as Data<int>;
+        typeIndex.assign(DataSignature.Scalar, DataTypes.Int);
+
+        LibCore.Instance.invoke("new", null, typeIndex.resolver(DataSignature.Scalar).AsEnumerable().Append(name.resolver(DataSignature.Scalar)));
 
         Console.WriteLine();
     }
