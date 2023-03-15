@@ -86,11 +86,7 @@ namespace NETGraph.Core.Meta
     {
         public static GeneratorDefinition Generator()
         {
-            return new GeneratorDefinition(
-            () => new Data<T>(typeof(T), DataOptions.Scalar),
-            (r) => new Data<T>(typeof(T), DataOptions.List | DataOptions.Resizable),
-            (r) => new Data<T>(typeof(T), DataOptions.Named | DataOptions.Resizable)
-        );
+            return new GeneratorDefinition((o) => new Data<T>(typeof(T), o));
         }
 
         protected T scalar { get; set; }

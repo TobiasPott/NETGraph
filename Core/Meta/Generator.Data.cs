@@ -5,29 +5,19 @@ namespace NETGraph.Core.Meta
 
     public interface IDataGenerator
     {
-        DataBase Scalar();
-        DataBase List(bool isResizable);
-        DataBase Named(bool isRezisable);
+        DataBase Generate(DataOptions options);
     }
 
     public struct GeneratorDefinition : IDataGenerator
     {
-        Func<DataBase> scalar;
-        Func<bool, DataBase> list;
-        Func<bool, DataBase> dict;
+        Func<DataOptions, DataBase> withOptions;
 
-        public GeneratorDefinition(Func<DataBase> scalar, Func<bool, DataBase> list, Func<bool, DataBase> dict)
+        public GeneratorDefinition(Func<DataOptions, DataBase> withOptions)
         {
-            if (scalar == null || list == null || dict == null)
-                throw new ArgumentNullException($"{nameof(scalar)},{nameof(list)} and {nameof(dict)} cannot be left empty. Please provide all generator methods.");
-            this.scalar = scalar;
-            this.list = list;
-            this.dict = dict;
+            this.withOptions = withOptions;
         }
 
-        public DataBase Scalar() => this.scalar.Invoke();
-        public DataBase List(bool isResizable) => this.list.Invoke(isResizable);
-        public DataBase Named(bool isRezisable) => this.dict.Invoke(isRezisable);
+        public DataBase Generate(DataOptions options) => this.withOptions.Invoke(options);
 
 
         // ToDo: Consider implementing a runtime Data Factory which builds new DataBase<T> typees by Type parameter

@@ -1,6 +1,7 @@
 ﻿using System;
 using NETGraph.Core.Meta;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace NETGraph.Core.BuiltIn
 {
@@ -21,15 +22,23 @@ namespace NETGraph.Core.BuiltIn
             //methods.Add("initScalar", Add);
             //methods.Add("initList", Add);
             //methods.Add("initDict", Add);
+            methods.Add("new", new Call(null, New));
+
         }
 
-
-        private void Add(string signature, IDataResolver assignTo, IEnumerable<IDataResolver> inputs)
+        // ToDo: Add processing of third parameter for naming a variable on creation
+        private IDataResolver New(IDataResolver reference, IEnumerable<IDataResolver> inputs)
         {
-            //int sum = inputs.Sum(q => q.resolve<int>());
-            //assignTo.assign<int>(sum);
+            int typeIndex = inputs.First().resolve<int>();
+            DataOptions options = (DataOptions)inputs.Skip(1).First().resolve<int>();
+            return new DataResolver(MetaTypeRegistry.Generator(typeIndex).Generate(options), DataSignature.Scalar);
         }
 
+        // ToDo: Add implementation for init methods of data
+        //      Add set value methods of data
+        //      Add modifying dict and list of data
+
+        //      Add method to store data on a stack (making it a named variable which can be adressed)
     }
 
 }
