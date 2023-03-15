@@ -5,7 +5,7 @@ using NETGraph.Core.Meta;
 namespace NETGraph.Core.BuiltIn
 {
 
-    public class StringBuilderData : Data<StringBuilder>
+    public class StringBuilderData : ScalarData<StringBuilder>
     {
 
         public StringBuilderData(string content = "") : base(typeof(StringBuilder), IData.Options.Scalar)

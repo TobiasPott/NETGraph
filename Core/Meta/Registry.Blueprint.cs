@@ -75,24 +75,24 @@ namespace NETGraph.Core.Meta
 
         public static void RegisterBuiltIn()
         {
-            RegisterDataType(new MetaTypeBlueprint((int)DataTypes.Any, typeof(Any), Data<Any>.Generator()));
-            RegisterDataType(new MetaTypeBlueprint((int)DataTypes.Void, typeof(Void), Data<Void>.Generator()));
-            RegisterDataType(new MetaTypeBlueprint((int)DataTypes.Object, typeof(object), Data<object>.Generator()));
-            RegisterDataType(new MetaTypeBlueprint((int)DataTypes.Bool, typeof(bool), Data<bool>.Generator()));
-            RegisterDataType(new MetaTypeBlueprint((int)DataTypes.Byte, typeof(byte), Data<byte>.Generator()));
-            RegisterDataType(new MetaTypeBlueprint((int)DataTypes.SByte, typeof(sbyte), Data<sbyte>.Generator()));
-            RegisterDataType(new MetaTypeBlueprint((int)DataTypes.Short, typeof(short), Data<short>.Generator()));
-            RegisterDataType(new MetaTypeBlueprint((int)DataTypes.UShort, typeof(ushort), Data<ushort>.Generator()));
-            RegisterDataType(new MetaTypeBlueprint((int)DataTypes.Char, typeof(char), Data<char>.Generator()));
-            RegisterDataType(new MetaTypeBlueprint((int)DataTypes.Int, typeof(int), Data<int>.Generator()));
-            RegisterDataType(new MetaTypeBlueprint((int)DataTypes.UInt, typeof(uint), Data<uint>.Generator()));
-            RegisterDataType(new MetaTypeBlueprint((int)DataTypes.Long, typeof(long), Data<long>.Generator()));
-            RegisterDataType(new MetaTypeBlueprint((int)DataTypes.ULong, typeof(ulong), Data<ulong>.Generator()));
-            RegisterDataType(new MetaTypeBlueprint((int)DataTypes.Float, typeof(float), Data<float>.Generator()));
-            RegisterDataType(new MetaTypeBlueprint((int)DataTypes.Double, typeof(double), Data<double>.Generator()));
-            RegisterDataType(new MetaTypeBlueprint((int)DataTypes.Decimal, typeof(decimal), Data<decimal>.Generator()));
-            RegisterDataType(new MetaTypeBlueprint((int)DataTypes.String, typeof(string), Data<string>.Generator()));
-            RegisterDataType(new MetaTypeBlueprint((int)DataTypes.IData, typeof(IData), Data<IData>.Generator()));
+            RegisterDataType(new MetaTypeBlueprint((int)DataTypes.Any, typeof(Any), ScalarData<Any>.Generator()));
+            RegisterDataType(new MetaTypeBlueprint((int)DataTypes.Void, typeof(Void), ScalarData<Void>.Generator()));
+            RegisterDataType(new MetaTypeBlueprint((int)DataTypes.Object, typeof(object), ScalarData<object>.Generator()));
+            RegisterDataType(new MetaTypeBlueprint((int)DataTypes.Bool, typeof(bool), ScalarData<bool>.Generator()));
+            RegisterDataType(new MetaTypeBlueprint((int)DataTypes.Byte, typeof(byte), ScalarData<byte>.Generator()));
+            RegisterDataType(new MetaTypeBlueprint((int)DataTypes.SByte, typeof(sbyte), ScalarData<sbyte>.Generator()));
+            RegisterDataType(new MetaTypeBlueprint((int)DataTypes.Short, typeof(short), ScalarData<short>.Generator()));
+            RegisterDataType(new MetaTypeBlueprint((int)DataTypes.UShort, typeof(ushort), ScalarData<ushort>.Generator()));
+            RegisterDataType(new MetaTypeBlueprint((int)DataTypes.Char, typeof(char), ScalarData<char>.Generator()));
+            RegisterDataType(new MetaTypeBlueprint((int)DataTypes.Int, typeof(int), ScalarData<int>.Generator()));
+            RegisterDataType(new MetaTypeBlueprint((int)DataTypes.UInt, typeof(uint), ScalarData<uint>.Generator()));
+            RegisterDataType(new MetaTypeBlueprint((int)DataTypes.Long, typeof(long), ScalarData<long>.Generator()));
+            RegisterDataType(new MetaTypeBlueprint((int)DataTypes.ULong, typeof(ulong), ScalarData<ulong>.Generator()));
+            RegisterDataType(new MetaTypeBlueprint((int)DataTypes.Float, typeof(float), ScalarData<float>.Generator()));
+            RegisterDataType(new MetaTypeBlueprint((int)DataTypes.Double, typeof(double), ScalarData<double>.Generator()));
+            RegisterDataType(new MetaTypeBlueprint((int)DataTypes.Decimal, typeof(decimal), ScalarData<decimal>.Generator()));
+            RegisterDataType(new MetaTypeBlueprint((int)DataTypes.String, typeof(string), ScalarData<string>.Generator()));
+            RegisterDataType(new MetaTypeBlueprint((int)DataTypes.IData, typeof(IData), ScalarData<IData>.Generator()));
         }
 
         public static IGenerator<IData, IData.Options> Generator(int typeIndex) => blueprints[typeIndex].generator;

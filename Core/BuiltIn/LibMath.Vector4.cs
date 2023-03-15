@@ -6,7 +6,7 @@ using System.Collections.Generic;
 namespace NETGraph.Core.BuiltIn
 {
 
-    public abstract class Vector4Base<T> : Data<T>
+    public abstract class Vector4Base<T> : DictData<T>
     {
         private static string[] keys = new[] { "x", "y", "z", "w" };
 

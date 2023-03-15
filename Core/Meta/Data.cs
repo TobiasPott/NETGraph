@@ -23,7 +23,7 @@ namespace NETGraph.Core.Meta
         IData,
     }
 
-    public static class DataExtensions
+    public static class IDataExtensions
     {
 
         // ToDo: movee to extension method for IData
@@ -53,8 +53,7 @@ namespace NETGraph.Core.Meta
         int typeIndex { get; }
 
         // methods for accessing nested or dynamic data instances
-        IData access(string dataPath);
-
+        //IData access(string dataPath);
 
         //method to resolve data object into underlying type instances
         V resolve<V>(DataAccessor accessor);
@@ -62,32 +61,92 @@ namespace NETGraph.Core.Meta
     }
 
 
-    public class Data<T> : IData
+    public class ScalarData<T> : IData
     {
         public static DataGenerator Generator()
         {
-            return new DataGenerator((o) => new Data<T>(TypeMapping.instance.BuiltInDataTypeFor(typeof(T)), o));
+            return new DataGenerator((o) => new ScalarData<T>(TypeMapping.instance.BuiltInDataTypeFor(typeof(T)), o));
         }
 
         public IData.Options options { get; protected set; }
         public int typeIndex { get; protected set; }
 
         protected T scalar { get; set; }
-        private List<T> list;
-        private Dictionary<string, T> dict;
 
 
-        protected Data(Type type, IData.Options options) : this(TypeMapping.instance.BuiltInDataTypeFor(type), options)
+        protected ScalarData(Type type, IData.Options options) : this(TypeMapping.instance.BuiltInDataTypeFor(type), options)
         { }
-        protected Data(int typeIndex, IData.Options options)
+        protected ScalarData(int typeIndex, IData.Options options)
         {
             this.typeIndex = typeIndex;
-            this.options = options;
+            this.options = IData.Options.Scalar | options;
+        }
 
-            if (options.HasFlag(IData.Options.List))
-                this.list = new List<T>();
-            else if (options.HasFlag(IData.Options.Named))
-                this.dict = new Dictionary<string, T>();
+
+        protected ScalarData<T> initScalar(T scalar)
+        {
+            this.scalar = scalar;
+            return this;
+        }
+      
+
+        protected object getValueScalar() => this.scalar;
+
+        public virtual V resolve<V>(DataAccessor accessor)
+        {
+            switch (accessor.accessType)
+            {
+                case DataAccessor.AccessTypes.Scalar:
+                    return (V)this.getValueScalar();
+                default:
+                    throw new InvalidOperationException($"Cannot acceess {this.GetType()} as {accessor.accessType}.");
+            }
+        }
+        public virtual void assign(DataAccessor accessor, object value)
+        {
+            switch (accessor.accessType)
+            {
+                case DataAccessor.AccessTypes.Scalar:
+                    this.scalar = (T)value;
+                    break;
+                default:
+                    throw new InvalidOperationException($"Cannot acceess {this.GetType()} as {accessor.accessType}.");
+            }
+        }
+
+        public override string ToString()
+        {
+            string toString = string.Empty;
+            if (this.options == IData.Options.Scalar)
+                toString = $"{scalar}";
+            else
+                toString = $"INVALID {this.GetType()}";
+
+            return base.ToString() + $"[{this.options}] = " + toString;
+        }
+
+    }
+
+    public class ListData<T> : IData
+    {
+        public static DataGenerator Generator()
+        {
+            return new DataGenerator((o) => new ListData<T>(TypeMapping.instance.BuiltInDataTypeFor(typeof(T)), o));
+        }
+
+        public IData.Options options { get; protected set; }
+        public int typeIndex { get; protected set; }
+
+        private List<T> list;
+
+
+        protected ListData(Type type, IData.Options options) : this(TypeMapping.instance.BuiltInDataTypeFor(type), options)
+        { }
+        protected ListData(int typeIndex, IData.Options options)
+        {
+            this.typeIndex = typeIndex;
+            this.options = IData.Options.List | options;
+            this.list = new List<T>();
         }
 
 
@@ -96,6 +155,80 @@ namespace NETGraph.Core.Meta
             get => list[index];
             set => list[index] = value;
         }
+
+
+
+        protected ListData<T> initList(IEnumerable<T> values)
+        {
+            if (this.list.Count == 0)
+            {
+                this.list = new List<T>(values);
+                return this;
+            }
+            else
+                throw new InvalidOperationException($"Cannot initialize data on {this.options} structure that contains data. Please clear the structure beforee re-init.");
+        }
+
+
+        protected object getValueAt(int index) => this[index];
+
+        public virtual V resolve<V>(DataAccessor accessor)
+        {
+            switch (accessor.accessType)
+            {
+                case DataAccessor.AccessTypes.Index:
+                    return (V)this.getValueAt(accessor.index);
+                default:
+                    throw new InvalidOperationException($"Cannot acceess {this.GetType()} as {accessor.accessType}.");
+            }
+        }
+        public virtual void assign(DataAccessor accessor, object value)
+        {
+            switch (accessor.accessType)
+            {
+                case DataAccessor.AccessTypes.Index:
+                    this[accessor.index] = (T)value;
+                    break;
+                default:
+                    throw new InvalidOperationException($"Cannot acceess {this.GetType()} as {accessor.accessType}.");
+            }
+        }
+
+        public override string ToString()
+        {
+            string toString = string.Empty;
+            if (this.options == IData.Options.List)
+                toString = $"[{string.Join(", ", list)}]";
+            else
+                toString = $"INVALID {this.GetType()}";
+            return base.ToString() + $"[{this.options}] = " + toString;
+        }
+
+    }
+
+    public class DictData<T> : IData
+    {
+        public static DataGenerator Generator()
+        {
+            return new DataGenerator((o) => new DictData<T>(TypeMapping.instance.BuiltInDataTypeFor(typeof(T)), o));
+        }
+
+        public IData.Options options { get; protected set; }
+        public int typeIndex { get; protected set; }
+
+        private Dictionary<string, T> dict;
+
+
+        protected DictData(Type type, IData.Options options) : this(TypeMapping.instance.BuiltInDataTypeFor(type), options)
+        { }
+        protected DictData(int typeIndex, IData.Options options)
+        {
+            this.typeIndex = typeIndex;
+            this.options = IData.Options.Named | options;
+            this.dict = new Dictionary<string, T>();
+        }
+
+
         protected T this[string name]
         {
             get => dict[name];
@@ -109,23 +242,7 @@ namespace NETGraph.Core.Meta
         }
 
 
-
-        protected Data<T> initScalar(T scalar)
-        {
-            this.scalar = scalar;
-            return this;
-        }
-        protected Data<T> initList(IEnumerable<T> values)
-        {
-            if (this.list.Count == 0)
-            {
-                this.list = new List<T>(values);
-                return this;
-            }
-            else
-                throw new InvalidOperationException($"Cannot initialize data on {this.options} structure that contains data. Please clear the structure beforee re-init.");
-        }
-        protected Data<T> initNamed(IEnumerable<KeyValuePair<string, T>> namedValues)
+        protected DictData<T> initNamed(IEnumerable<KeyValuePair<string, T>> namedValues)
         {
             if (this.dict.Count == 0)
             {
@@ -137,91 +254,37 @@ namespace NETGraph.Core.Meta
         }
 
 
-        public virtual IData access(string dataPath)
-        {
-            throw new InvalidOperationException($"{nameof(Data<T>)} does not support accessing nested or dynamic data. Implement your own type to support arbitrary data access with dynamic data.");
-        }
-
-
-        protected object getValueScalar() => this.scalar;
-        protected object getValueAt(int index) => this[index];
         protected object getValueAt(string name) => this[name];
 
         public virtual V resolve<V>(DataAccessor accessor)
         {
             switch (accessor.accessType)
             {
-                case DataAccessor.AccessTypes.Scalar:
-                    return (V)this.getValueScalar();
-                case DataAccessor.AccessTypes.Index:
-                    return (V)this.getValueAt(accessor.index);
                 case DataAccessor.AccessTypes.Key:
                     return (V)this.getValueAt(accessor.key);
                 default:
-                    return default(V);
+                    throw new InvalidOperationException($"Cannot acceess {this.GetType()} as {accessor.accessType}.");
             }
         }
         public virtual void assign(DataAccessor accessor, object value)
         {
             switch (accessor.accessType)
             {
-                case DataAccessor.AccessTypes.Scalar:
-                    this.scalar = (T)value;
-                    break;
-                case DataAccessor.AccessTypes.Index:
-                    this[accessor.index] = (T)value;
-                    break;
                 case DataAccessor.AccessTypes.Key:
                     this[accessor.key] = (T)value;
                     break;
                 default:
-                    break;
+                    throw new InvalidOperationException($"Cannot acceess {this.GetType()} as {accessor.accessType}.");
             }
         }
-
-        private void throwCheckResizable()
-        {
-            if (!this.options.HasFlag(IData.Options.Resizable))
-                throw new InvalidOperationException($"You cannot add items to a non resizable structure.");
-        }
-        private void throwCheckStructure(IData.Options structure)
-        {
-            if (!this.options.HasFlag(structure))
-                throw new InvalidOperationException($"You cannot add items to a non collection structure. Consider using a {structure} structure.");
-        }
-        private void throwCheckGenericType(object item)
-        {
-            if (!(item is T))
-                throw new InvalidCastException($"{nameof(item)} has missmatching type.");
-        }
-        private void throwCheckAccessByIndex()
-        {
-            if (!this.options.HasFlag(IData.Options.List))
-                throw new InvalidCastException($"{typeof(Data<T>)} cannot be accessed by index.");
-        }
-        private void throwCheckAccessByKey()
-        {
-            if (!this.options.HasFlag(IData.Options.Named))
-                throw new InvalidCastException($"{typeof(Data<T>)} cannot be accessed by key.");
-        }
-        private void throwCheckAccessByScalar()
-        {
-            if (!this.options.HasFlag(IData.Options.Scalar))
-                throw new InvalidCastException($"{typeof(Data<T>)} cannot be accessed as scalar.");
-        }
-
-
 
         public override string ToString()
         {
             string toString = string.Empty;
-            if (this.options == IData.Options.Scalar)
-                toString = $"{scalar}";
-            else if (this.options == IData.Options.List)
-                toString = $"[{string.Join(", ", list)}]";
-            else if (this.options == IData.Options.Named)
+            if (this.options.HasFlag(IData.Options.Named))
                 toString = $"[{string.Join(", ", dict)}]";
-
+            else
+                toString = $"INVALID {this.GetType()}";
             return base.ToString() + $"[{this.options}] = " + toString;
         }
 
