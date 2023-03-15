@@ -26,8 +26,10 @@ namespace NETGraph.Core.Meta
     public static class DataExtensions
     {
 
+        // ToDo: movee to extension method for IData
         public static void assign<V>(this IData data, string accessor, V value) => data.assign(new DataAccessor(accessor), value);
         public static void assign<V>(this IData data, V value) => data.assign(DataAccessor.Scalar, value);
+        public static IResolver resolver(this IData data, DataAccessor accessor) => new DataResolver(data, accessor);
         public static IResolver resolver(this IData data, string accessor) => data.resolver(new DataAccessor(accessor));
         public static IResolver resolver(this IData data) => data.resolver(DataAccessor.Scalar);
 
@@ -58,38 +60,18 @@ namespace NETGraph.Core.Meta
         //method to resolve data object into underlying type instances
         V resolve<V>(DataAccessor accessor);
         void assign(DataAccessor accessor, object scalar);
-
-        IResolver resolver(DataAccessor accessor);
     }
 
 
-    public abstract class DataBase : IData
-    {
-        public IData.Options options { get; protected set; }
-        public int typeIndex { get; protected set; }
-
-
-        protected DataBase(int typeIndex, IData.Options options)
-        {
-            this.typeIndex = typeIndex;
-            this.options = options;
-        }
-
-
-        // methods for accessing nested or dynamic data instances
-        public abstract IData access(string dataPath);
-        //method to resolve data object into underlying type instances
-        public abstract void assign(DataAccessor accessor, object scalar);
-        public abstract V resolve<V>(DataAccessor accessor);
-        public IResolver resolver(DataAccessor accessor) => new DataResolver(this, accessor);
-    }
-
-    public class Data<T> : DataBase
+    public class Data<T> : IData
     {
         public static DataGenerator Generator()
         {
             return new DataGenerator((o) => new Data<T>(TypeMapping.instance.BuiltInDataTypeFor(typeof(T)), o));
         }
+
+        public IData.Options options { get; protected set; }
+        public int typeIndex { get; protected set; }
 
         protected T scalar { get; set; }
         private List<T> list;
@@ -98,8 +80,11 @@ namespace NETGraph.Core.Meta
 
         protected Data(Type type, IData.Options options) : this(TypeMapping.instance.BuiltInDataTypeFor(type), options)
         { }
-        protected Data(int typeIndex, IData.Options options) : base(typeIndex, options)
+        protected Data(int typeIndex, IData.Options options)
         {
+            this.typeIndex = typeIndex;
+            this.options = options;
+
             if (options.HasFlag(IData.Options.List))
                 this.list = new List<T>();
             else if (options.HasFlag(IData.Options.Named))
@@ -153,7 +138,7 @@ namespace NETGraph.Core.Meta
         }
 
 
-        public override IData access(string dataPath)
+        public virtual IData access(string dataPath)
         {
             throw new InvalidOperationException($"{nameof(Data<T>)} does not support accessing nested or dynamic data. Implement your own type to support arbitrary data access with dynamic data.");
         }
@@ -163,7 +148,7 @@ namespace NETGraph.Core.Meta
         protected object getValueAt(int index) => this[index];
         protected object getValueAt(string name) => this[name];
 
-        public override V resolve<V>(DataAccessor accessor)
+        public virtual V resolve<V>(DataAccessor accessor)
         {
             switch (accessor.accessType)
             {
@@ -177,7 +162,7 @@ namespace NETGraph.Core.Meta
                     return default(V);
             }
         }
-        public override void assign(DataAccessor accessor, object value)
+        public virtual void assign(DataAccessor accessor, object value)
         {
             switch (accessor.accessType)
             {

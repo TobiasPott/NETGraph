@@ -6,7 +6,7 @@ namespace NETGraph.Core.Meta
     {
         Func<IData.Options, IData> withOptions;
 
-        public DataGenerator(Func<IData.Options, DataBase> withOptions)
+        public DataGenerator(Func<IData.Options, IData> withOptions)
         {
             this.withOptions = withOptions;
         }
