@@ -6,7 +6,7 @@ using System.Collections.Generic;
 namespace NETGraph.Core.BuiltIn
 {
 
-    public abstract class Vector3Base<T> : DictData<T>
+    public class Vector3<T> : DictData<T>
     {
         private static string[] keys = new[] { "x", "y", "z" };
 
@@ -14,7 +14,7 @@ namespace NETGraph.Core.BuiltIn
         public DataResolver y { get; private set; }
         public DataResolver z { get; private set; }
 
-        public Vector3Base(T x, T y, T z) : base(typeof(T), IData.Options.Named)
+        public Vector3(T x, T y, T z) : base(typeof(T), IData.Options.Named)
         {
             initNamed(keys.Select(k => new KeyValuePair<string, T>(k, default)));
             this.assign(keys[0], x);
@@ -32,21 +32,21 @@ namespace NETGraph.Core.BuiltIn
     }
 
 
-    public class Vector3Byte : Vector3Base<byte>
+    public class Vector3b : Vector3<byte>
     {
-        public Vector3Byte(byte x, byte y, byte z) : base(x, y, z) { }
+        public Vector3b(byte x, byte y, byte z) : base(x, y, z) { }
     }
-    public class Vector3Double : Vector3Base<double>
+    public class Vector3d : Vector3<double>
     {
-        public Vector3Double(double x, double y, double z) : base(x, y, z) { }
+        public Vector3d(double x, double y, double z) : base(x, y, z) { }
     }
-    public class Vector3Int : Vector3Base<int>
+    public class Vector3i : Vector3<int>
     {
-        public Vector3Int(int x, int y, int z) : base(x, y, z) { }
+        public Vector3i(int x, int y, int z) : base(x, y, z) { }
     }
-    public class Vector3 : Vector3Base<float>
+    public class Vector3f : Vector3<float>
     {
-        public Vector3(float x, float y, float z) : base(x, y, z) { }
+        public Vector3f(float x, float y, float z) : base(x, y, z) { }
     }
 
 }

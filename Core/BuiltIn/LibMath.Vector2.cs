@@ -6,14 +6,14 @@ using System.Collections.Generic;
 namespace NETGraph.Core.BuiltIn
 {
 
-    public abstract class Vector2Base<T> : DictData<T>
+    public class Vector2<T> : DictData<T>
     {
         private static string[] keys = new[] { "x", "y" };
 
         public DataResolver x { get; private set; }
         public DataResolver y { get; private set; }
 
-        public Vector2Base(T x, T y) : base(typeof(T), IData.Options.Named)
+        public Vector2(T x, T y) : base(typeof(T), IData.Options.Named)
         {
             initNamed(keys.Select(k => new KeyValuePair<string, T>(k, default)));
             this.assign(keys[0], x);
@@ -30,21 +30,21 @@ namespace NETGraph.Core.BuiltIn
     }
 
 
-    public class Vector2Byte : Vector2Base<byte>
+    public class Vector2b : Vector2<byte>
     {
-        public Vector2Byte(byte x, byte y) : base(x, y) { }
+        public Vector2b(byte x, byte y) : base(x, y) { }
     }
-    public class Vector2Double : Vector2Base<double>
+    public class Vector2d : Vector2<double>
     {
-        public Vector2Double(double x, double y) : base(x, y) { }
+        public Vector2d(double x, double y) : base(x, y) { }
     }
-    public class Vector2Int : Vector2Base<int>
+    public class Vector2i : Vector2<int>
     {
-        public Vector2Int(int x, int y) : base(x, y) { }
+        public Vector2i(int x, int y) : base(x, y) { }
     }
-    public class Vector2 : Vector2Base<float>
+    public class Vector2f : Vector2<float>
     {
-        public Vector2(float x, float y) : base(x, y) { }
+        public Vector2f(float x, float y) : base(x, y) { }
     }
 
 }

@@ -6,7 +6,7 @@ using System.Collections.Generic;
 namespace NETGraph.Core.BuiltIn
 {
 
-    public abstract class Vector4Base<T> : DictData<T>
+    public class Vector4<T> : DictData<T>
     {
         private static string[] keys = new[] { "x", "y", "z", "w" };
 
@@ -15,7 +15,7 @@ namespace NETGraph.Core.BuiltIn
         public DataResolver z { get; private set; }
         public DataResolver w { get; private set; }
 
-        public Vector4Base(T x, T y, T z, T w) : base(typeof(T), IData.Options.Named)
+        public Vector4(T x, T y, T z, T w) : base(typeof(T), IData.Options.Named)
         {
             initNamed(keys.Select(k => new KeyValuePair<string, T>(k, default)));
             this.assign(keys[0], x);
@@ -36,21 +36,21 @@ namespace NETGraph.Core.BuiltIn
     }
 
 
-    public class Vector4Byte : Vector4Base<byte>
+    public class Vector4b : Vector4<byte>
     {
-        public Vector4Byte(byte x, byte y, byte z, byte w) : base(x, y, z, w) { }
+        public Vector4b(byte x, byte y, byte z, byte w) : base(x, y, z, w) { }
     }
-    public class Vector4Double : Vector4Base<double>
+    public class Vector4d : Vector4<double>
     {
-        public Vector4Double(double x, double y, double z, double w) : base(x, y, z, w) { }
+        public Vector4d(double x, double y, double z, double w) : base(x, y, z, w) { }
     }
-    public class Vector4Int : Vector4Base<int>
+    public class Vector4i : Vector4<int>
     {
-        public Vector4Int(int x, int y, int z, int w) : base(x, y, z, w) { }
+        public Vector4i(int x, int y, int z, int w) : base(x, y, z, w) { }
     }
-    public class Vector4 : Vector4Base<float>
+    public class Vector4f : Vector4<float>
     {
-        public Vector4(float x, float y, float z, float w) : base(x, y, z, w) { }
+        public Vector4f(float x, float y, float z, float w) : base(x, y, z, w) { }
     }
 
 }
