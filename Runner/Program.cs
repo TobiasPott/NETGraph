@@ -64,7 +64,7 @@ public class Program
         // binding to actual data objeect => reesults in resolvable DataQuery
         TimeStamp(sw, vec3IntData.ToString());
 
-        IEnumerable<IDataResolver> inputs = vec3IntData.z.AsEnumerable<IDataResolver>().Append(vec3IntData.x);
+        IEnumerable<IResolver> inputs = vec3IntData.z.AsEnumerable<IResolver>().Append(vec3IntData.x);
         libMath.assign("add", null, vec3IntData.z, inputs); // execute method
         TimeStamp(sw, vec3IntData.ToString());
 
@@ -83,12 +83,12 @@ public class Program
         
         // runner test code to create a new 'named' data of data type Int
         Data<string> name = Data<string>.Generator().Generate(IData.Options.Scalar) as Data<string>;
-        name.assign(DataSignature.Scalar, "blubb");
+        name.assign(DataAccessor.Scalar, "blubb");
 
         Data<int> typeIndex = Data<int>.Generator().Generate(IData.Options.Scalar) as Data<int>;
-        typeIndex.assign(DataSignature.Scalar, DataTypes.Int);
+        typeIndex.assign(DataAccessor.Scalar, DataTypes.Int);
 
-        LibCore.Instance.invoke("new", null, typeIndex.resolver(DataSignature.Scalar).AsEnumerable().Append(name.resolver(DataSignature.Scalar)));
+        LibCore.Instance.invoke("new", null, typeIndex.resolver().AsEnumerable().Append(name.resolver()));
 
         Console.WriteLine();
     }
