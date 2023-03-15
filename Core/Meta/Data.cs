@@ -29,9 +29,8 @@ namespace NETGraph.Core.Meta
         // ToDo: movee to extension method for IData
         public static void assign<V>(this IData data, string accessor, V value) => data.assign(new DataAccessor(accessor), value);
         public static void assign<V>(this IData data, V value) => data.assign(DataAccessor.Scalar, value);
-        public static IResolver resolver(this IData data, DataAccessor accessor) => new DataResolver(data, accessor);
-        public static IResolver resolver(this IData data, string accessor) => data.resolver(new DataAccessor(accessor));
-        public static IResolver resolver(this IData data) => data.resolver(DataAccessor.Scalar);
+        public static IResolver resolver(this IData data, string accessor) => new DataResolver(data, accessor);
+        public static IResolver resolver(this IData data) => data.resolver(string.Empty);
 
         public static bool match(IData lh, IData rh) => lh.typeIndex == rh.typeIndex;
         public static bool matchStructure(IData lh, IData rh) => lh.typeIndex == rh.typeIndex && lh.options == rh.options;

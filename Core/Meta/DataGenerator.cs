@@ -12,6 +12,7 @@ namespace NETGraph.Core.Meta
         }
 
         public IData Generate(IData.Options options) => this.withOptions.Invoke(options);
+        public IData Generate() => this.withOptions.Invoke(0);
 
 
         // ToDo: Consider implementing a runtime Data Factory which builds new DataBase<T> typees by Type parameter
