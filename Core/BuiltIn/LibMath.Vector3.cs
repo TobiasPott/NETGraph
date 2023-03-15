@@ -14,7 +14,7 @@ namespace NETGraph.Core.BuiltIn
         public DataResolver y { get; private set; }
         public DataResolver z { get; private set; }
 
-        public Vector3Base(T x, T y, T z) : base(MetaTypeRegistry.GetDataTypeFor(typeof(T).Name), IData.Options.Named)
+        public Vector3Base(T x, T y, T z) : base(typeof(T), IData.Options.Named)
         {
             initNamed(keys.Select(k => new KeyValuePair<string, T>(k, default)));
             this.assign(keys[0], x);

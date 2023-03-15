@@ -88,7 +88,7 @@ namespace NETGraph.Core.Meta
     {
         public static DataGenerator Generator()
         {
-            return new DataGenerator((o) => new Data<T>(typeof(T), o));
+            return new DataGenerator((o) => new Data<T>(TypeMapping.instance.BuiltInDataTypeFor(typeof(T)), o));
         }
 
         protected T scalar { get; set; }
@@ -98,9 +98,7 @@ namespace NETGraph.Core.Meta
 
         protected Data(Type type, IData.Options options) : this(TypeMapping.instance.BuiltInDataTypeFor(type), options)
         { }
-        protected Data(int typeIndex, IData.Options structure) : base(typeIndex, structure)
-        { }
-        protected Data(DataTypes type, IData.Options options) : base((int)type, options)
+        protected Data(int typeIndex, IData.Options options) : base(typeIndex, options)
         {
             if (options.HasFlag(IData.Options.List))
                 this.list = new List<T>();

@@ -48,7 +48,7 @@ namespace NETGraph.Core.Meta
         }
 
         public Type BuiltInTypeFor(DataTypes dataType) => builtInTypesMap[dataType];
-        public DataTypes BuiltInDataTypeFor(Type type) => builtInTypesMap.First(x => x.Value.Equals(type)).Key;
+        public int BuiltInDataTypeFor(Type type) => (int)builtInTypesMap.First(x => x.Value.Equals(type)).Key;
 
     }
 
