@@ -54,7 +54,7 @@ namespace NETGraph.Core.BuiltIn
         }
 
 
-        private void Add(IDataResolver reference, IDataResolver assignTo, IEnumerable<IDataResolver> inputs)
+        private void Add(IResolver reference, IResolver assignTo, IEnumerable<IResolver> inputs)
         {
             int sum = inputs.Sum(q => q.resolve<int>());
             // check if reference is given and add it's value to sum;
@@ -62,19 +62,19 @@ namespace NETGraph.Core.BuiltIn
                 sum += reference.resolve<int>();
             assignTo.assign<int>(sum);
         }
-        private void Subtract(IDataResolver reference, IDataResolver assignTo, IEnumerable<IDataResolver> inputs)
+        private void Subtract(IResolver reference, IResolver assignTo, IEnumerable<IResolver> inputs)
         {
             int subtrahends = inputs.Sum(q => q.resolve<int>());
             assignTo.assign<int>(assignTo.resolve<int>() - subtrahends);
         }
-        private void Multiply(IDataResolver reference, IDataResolver assignTo, IEnumerable<IDataResolver> inputs)
+        private void Multiply(IResolver reference, IResolver assignTo, IEnumerable<IResolver> inputs)
         {
             int product = 1;
             foreach (DataResolver input in inputs)
                 product *= input.resolve<int>();
             assignTo.assign<int>(product);
         }
-        private void Divide(IDataResolver reference, IDataResolver assignTo, IEnumerable<IDataResolver> inputs)
+        private void Divide(IResolver reference, IResolver assignTo, IEnumerable<IResolver> inputs)
         {
             int dividend = inputs.First().resolve<int>();
             foreach (DataResolver input in inputs.Skip(1))

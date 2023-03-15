@@ -16,22 +16,22 @@ namespace NETGraph.Core.BuiltIn
         protected Dictionary<string, Call> methods = new Dictionary<string, Call>();
 
 
-        public void assign(string signature, IDataResolver reference, IDataResolver assignTo, IEnumerable<IDataResolver> inputs)
+        public void assign(string accessor, IResolver reference, IResolver assignTo, IEnumerable<IResolver> inputs)
         {
-            Call call = methods[signature];
+            Call call = methods[accessor];
             if (call.assign != null)
                 call.assign.Invoke(reference, assignTo, inputs);
             else
-                throw new InvalidOperationException($"Assignment call for {signature} is not supported.");
+                throw new InvalidOperationException($"Assignment call for {accessor} is not supported.");
         }
 
-        public IDataResolver invoke(string signature, IDataResolver reference, IEnumerable<IDataResolver> inputs)
+        public IResolver invoke(string accessor, IResolver reference, IEnumerable<IResolver> inputs)
         {
-            Call call = methods[signature];
+            Call call = methods[accessor];
             if (call.invoke != null)
                 return call.invoke.Invoke(reference, inputs);
             else
-                throw new InvalidOperationException($"Method call for {signature} is not supported.");
+                throw new InvalidOperationException($"Method call for {accessor} is not supported.");
         }
     }
 

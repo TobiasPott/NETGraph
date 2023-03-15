@@ -2,12 +2,6 @@
 
 namespace NETGraph.Core.Meta
 {
-
-    public interface IGenerator<T, O>
-    {
-        T Generate(O options);
-    }
-
     public struct DataGenerator : IGenerator<IData, IData.Options>
     {
         Func<IData.Options, IData> withOptions;

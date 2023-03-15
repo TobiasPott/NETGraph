@@ -27,13 +27,13 @@ namespace NETGraph.Core.BuiltIn
         }
 
         // ToDo: Add processing of third parameter for naming a variable on creation
-        private IDataResolver New(IDataResolver reference, IEnumerable<IDataResolver> inputs)
+        private IResolver New(IResolver reference, IEnumerable<IResolver> inputs)
         {
             int typeIndex = inputs.First().resolve<int>();
             string name = inputs.Skip(1).First().resolve<string>();
 
             Console.WriteLine($"new {(DataTypes)typeIndex} named {name}");
-            return new DataResolver(MetaTypeRegistry.Generator(typeIndex).Generate(IData.Options.Scalar), DataSignature.Scalar);
+            return new DataResolver(MetaTypeRegistry.Generator(typeIndex).Generate(IData.Options.Scalar), DataAccessor.Scalar);
         }
 
         // ToDo: Add implementation for init methods of data

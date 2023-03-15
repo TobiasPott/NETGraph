@@ -3,7 +3,7 @@
 namespace NETGraph.Core.Meta
 {
 
-    public struct DataSignature
+    public struct DataAccessor
     {
         public enum AccessTypes
         {
@@ -16,29 +16,29 @@ namespace NETGraph.Core.Meta
         private const string Mark_Named = ".";
 
 
-        public static readonly DataSignature Scalar = new DataSignature(string.Empty);
-        public static DataSignature Named(string key) => new DataSignature($".{key}");
-        public static DataSignature Index(int index) => new DataSignature($"[{index}]");
+        public static readonly DataAccessor Scalar = new DataAccessor(string.Empty);
+        public static DataAccessor Named(string key) => new DataAccessor($".{key}");
+        public static DataAccessor Index(int index) => new DataAccessor($"[{index}]");
 
 
         public AccessTypes accessType { get; private set; }
         public int index { get; private set; }
         public string key { get; private set; }
 
-        public DataSignature(string signature)
+        public DataAccessor(string accessor)
         {
             index = -1;
             key = string.Empty;
-            if (string.IsNullOrEmpty(signature))
+            if (string.IsNullOrEmpty(accessor))
             {
                 accessType = AccessTypes.Scalar;
                 index = -1;
                 key = string.Empty;
             }
-            else if (signature.StartsWith(Mark_Index))
+            else if (accessor.StartsWith(Mark_Index))
             {
                 accessType = AccessTypes.Index;
-                string indexString = signature.Substring(signature.IndexOf(Mark_Index) + 1).TrimEnd(']');
+                string indexString = accessor.Substring(accessor.IndexOf(Mark_Index) + 1).TrimEnd(']');
                 if (int.TryParse(indexString, out int value))
                     index = value;
                 else
@@ -47,17 +47,17 @@ namespace NETGraph.Core.Meta
             else
             {
                 accessType = AccessTypes.Key;
-                if (signature.StartsWith(Mark_Named))
-                    key = signature.Substring(1);
+                if (accessor.StartsWith(Mark_Named))
+                    key = accessor.Substring(1);
                 else
-                    key = signature;
+                    key = accessor;
             }
         }
 
 
-        public static string Signature(string dataName, int index) => string.Format("{0}[{1}]", dataName, index);
-        public static string Signature(string dataName, string key) => string.Format("{0}.{1}", dataName, key);
-        public static string Signature(string dataName) => dataName;
+        public static string ToAccessorString(string dataName, int index) => string.Format("{0}[{1}]", dataName, index);
+        public static string ToAccessorString(string dataName, string key) => string.Format("{0}.{1}", dataName, key);
+        public static string ToAccessorString(string dataName) => dataName;
 
         public override string ToString()
         {
@@ -67,8 +67,17 @@ namespace NETGraph.Core.Meta
                 return "named value: " + key;
             if (accessType == AccessTypes.Scalar)
                 return "direct value";
-            return "discard";
+            return "INVALID SIGNATURE";
         }
+
+
+
+
+        public static implicit operator DataAccessor(string accessor)
+        {
+            return new DataAccessor(accessor);
+        }
+
     }
 
 }

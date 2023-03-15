@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using NETGraph.Core;
 
+
 namespace NETGraph.Core.Meta
 {
 
@@ -25,8 +26,10 @@ namespace NETGraph.Core.Meta
     public static class DataExtensions
     {
 
-        public static void assign<V>(this IData data, string signature, V value) => data.assign(new DataSignature(signature), value);
-        public static IDataResolver resolver(this IData data, string signature) => data.resolver(new DataSignature(signature));
+        public static void assign<V>(this IData data, string accessor, V value) => data.assign(new DataAccessor(accessor), value);
+        public static void assign<V>(this IData data, V value) => data.assign(DataAccessor.Scalar, value);
+        public static IResolver resolver(this IData data, string accessor) => data.resolver(new DataAccessor(accessor));
+        public static IResolver resolver(this IData data) => data.resolver(DataAccessor.Scalar);
 
         public static bool match(IData lh, IData rh) => lh.typeIndex == rh.typeIndex;
         public static bool matchStructure(IData lh, IData rh) => lh.typeIndex == rh.typeIndex && lh.options == rh.options;
@@ -53,10 +56,10 @@ namespace NETGraph.Core.Meta
 
 
         //method to resolve data object into underlying type instances
-        V resolve<V>(DataSignature signature);
-        void assign(DataSignature signature, object scalar);
+        V resolve<V>(DataAccessor accessor);
+        void assign(DataAccessor accessor, object scalar);
 
-        IDataResolver resolver(DataSignature signature);
+        IResolver resolver(DataAccessor accessor);
     }
 
 
@@ -65,9 +68,8 @@ namespace NETGraph.Core.Meta
         public IData.Options options { get; protected set; }
         public int typeIndex { get; protected set; }
 
-        protected DataBase(DataTypes type, IData.Options options, bool isResizable = true) : this((int)type, options, isResizable)
-        { }
-        protected DataBase(int typeIndex, IData.Options options, bool isResizable = true)
+
+        protected DataBase(int typeIndex, IData.Options options)
         {
             this.typeIndex = typeIndex;
             this.options = options;
@@ -77,9 +79,9 @@ namespace NETGraph.Core.Meta
         // methods for accessing nested or dynamic data instances
         public abstract IData access(string dataPath);
         //method to resolve data object into underlying type instances
-        public abstract void assign(DataSignature signature, object scalar);
-        public abstract V resolve<V>(DataSignature signature);
-        public IDataResolver resolver(DataSignature signature) => new DataResolver(this, signature);
+        public abstract void assign(DataAccessor accessor, object scalar);
+        public abstract V resolve<V>(DataAccessor accessor);
+        public IResolver resolver(DataAccessor accessor) => new DataResolver(this, accessor);
     }
 
     public class Data<T> : DataBase
@@ -96,9 +98,9 @@ namespace NETGraph.Core.Meta
 
         protected Data(Type type, IData.Options options) : this(TypeMapping.instance.BuiltInDataTypeFor(type), options)
         { }
-        protected Data(int typeIndex, IData.Options structure) : this((DataTypes)typeIndex, structure)
+        protected Data(int typeIndex, IData.Options structure) : base(typeIndex, structure)
         { }
-        protected Data(DataTypes type, IData.Options options) : base(type, options)
+        protected Data(DataTypes type, IData.Options options) : base((int)type, options)
         {
             if (options.HasFlag(IData.Options.List))
                 this.list = new List<T>();
@@ -163,32 +165,32 @@ namespace NETGraph.Core.Meta
         protected object getValueAt(int index) => this[index];
         protected object getValueAt(string name) => this[name];
 
-        public override V resolve<V>(DataSignature signature)
+        public override V resolve<V>(DataAccessor accessor)
         {
-            switch (signature.accessType)
+            switch (accessor.accessType)
             {
-                case DataSignature.AccessTypes.Scalar:
+                case DataAccessor.AccessTypes.Scalar:
                     return (V)this.getValueScalar();
-                case DataSignature.AccessTypes.Index:
-                    return (V)this.getValueAt(signature.index);
-                case DataSignature.AccessTypes.Key:
-                    return (V)this.getValueAt(signature.key);
+                case DataAccessor.AccessTypes.Index:
+                    return (V)this.getValueAt(accessor.index);
+                case DataAccessor.AccessTypes.Key:
+                    return (V)this.getValueAt(accessor.key);
                 default:
                     return default(V);
             }
         }
-        public override void assign(DataSignature signature, object value)
+        public override void assign(DataAccessor accessor, object value)
         {
-            switch (signature.accessType)
+            switch (accessor.accessType)
             {
-                case DataSignature.AccessTypes.Scalar:
+                case DataAccessor.AccessTypes.Scalar:
                     this.scalar = (T)value;
                     break;
-                case DataSignature.AccessTypes.Index:
-                    this[signature.index] = (T)value;
+                case DataAccessor.AccessTypes.Index:
+                    this[accessor.index] = (T)value;
                     break;
-                case DataSignature.AccessTypes.Key:
-                    this[signature.key] = (T)value;
+                case DataAccessor.AccessTypes.Key:
+                    this[accessor.key] = (T)value;
                     break;
                 default:
                     break;

@@ -3,9 +3,8 @@
 namespace NETGraph.Core.Meta
 {
 
-    // ToDo: Implement IDynamicData type
-    //      IDynamicData holds a method referencee returning an IData reference or sth like that
-    // Todo: change resolver path parser to parse nested keys/scalar/index access
+    // ToDo: Reimplement the data blueprint type to include all necessary information
+    //      req.: name, type, options, keys (if dict access), size (if list access)
     public struct DataBlueprint
     {
         public string Name { get; private set; }
