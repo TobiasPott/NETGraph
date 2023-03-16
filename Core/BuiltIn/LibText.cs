@@ -7,7 +7,7 @@ namespace NETGraph.Core.BuiltIn
 {
     public class LibString : LibBase
     {
-        //public static LibString Instance { get; private set; } = new LibString();
+        public static LibString Instance { get; private set; } = new LibString();
 
         //public enum DataTypes : int
         //{

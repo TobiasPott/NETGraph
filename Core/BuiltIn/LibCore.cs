@@ -12,6 +12,25 @@ namespace NETGraph.Core.BuiltIn
 
         private LibCore()
         {
+            MetaTypeRegistry.Register(new MetaTypeBlueprint((int)DataTypes.Any, typeof(Any)));
+            MetaTypeRegistry.Register(new MetaTypeBlueprint((int)DataTypes.Void, typeof(void)));
+            MetaTypeRegistry.Register(new MetaTypeBlueprint((int)DataTypes.Object, typeof(object)));
+            MetaTypeRegistry.Register(new MetaTypeBlueprint((int)DataTypes.Bool, typeof(bool)));
+            MetaTypeRegistry.Register(new MetaTypeBlueprint((int)DataTypes.Byte, typeof(byte)));
+            MetaTypeRegistry.Register(new MetaTypeBlueprint((int)DataTypes.SByte, typeof(sbyte)));
+            MetaTypeRegistry.Register(new MetaTypeBlueprint((int)DataTypes.Short, typeof(short)));
+            MetaTypeRegistry.Register(new MetaTypeBlueprint((int)DataTypes.UShort, typeof(ushort)));
+            MetaTypeRegistry.Register(new MetaTypeBlueprint((int)DataTypes.Char, typeof(char)));
+            MetaTypeRegistry.Register(new MetaTypeBlueprint((int)DataTypes.Int, typeof(int)));
+            MetaTypeRegistry.Register(new MetaTypeBlueprint((int)DataTypes.UInt, typeof(uint)));
+            MetaTypeRegistry.Register(new MetaTypeBlueprint((int)DataTypes.Long, typeof(long)));
+            MetaTypeRegistry.Register(new MetaTypeBlueprint((int)DataTypes.ULong, typeof(ulong)));
+            MetaTypeRegistry.Register(new MetaTypeBlueprint((int)DataTypes.Float, typeof(float)));
+            MetaTypeRegistry.Register(new MetaTypeBlueprint((int)DataTypes.Double, typeof(double)));
+            MetaTypeRegistry.Register(new MetaTypeBlueprint((int)DataTypes.Decimal, typeof(decimal)));
+            MetaTypeRegistry.Register(new MetaTypeBlueprint((int)DataTypes.String, typeof(string)));
+            MetaTypeRegistry.Register(new MetaTypeBlueprint((int)DataTypes.IData, typeof(IData)));
+
             // ToDo: Implement new, initScalar, initList, initDict methods
             //      May update the generator cache, as this may make it obsolete to have specific scalar, list and dict methods in there
             //      as the lib implementation wraps the base data instance creation and the required init methods
@@ -33,7 +52,7 @@ namespace NETGraph.Core.BuiltIn
             string name = inputs.Skip(1).First().resolve<string>();
 
             Console.WriteLine($"new {(DataTypes)typeIndex} named {name}");
-            return new DataResolver(MetaTypeRegistry.Generator(typeIndex).Generate(IData.Options.Scalar), DataAccessor.Scalar);
+            return new DataResolver(DataGenerator.Generate(MetaTypeRegistry.GetType(typeIndex), IData.Options.Scalar), DataAccessor.Scalar);
         }
 
         // ToDo: Add implementation for init methods of data

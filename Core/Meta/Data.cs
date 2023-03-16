@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using NETGraph.Core;
@@ -64,11 +65,6 @@ namespace NETGraph.Core.Meta
 
     public struct ScalarData<T> : IData
     {
-        public static DataGenerator Generator()
-        {
-            return new DataGenerator((o) => new ScalarData<T>(MetaTypeRegistry.GetTypeIndex(typeof(T)), o));
-        }
-
         public IData.Options options { get; private set; }
         public int typeIndex { get; private set; }
 
@@ -120,21 +116,16 @@ namespace NETGraph.Core.Meta
         {
             string toString = string.Empty;
             if (this.options.HasFlag(IData.Options.Scalar))
-                toString = $"scalar:{scalar}";
+                toString = $"scalar = {scalar}";
             else
                 toString = $"INVALID {this.GetType()}";
 
-            return base.ToString() + $"[{this.options}] = " + toString;
+            return $"ScalaData<{typeof(T).Name}> " + "{ " + string.Join(", ", toString, options) + " }";
         }
 
     }
     public class ListData<T> : IData
     {
-        public static DataGenerator Generator()
-        {
-            return new DataGenerator((o) => new ListData<T>(MetaTypeRegistry.GetTypeIndex(typeof(T)), o));
-        }
-
         public IData.Options options { get; private set; }
         public int typeIndex { get; private set; }
 
@@ -199,10 +190,11 @@ namespace NETGraph.Core.Meta
         {
             string toString = string.Empty;
             if (this.options.HasFlag(IData.Options.List))
-                toString = $"[list:{string.Join(", ", list)}]";
+                toString = $"list = ({string.Join(", ", list)})";
             else
                 toString = $"INVALID {this.GetType()}";
-            return base.ToString() + $"[{this.options}] = " + toString;
+
+            return $"ListData<{typeof(T).Name}> " + "{ " + string.Join(", ", toString, options) + " }";
         }
 
     }
@@ -277,10 +269,11 @@ namespace NETGraph.Core.Meta
         {
             string toString = string.Empty;
             if (this.options.HasFlag(IData.Options.Named))
-                toString = $"[dict:{string.Join(", ", dict)}]";
+                toString = $"dict = ({string.Join(", ", dict)})";
             else
                 toString = $"INVALID {this.GetType()}";
-            return base.ToString() + $"[{this.options}] = " + toString;
+
+            return $"DictData<{typeof(T).Name}> " + "{ " + string.Join(", ", toString, options) + " }";
         }
 
     }

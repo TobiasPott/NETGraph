@@ -12,21 +12,18 @@ namespace NETGraph.Core.Meta
         public string typeName { get; private set; }
         // ToDo: add alias for type names
         public Type type { get; private set; } // maybe null for types without underlying .NET type 
-        public IGenerator<IData, IData.Options> generator { get; private set; }
 
-        public MetaTypeBlueprint(int dataType, Type type, IGenerator<IData, IData.Options> generator)
+        public MetaTypeBlueprint(int dataType, Type type) //, IGenerator<IData, IData.Options> generator)
         {
             this.typeName = type.Name.ToLowerInvariant();
             this.typeIndex = (int)dataType;
             this.type = type;
-            this.generator = generator;
         }
-        public MetaTypeBlueprint(Type type, IGenerator<IData, IData.Options> generator)
+        public MetaTypeBlueprint(Type type)
         {
             this.typeIndex = _runningIndex++;
             this.typeName = type.Name.ToLowerInvariant();
             this.type = type;
-            this.generator = generator;
         }
 
     }
