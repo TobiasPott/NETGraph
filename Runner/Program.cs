@@ -51,13 +51,13 @@ public class Program
 
     public static void Main(string[] args)
     {
-        MetaTypeRegistry.RegisterBuiltIn();
+        MetaTypeRegistry.LoadBuiltInLibraries();
 
-
+        /*
         Stopwatch sw = new Stopwatch();
         sw.Start();
 
-        Vector3Int vec3IntData = new Vector3Int(1, 10, 0);
+        Vector3i vec3IntData = new Vector3i(1, 10, 0);
         LibMath libMath = LibMath.Instance;
 
 
@@ -77,18 +77,20 @@ public class Program
         vec3IntData.x.assign(12);
         for (int i = 0; i < 5; i++)
             libMath.assign("add", null, vec3IntData.z, inputs); // execute method
-
-
         TimeStamp(sw, vec3IntData.ToString());
+        */
         
         // runner test code to create a new 'named' data of data type Int
-        Data<string> name = Data<string>.Generator().Generate(IData.Options.Scalar) as Data<string>;
+        ScalarData<string> name = (ScalarData<string>)DataGenerator.Generate<string>(IData.Options.Scalar);
         name.assign(DataAccessor.Scalar, "blubb");
 
-        Data<int> typeIndex = Data<int>.Generator().Generate(IData.Options.Scalar) as Data<int>;
+        ScalarData<int> typeIndex = (ScalarData<int>)DataGenerator.Generate<int>(IData.Options.Scalar);
         typeIndex.assign(DataAccessor.Scalar, DataTypes.Int);
 
         LibCore.Instance.invoke("new", null, typeIndex.resolver().AsEnumerable().Append(name.resolver()));
+
+        ScalarData<int> rtGenInt = (ScalarData<int>)DataGenerator.Generate(typeof(int), IData.Options.Scalar);
+        Console.WriteLine(rtGenInt);
 
         Console.WriteLine();
     }
