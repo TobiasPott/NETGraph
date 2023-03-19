@@ -41,11 +41,6 @@ public static class IEnumerableExt
 }
 public class Program
 {
-    public const string NInput = "input";
-    public const string NOutput = "output";
-    public const string VStart = "Start";
-    public const string VMid = "Mitte";
-    public const string VEnd = "Ende";
 
     public static object GuidStringNode { get; private set; }
 
@@ -81,16 +76,34 @@ public class Program
         */
 
         // runner test code to create a new 'named' data of data type Int
-        ScalarData<string> name = (ScalarData<string>)Memory.Alloc<string>(IData.Options.Scalar);
-        name.assign(DataAccessor.Scalar, "blubb");
 
-        ScalarData<int> typeIndex = (ScalarData<int>)Memory.Alloc<int>(IData.Options.Scalar);
-        typeIndex.assign(DataAccessor.Scalar, DataTypes.Int);
 
-        Memory.Assign("newInt", Memory.Alloc(typeof(int), IData.Options.Scalar));
-        ScalarData<int> rtGenInt = (ScalarData<int>)Memory.Get("newInt");
-        rtGenInt.assign(1337);
-        Console.WriteLine(rtGenInt);
+        Memory.Assign("x", Memory.Alloc(typeof(int), Options.Scalar));
+        ScalarData<int> xInt = (ScalarData<int>)Memory.Get("x");
+        xInt.assign(1337);
+
+        Memory.Assign("y", Memory.Alloc(typeof(int), Options.Scalar));
+        ScalarData<int> yInt = (ScalarData<int>)Memory.Get("y");
+        yInt.assign(7331);
+
+        Console.WriteLine(xInt);
+
+        LibMath libMath = LibMath.Instance;
+        libMath.assign("add", null, xInt, xInt, yInt); // execute method
+
+        Console.WriteLine(xInt);
+
+
+        Memory.Assign("z", Memory.Alloc(typeof(int), Options.Scalar));
+        ScalarData<int> zInt = (ScalarData<int>)Memory.Get("z");
+        LibCore.assign(zInt, xInt);
+        Console.WriteLine(zInt);
+
+
+        //Memory.Assign("a", Memory.Alloc(typeof(float), Options.Scalar));
+        //ScalarData<float> aFloat = (ScalarData<float>)Memory.Get("a");
+        //LibCore.assign(aFloat, xInt);
+        //Console.WriteLine(aFloat);
 
         Console.WriteLine();
     }
