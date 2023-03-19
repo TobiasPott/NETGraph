@@ -80,14 +80,6 @@ namespace NETGraph.Core.Meta
             this.scalar = default(T);
         }
 
-
-        internal ScalarData<T> initScalar(T scalar)
-        {
-            this.scalar = scalar;
-            return this;
-        }
-
-
         internal object getValueScalar() => this.scalar;
 
         public V resolve<V>(DataAccessor accessor)
@@ -150,18 +142,6 @@ namespace NETGraph.Core.Meta
 
 
 
-        internal ListData<T> initList(IEnumerable<T> values)
-        {
-            if (this.list.Count == 0)
-            {
-                this.list = new List<T>(values);
-                return this;
-            }
-            else
-                throw new InvalidOperationException($"Cannot initialize data on {this.options} structure that contains data. Please clear the structure beforee re-init.");
-        }
-
-
         internal object getValueAt(int index) => this[index];
 
         public virtual V resolve<V>(DataAccessor accessor)
@@ -215,6 +195,14 @@ namespace NETGraph.Core.Meta
             this.dict = new Dictionary<string, T>();
         }
 
+        protected void initializeNames(string[] names)
+        {
+            if (this.dict.Count == 0 && names.Length > 0)
+                foreach (string name in names)
+                    this.dict.Add(name, default);
+
+        }
+
 
         internal T this[string name]
         {
@@ -226,18 +214,6 @@ namespace NETGraph.Core.Meta
                 else
                     dict[name] = value;
             }
-        }
-
-
-        internal DictData<T> initNamed(IEnumerable<KeyValuePair<string, T>> namedValues)
-        {
-            if (this.dict.Count == 0)
-            {
-                this.dict = new Dictionary<string, T>(namedValues);
-                return this;
-            }
-            else
-                throw new InvalidOperationException($"Cannot initialize data on {this.options} structure that contains data. Please clear the structure beforee re-init.");
         }
 
 

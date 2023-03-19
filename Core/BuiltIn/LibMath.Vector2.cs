@@ -15,7 +15,7 @@ namespace NETGraph.Core.BuiltIn
 
         public Vector2(T x, T y) : base(typeof(T), IData.Options.Named)
         {
-            initNamed(keys.Select(k => new KeyValuePair<string, T>(k, default)));
+            this.initializeNames(keys);
             this.assign(keys[0], x);
             this.assign(keys[1], y);
 
