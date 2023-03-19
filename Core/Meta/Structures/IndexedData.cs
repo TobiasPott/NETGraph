@@ -31,13 +31,39 @@ namespace NETGraph.Core.Meta
 
         internal object getValueAt(int index) => this[index];
 
+        public V resolve<V>()
+        {
+            Type vType = typeof(V);
+            Type dType = typeof(List<T>);
+            if (vType.IsAssignableFrom(dType))
+                return (V)(object)this.list;
+            throw new InvalidOperationException($"Cannot resolve {dType} to {vType}");
+        }
         public virtual V resolve<V>(DataAccessor accessor)
         {
             if (accessor.accessType == DataAccessor.AccessTypes.Index)
                 return (V)this.getValueAt(accessor.index);
             else
-                throw new InvalidOperationException($"Cannot acceess {this.GetType()} as {accessor.accessType}.");
+            {
+                if (typeof(V).Equals(list.GetType()))
+                    return (V)(object)this.list; // ToDo: ponder about weird object cast solution (e.g. object typed backing field
+                else
+                    throw new InvalidOperationException($"Cannot acceess {this.GetType()} as {accessor.accessType}.");
+            }
         }
+
+        public void assign<V>(V value)
+        {
+            Type vType = typeof(V);
+            Type dType = typeof(List<T>);
+            if (dType.IsAssignableFrom(vType))
+            {
+                this.list = (List<T>)(object)value;
+                return;
+            }
+            throw new InvalidOperationException($"Cannot assign {dType} to {vType}");
+        }
+        public void assign<V>(DataAccessor accessor, V value) => assign(accessor, (object)value);
         public virtual void assign(DataAccessor accessor, object value)
         {
             if (accessor.accessType == DataAccessor.AccessTypes.Index)
@@ -45,6 +71,8 @@ namespace NETGraph.Core.Meta
             else
                 throw new InvalidOperationException($"Cannot acceess {this.GetType()} as {accessor.accessType}.");
         }
+
+
 
         public override string ToString()
         {

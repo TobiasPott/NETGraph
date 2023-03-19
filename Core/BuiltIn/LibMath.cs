@@ -46,7 +46,6 @@ namespace NETGraph.Core.BuiltIn
             MetaTypeRegistry.Register(new MetaType((int)DataTypes.Vector4b, typeof(Vector4b)));
             MetaTypeRegistry.Register(new MetaType((int)DataTypes.Vector4i, typeof(Vector4i)));
 
-
             methods.Add("add", new Call(Add, null));
             methods.Add("subtract", new Call(Subtract, null));
             methods.Add("multiply", new Call(Multiply, null));
@@ -70,14 +69,14 @@ namespace NETGraph.Core.BuiltIn
         private void Multiply(IResolver reference, IResolver assignTo, IEnumerable<IResolver> inputs)
         {
             int product = 1;
-            foreach (DataResolver input in inputs)
+            foreach (IResolver input in inputs)
                 product *= input.resolve<int>();
             assignTo.assign<int>(product);
         }
         private void Divide(IResolver reference, IResolver assignTo, IEnumerable<IResolver> inputs)
         {
             int dividend = inputs.First().resolve<int>();
-            foreach (DataResolver input in inputs.Skip(1))
+            foreach (IResolver input in inputs.Skip(1))
                 dividend /= input.resolve<int>();
             assignTo.assign<int>(dividend);
         }

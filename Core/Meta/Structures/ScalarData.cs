@@ -23,6 +23,15 @@ namespace NETGraph.Core.Meta
 
         internal object getValueScalar() => this.scalar;
 
+
+        public V resolve<V>()
+        {
+            Type vType = typeof(V);
+            Type dType = typeof(T);
+            if (vType.IsAssignableFrom(dType))
+                return (V)(object)this.scalar;
+            throw new InvalidOperationException($"Cannot resolve {dType} to {vType}");
+        }
         public V resolve<V>(DataAccessor accessor)
         {
             if (accessor.accessType == DataAccessor.AccessTypes.Scalar)
@@ -30,6 +39,19 @@ namespace NETGraph.Core.Meta
             else
                 throw new InvalidOperationException($"Cannot acceess {this.GetType()} as {accessor.accessType}.");
         }
+
+        public void assign<V>(V value)
+        {
+            Type vType = typeof(V);
+            Type dType = typeof(T);
+            if (vType.IsAssignableFrom(dType))
+            {
+                this.scalar = (T)(object)value;
+                return;
+            }
+            throw new InvalidOperationException($"Cannot assign {dType} to {vType}");
+        }
+        public void assign<V>(DataAccessor accessor, V value) => assign(accessor, (object)value);
         public void assign(DataAccessor accessor, object value)
         {
             if (accessor.accessType == DataAccessor.AccessTypes.Scalar)
@@ -48,7 +70,6 @@ namespace NETGraph.Core.Meta
 
             return $"ScalaData<{typeof(T).Name}> " + "{ " + string.Join(", ", toString, options) + " }";
         }
-
     }
 }
 

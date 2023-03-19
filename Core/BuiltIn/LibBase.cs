@@ -16,7 +16,7 @@ namespace NETGraph.Core.BuiltIn
         protected Dictionary<string, Call> methods = new Dictionary<string, Call>();
 
 
-        public void assign(string accessor, IResolver reference, IResolver assignTo, IEnumerable<IResolver> inputs)
+        public void assign(string accessor, IResolver reference, IResolver assignTo, params IResolver[] inputs)
         {
             Call call = methods[accessor];
             if (call.assign != null)
@@ -25,7 +25,7 @@ namespace NETGraph.Core.BuiltIn
                 throw new InvalidOperationException($"Assignment call for {accessor} is not supported.");
         }
 
-        public IResolver invoke(string accessor, IResolver reference, IEnumerable<IResolver> inputs)
+        public IResolver invoke(string accessor, IResolver reference, params IResolver[] inputs)
         {
             Call call = methods[accessor];
             if (call.invoke != null)

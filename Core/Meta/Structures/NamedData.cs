@@ -3,6 +3,8 @@ using System.Collections.Generic;
 
 namespace NETGraph.Core.Meta
 {
+    // ToDo: Implement base class for MutableData with generic type
+    //      class based IData implementations (builtin) allow for data persistence and mutation, struct based can only carry local changes
     public class NamedData<T> : IData
     {
         public Options options { get; private set; }
@@ -44,6 +46,14 @@ namespace NETGraph.Core.Meta
 
         internal object getValueAt(string name) => this[name];
 
+        public V resolve<V>()
+        {
+            Type vType = typeof(V);
+            Type dType = typeof(Dictionary<string, T>);
+            if (vType.IsAssignableFrom(dType))
+                return (V)(object)this.dict;
+            throw new InvalidOperationException($"Cannot resolve {dType} to {vType}");
+        }
         public virtual V resolve<V>(DataAccessor accessor)
         {
             if (accessor.accessType == DataAccessor.AccessTypes.Key)
@@ -52,14 +62,27 @@ namespace NETGraph.Core.Meta
                 throw new InvalidOperationException($"Cannot acceess {this.GetType()} as {accessor.accessType}.");
 
         }
+
+        public void assign<V>(V value)
+        {
+            Type vType = typeof(V);
+            Type dType = typeof(Dictionary<string, T>);
+            if (dType.IsAssignableFrom(vType))
+            {
+                this.dict = (Dictionary<string, T>)(object)value;
+                return;
+            }
+            throw new InvalidOperationException($"Cannot assign {dType} to {vType}");
+        }
+        public void assign<V>(DataAccessor accessor, V value) => assign(accessor, (object)value);
         public virtual void assign(DataAccessor accessor, object value)
         {
             if (accessor.accessType == DataAccessor.AccessTypes.Key)
                 this[accessor.key] = (T)value;
             else
                 throw new InvalidOperationException($"Cannot acceess {this.GetType()} as {accessor.accessType}.");
-
         }
+
 
         public override string ToString()
         {

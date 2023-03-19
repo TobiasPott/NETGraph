@@ -40,8 +40,6 @@ namespace NETGraph.Core.Meta
         // ToDo: movee to extension method for IData
         public static void assign<V>(this IData data, string accessor, V value) => data.assign(new DataAccessor(accessor), value);
         public static void assign<V>(this IData data, V value) => data.assign(DataAccessor.Scalar, value);
-        public static IResolver resolver(this IData data, string accessor) => new DataResolver(data, accessor);
-        public static IResolver resolver(this IData data) => data.resolver(string.Empty);
 
         public static bool match(IData lh, IData rh) => lh.typeIndex == rh.typeIndex;
         public static bool matchStructure(IData lh, IData rh) => lh.typeIndex == rh.typeIndex && lh.options == rh.options;
@@ -49,7 +47,7 @@ namespace NETGraph.Core.Meta
 
     }
 
-    public interface IData
+    public interface IData : IResolver
     {
         Options options { get; }
         int typeIndex { get; }
@@ -57,9 +55,9 @@ namespace NETGraph.Core.Meta
         // methods for accessing nested or dynamic data instances
         //IData access(string dataPath);
 
-        //method to resolve data object into underlying type instances
-        V resolve<V>(DataAccessor accessor);
-        void assign(DataAccessor accessor, object scalar);
+        ////method to resolve data object into underlying type instances
+        //V resolve<V>(DataAccessor accessor);
+        //void assign(DataAccessor accessor, object scalar);
     }
 
 

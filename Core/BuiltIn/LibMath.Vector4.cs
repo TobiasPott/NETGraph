@@ -10,11 +10,6 @@ namespace NETGraph.Core.BuiltIn
     {
         private static string[] keys = new[] { "x", "y", "z", "w" };
 
-        public DataResolver x { get; private set; }
-        public DataResolver y { get; private set; }
-        public DataResolver z { get; private set; }
-        public DataResolver w { get; private set; }
-
         public Vector4(T x, T y, T z, T w) : base(typeof(T), Options.Named)
         {
             this.initializeNames(keys);
@@ -22,11 +17,6 @@ namespace NETGraph.Core.BuiltIn
             this.assign(keys[1], y);
             this.assign(keys[2], z);
             this.assign(keys[3], w);
-
-            this.x = new DataResolver(this, keys[0]);
-            this.y = new DataResolver(this, keys[1]);
-            this.z = new DataResolver(this, keys[2]);
-            this.w = new DataResolver(this, keys[3]);
         }
 
         public override string ToString()
