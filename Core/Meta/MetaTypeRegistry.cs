@@ -8,10 +8,10 @@ namespace NETGraph.Core.Meta
 
     public class MetaTypeRegistry
     {
-        private static Dictionary<int, MetaTypeBlueprint> blueprints = new Dictionary<int, MetaTypeBlueprint>();
+        private static Dictionary<int, MetaType> blueprints = new Dictionary<int, MetaType>();
         private static Dictionary<DataTypes, Type> builtInTypesMap = new Dictionary<DataTypes, Type>();
 
-        public static bool Register(MetaTypeBlueprint blueprint)
+        public static bool Register(MetaType blueprint)
         {
             if (!blueprints.ContainsKey(blueprint.typeIndex))
             {
