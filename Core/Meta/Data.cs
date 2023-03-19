@@ -63,7 +63,7 @@ namespace NETGraph.Core.Meta
     }
 
 
-    public struct ScalarData<T> : IData
+    public class ScalarData<T> : IData
     {
         public IData.Options options { get; private set; }
         public int typeIndex { get; private set; }

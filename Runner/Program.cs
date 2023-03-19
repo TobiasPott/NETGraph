@@ -79,17 +79,17 @@ public class Program
             libMath.assign("add", null, vec3IntData.z, inputs); // execute method
         TimeStamp(sw, vec3IntData.ToString());
         */
-        
+
         // runner test code to create a new 'named' data of data type Int
-        ScalarData<string> name = (ScalarData<string>)DataGenerator.Generate<string>(IData.Options.Scalar);
+        ScalarData<string> name = (ScalarData<string>)Memory.Alloc<string>(IData.Options.Scalar);
         name.assign(DataAccessor.Scalar, "blubb");
 
-        ScalarData<int> typeIndex = (ScalarData<int>)DataGenerator.Generate<int>(IData.Options.Scalar);
+        ScalarData<int> typeIndex = (ScalarData<int>)Memory.Alloc<int>(IData.Options.Scalar);
         typeIndex.assign(DataAccessor.Scalar, DataTypes.Int);
 
-        LibCore.Instance.invoke("new", null, typeIndex.resolver().AsEnumerable().Append(name.resolver()));
-
-        ScalarData<int> rtGenInt = (ScalarData<int>)DataGenerator.Generate(typeof(int), IData.Options.Scalar);
+        Memory.Assign("newInt", Memory.Alloc(typeof(int), IData.Options.Scalar));
+        ScalarData<int> rtGenInt = (ScalarData<int>)Memory.Get("newInt");
+        rtGenInt.assign(1337);
         Console.WriteLine(rtGenInt);
 
         Console.WriteLine();

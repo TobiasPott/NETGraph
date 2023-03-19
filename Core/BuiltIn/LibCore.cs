@@ -37,22 +37,6 @@ namespace NETGraph.Core.BuiltIn
             //      these can than be used with method definitions and calls to execute and
             //      
             //      This may also require to reintroduce additional 'invoke' signature to return new DataResolver as 'new' is impossible without
-            //methods.Add("new", Add);
-            //methods.Add("initScalar", Add);
-            //methods.Add("initList", Add);
-            //methods.Add("initDict", Add);
-            methods.Add("new", new Call(null, New));
-
-        }
-
-        // ToDo: Add processing of third parameter for naming a variable on creation
-        private IResolver New(IResolver reference, IEnumerable<IResolver> inputs)
-        {
-            int typeIndex = inputs.First().resolve<int>();
-            string name = inputs.Skip(1).First().resolve<string>();
-
-            Console.WriteLine($"new {(DataTypes)typeIndex} named {name}");
-            return new DataResolver(DataGenerator.Generate(MetaTypeRegistry.GetType(typeIndex), IData.Options.Scalar), DataAccessor.Scalar);
         }
 
         // ToDo: Add implementation for init methods of data

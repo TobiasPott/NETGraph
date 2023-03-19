@@ -1,13 +1,26 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Reflection;
 
 namespace NETGraph.Core.Meta
 {
 
-    public static class DataGenerator
+    public static class Memory
     {
+        // ToDo: Add memory frame/stack frame and data scope support to the memory class
+        //
+        private static Dictionary<string, IData> _data = new Dictionary<string, IData>();
 
-        public static IData Generate<T>(IData.Options options)
+
+        public static void Assign(string name, IData data) => _data.Add(name, data);
+        public static IData Get(string name) => _data[name];
+        public static void Free(string name)
+        {
+            if (_data.ContainsKey(name))
+                _data.Remove(name);
+        }
+
+        public static IData Alloc<T>(IData.Options options)
         {
             int typeIndex = MetaTypeRegistry.GetTypeIndex(typeof(T));
             if (options.HasFlag(IData.Options.List))
@@ -18,20 +31,13 @@ namespace NETGraph.Core.Meta
                 return new ScalarData<T>(typeIndex, options);
         }
 
-        public static IData Generate(int typeIndex, IData.Options options)
-        {
-            Type type = MetaTypeRegistry.GetType(typeIndex);
-            return Generate(typeIndex, type, options);
-        }
-        public static IData Generate(Type type, IData.Options options)
-        {
-            int typeIndex = MetaTypeRegistry.GetTypeIndex(type);
-            return Generate(typeIndex, type, options);
-        }
         private static Type[] iDataDenericTypeCache = new Type[1];
         private static Type[] iDataArgumentsTypeCache = new Type[] { typeof(int), typeof(IData.Options) };
         private static object[] iDataArgumentsCache = new object[2];
-        private static IData Generate(int typeIndex, Type type, IData.Options options)
+
+        public static IData Alloc(int typeIndex, IData.Options options) => Alloc(typeIndex, MetaTypeRegistry.GetType(typeIndex), options);
+        public static IData Alloc(Type type, IData.Options options) => Alloc(MetaTypeRegistry.GetTypeIndex(type), type, options);
+        private static IData Alloc(int typeIndex, Type type, IData.Options options)
         {
             // Specify the type parameter of the A<> type
             iDataDenericTypeCache[0] = type;
