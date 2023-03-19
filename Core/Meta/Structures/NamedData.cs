@@ -69,8 +69,11 @@ namespace NETGraph.Core.Meta
             Type dType = typeof(Dictionary<string, T>);
             if (dType.IsAssignableFrom(vType))
             {
-                this.dict = (Dictionary<string, T>)(object)value;
-                return;
+                if (value.TryCast<Dictionary<string, T>>(out Dictionary<string, T> dict))
+                {
+                    this.dict = dict;
+                    return;
+                }
             }
             throw new InvalidOperationException($"Cannot assign {dType} to {vType}");
         }

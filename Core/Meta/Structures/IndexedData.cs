@@ -58,8 +58,11 @@ namespace NETGraph.Core.Meta
             Type dType = typeof(List<T>);
             if (dType.IsAssignableFrom(vType))
             {
-                this.list = (List<T>)(object)value;
-                return;
+                if (value.TryCast<List<T>>(out List<T> list))
+                {
+                    this.list = list;
+                    return;
+                }
             }
             throw new InvalidOperationException($"Cannot assign {dType} to {vType}");
         }

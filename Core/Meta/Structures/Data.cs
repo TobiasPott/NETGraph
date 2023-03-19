@@ -36,8 +36,6 @@ namespace NETGraph.Core.Meta
 
     public static class IDataExtensions
     {
-
-        // ToDo: movee to extension method for IData
         public static void assign<V>(this IData data, string accessor, V value) => data.assign(new DataAccessor(accessor), value);
         public static void assign<V>(this IData data, V value) => data.assign(DataAccessor.Scalar, value);
 
@@ -45,6 +43,17 @@ namespace NETGraph.Core.Meta
         public static bool matchStructure(IData lh, IData rh) => lh.typeIndex == rh.typeIndex && lh.options == rh.options;
 
 
+        public static bool TryCast<T>(this object obj, out T result)
+        {
+            if (obj is T)
+            {
+                result = (T)obj;
+                return true;
+            }
+
+            result = default(T);
+            return false;
+        }
     }
 
     public interface IData : IResolver

@@ -30,20 +30,14 @@ namespace NETGraph.Core.BuiltIn
             MetaTypeRegistry.Register(new MetaType((int)DataTypes.Decimal, typeof(decimal)));
             MetaTypeRegistry.Register(new MetaType((int)DataTypes.String, typeof(string)));
             MetaTypeRegistry.Register(new MetaType((int)DataTypes.IData, typeof(IData)));
-
-            // ToDo: Implement new, initScalar, initList, initDict methods
-            //      May update the generator cache, as this may make it obsolete to have specific scalar, list and dict methods in there
-            //      as the lib implementation wraps the base data instance creation and the required init methods
-            //      these can than be used with method definitions and calls to execute and
-            //      
-            //      This may also require to reintroduce additional 'invoke' signature to return new DataResolver as 'new' is impossible without
         }
 
-        // ToDo: Add implementation for init methods of data
-        //      Add set value methods of data
-        //      Add modifying dict and list of data
+        public static void assign(IResolver lh, IResolver rh)
+        {
+            // ToDo: Resolve weird object resolve method, perhaps requires per-type conversion as it would allow resolving for known generic type
+            lh.assign(rh.resolve<object>());
+        }
 
-        //      Add method to store data on a stack (making it a named variable which can be adressed)
     }
 
 }

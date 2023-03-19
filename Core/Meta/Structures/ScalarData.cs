@@ -42,15 +42,21 @@ namespace NETGraph.Core.Meta
 
         public void assign<V>(V value)
         {
+            // ToDo: add type check for IResolver and resolve them to target type
             Type vType = typeof(V);
             Type dType = typeof(T);
             if (vType.IsAssignableFrom(dType))
             {
-                this.scalar = (T)(object)value;
-                return;
+                if (value.TryCast<T>(out T scalar))
+                {
+                    this.scalar = scalar;
+                    return;
+                }
             }
             throw new InvalidOperationException($"Cannot assign {dType} to {vType}");
         }
+        // ToDo: Convert below assign methods with accessor arg to use a shared base method like assign<V>(V) to include automatic casting and assignment check
+        // ToDo: Transfer results to IndexedData and NamedData types
         public void assign<V>(DataAccessor accessor, V value) => assign(accessor, (object)value);
         public void assign(DataAccessor accessor, object value)
         {
