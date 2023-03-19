@@ -6,14 +6,14 @@ using System.Collections.Generic;
 namespace NETGraph.Core.BuiltIn
 {
 
-    public class Vector2<T> : DictData<T>
+    public class Vector2<T> : NamedData<T>
     {
         private static string[] keys = new[] { "x", "y" };
 
         public DataResolver x { get; private set; }
         public DataResolver y { get; private set; }
 
-        public Vector2(T x, T y) : base(typeof(T), IData.Options.Named)
+        public Vector2(T x, T y) : base(typeof(T), Options.Named)
         {
             this.initializeNames(keys);
             this.assign(keys[0], x);

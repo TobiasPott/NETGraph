@@ -6,7 +6,7 @@ using System.Collections.Generic;
 namespace NETGraph.Core.BuiltIn
 {
 
-    public class Vector3<T> : DictData<T>
+    public class Vector3<T> : NamedData<T>
     {
         private static string[] keys = new[] { "x", "y", "z" };
 
@@ -14,7 +14,7 @@ namespace NETGraph.Core.BuiltIn
         public DataResolver y { get; private set; }
         public DataResolver z { get; private set; }
 
-        public Vector3(T x, T y, T z) : base(typeof(T), IData.Options.Named)
+        public Vector3(T x, T y, T z) : base(typeof(T), Options.Named)
         {
             this.initializeNames(keys);
             this.assign(keys[0], x);

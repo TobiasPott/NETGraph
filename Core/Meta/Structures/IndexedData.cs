@@ -3,20 +3,20 @@ using System.Collections.Generic;
 
 namespace NETGraph.Core.Meta
 {
-    public class ListData<T> : IData
+    public class IndexedData<T> : IData
     {
-        public IData.Options options { get; private set; }
+        public Options options { get; private set; }
         public int typeIndex { get; private set; }
 
         private List<T> list;
 
 
-        internal ListData(Type type, IData.Options options) : this(MetaTypeRegistry.GetTypeIndex(type), options)
+        internal IndexedData(Type type, Options options) : this(MetaTypeRegistry.GetTypeIndex(type), options)
         { }
-        internal ListData(int typeIndex, IData.Options options)
+        internal IndexedData(int typeIndex, Options options)
         {
             this.typeIndex = typeIndex;
-            this.options = IData.Options.List | options;
+            this.options = Options.List | options;
             this.list = new List<T>();
         }
 
@@ -49,7 +49,7 @@ namespace NETGraph.Core.Meta
         public override string ToString()
         {
             string toString = string.Empty;
-            if (this.options.HasFlag(IData.Options.List))
+            if (this.options.HasFlag(Options.List))
                 toString = $"list = ({string.Join(", ", list)})";
             else
                 toString = $"INVALID {this.GetType()}";

@@ -8,6 +8,16 @@ using NETGraph.Core;
 namespace NETGraph.Core.Meta
 {
 
+    [Flags()]
+    public enum Options : int
+    {
+        Scalar = 1,
+        List = 2,
+        Named = 4,
+        Resizable = 8,
+
+    }
+
     public enum DataTypes : int
     {
         Any = -1,
@@ -41,16 +51,6 @@ namespace NETGraph.Core.Meta
 
     public interface IData
     {
-        [Flags()]
-        public enum Options
-        {
-            Scalar = 1,
-            List = 2,
-            Named = 4,
-            Resizable = 8,
-
-        }
-
         Options options { get; }
         int typeIndex { get; }
 

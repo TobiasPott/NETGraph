@@ -20,32 +20,32 @@ namespace NETGraph.Core.Meta
                 _data.Remove(name);
         }
 
-        public static IData Alloc<T>(IData.Options options)
+        public static IData Alloc<T>(Options options)
         {
             int typeIndex = MetaTypeRegistry.GetTypeIndex(typeof(T));
-            if (options.HasFlag(IData.Options.List))
-                return new ListData<T>(typeIndex, options);
-            else if (options.HasFlag(IData.Options.Named))
-                return new DictData<T>(typeIndex, options);
+            if (options.HasFlag(Options.List))
+                return new IndexedData<T>(typeIndex, options);
+            else if (options.HasFlag(Options.Named))
+                return new NamedData<T>(typeIndex, options);
             else
                 return new ScalarData<T>(typeIndex, options);
         }
 
         private static Type[] iDataDenericTypeCache = new Type[1];
-        private static Type[] iDataArgumentsTypeCache = new Type[] { typeof(int), typeof(IData.Options) };
+        private static Type[] iDataArgumentsTypeCache = new Type[] { typeof(int), typeof(Options) };
         private static object[] iDataArgumentsCache = new object[2];
 
-        public static IData Alloc(int typeIndex, IData.Options options) => Alloc(typeIndex, MetaTypeRegistry.GetType(typeIndex), options);
-        public static IData Alloc(Type type, IData.Options options) => Alloc(MetaTypeRegistry.GetTypeIndex(type), type, options);
-        private static IData Alloc(int typeIndex, Type type, IData.Options options)
+        public static IData Alloc(int typeIndex, Options options) => Alloc(typeIndex, MetaTypeRegistry.GetType(typeIndex), options);
+        public static IData Alloc(Type type, Options options) => Alloc(MetaTypeRegistry.GetTypeIndex(type), type, options);
+        private static IData Alloc(int typeIndex, Type type, Options options)
         {
             // Specify the type parameter of the A<> type
             iDataDenericTypeCache[0] = type;
             Type genericType;
-            if (options.HasFlag(IData.Options.List))
-                genericType = typeof(ListData<>).MakeGenericType(iDataDenericTypeCache);
-            else if (options.HasFlag(IData.Options.Named))
-                genericType = typeof(DictData<>).MakeGenericType(iDataDenericTypeCache);
+            if (options.HasFlag(Options.List))
+                genericType = typeof(IndexedData<>).MakeGenericType(iDataDenericTypeCache);
+            else if (options.HasFlag(Options.Named))
+                genericType = typeof(NamedData<>).MakeGenericType(iDataDenericTypeCache);
             else
                 genericType = typeof(ScalarData<>).MakeGenericType(iDataDenericTypeCache);
             // Get the 'B' method and invoke it:

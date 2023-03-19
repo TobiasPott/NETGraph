@@ -6,18 +6,18 @@ namespace NETGraph.Core.Meta
 
     public class ScalarData<T> : IData
     {
-        public IData.Options options { get; private set; }
+        public Options options { get; private set; }
         public int typeIndex { get; private set; }
 
         internal T scalar { get; set; }
 
 
-        internal ScalarData(Type type, IData.Options options) : this(MetaTypeRegistry.GetTypeIndex(type), options)
+        internal ScalarData(Type type, Options options) : this(MetaTypeRegistry.GetTypeIndex(type), options)
         { }
-        internal ScalarData(int typeIndex, IData.Options options)
+        internal ScalarData(int typeIndex, Options options)
         {
             this.typeIndex = typeIndex;
-            this.options = IData.Options.Scalar | options;
+            this.options = Options.Scalar | options;
             this.scalar = default(T);
         }
 
@@ -41,7 +41,7 @@ namespace NETGraph.Core.Meta
         public override string ToString()
         {
             string toString = string.Empty;
-            if (this.options.HasFlag(IData.Options.Scalar))
+            if (this.options.HasFlag(Options.Scalar))
                 toString = $"scalar = {scalar}";
             else
                 toString = $"INVALID {this.GetType()}";

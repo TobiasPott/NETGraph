@@ -3,20 +3,20 @@ using System.Collections.Generic;
 
 namespace NETGraph.Core.Meta
 {
-    public class DictData<T> : IData
+    public class NamedData<T> : IData
     {
-        public IData.Options options { get; private set; }
+        public Options options { get; private set; }
         public int typeIndex { get; private set; }
 
         private Dictionary<string, T> dict;
 
 
-        internal DictData(Type type, IData.Options options) : this(MetaTypeRegistry.GetTypeIndex(type), options)
+        internal NamedData(Type type, Options options) : this(MetaTypeRegistry.GetTypeIndex(type), options)
         { }
-        internal DictData(int typeIndex, IData.Options options)
+        internal NamedData(int typeIndex, Options options)
         {
             this.typeIndex = typeIndex;
-            this.options = IData.Options.Named | options;
+            this.options = Options.Named | options;
             this.dict = new Dictionary<string, T>();
         }
 
@@ -64,7 +64,7 @@ namespace NETGraph.Core.Meta
         public override string ToString()
         {
             string toString = string.Empty;
-            if (this.options.HasFlag(IData.Options.Named))
+            if (this.options.HasFlag(Options.Named))
                 toString = $"dict = ({string.Join(", ", dict)})";
             else
                 toString = $"INVALID {this.GetType()}";
