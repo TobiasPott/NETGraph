@@ -89,7 +89,8 @@ public class Program
         Console.WriteLine(xInt);
 
         LibMath libMath = LibMath.Instance;
-        libMath.assign("add", null, xInt, xInt, yInt); // execute method
+        IResolver addResult = libMath.invoke("add", null, xInt, yInt); // execute method
+        Console.WriteLine("add => " + addResult.resolve<int>());
 
         Console.WriteLine("x => " + xInt);
         Console.WriteLine("y => " + yInt);
@@ -106,7 +107,7 @@ public class Program
         wInt.assign(xInt as IResolver);
         Console.WriteLine("w => " + wInt);
 
-        Memory.Assign("ints", Memory.Alloc(typeof(int), Options.List));
+        Memory.Assign("ints", Memory.Alloc(typeof(int), Options.Index));
         IndexedData<int> intsList = (IndexedData<int>)Memory.Get("ints");
         intsList.initializeWith(new int[] { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9});
         //Memory.Assign("a", Memory.Alloc(typeof(float), Options.Scalar));
