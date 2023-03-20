@@ -1,5 +1,6 @@
 ﻿
 using System;
+using System.Collections.Generic;
 
 namespace NETGraph.Core.Meta
 {
@@ -26,30 +27,23 @@ namespace NETGraph.Core.Meta
         internal object getValueScalar() => this.scalar;
 
 
-        public V resolve<V>()
-        {
-            // ToDo: Add TryCast to IndexedData and NamedData
-            if (CoreExtensions.IsAssignableFrom<V, T>() && this.scalar.TryCast<V>(out V casted))
-                return casted;
-            throw new InvalidOperationException($"Cannot resolve {typeof(T)} to {typeof(V)}");
-        }
+        public V resolve<V>() => resolve<V>(DataAccessor.Scalar);
         public V resolve<V>(DataAccessor accessor)
         {
             if (accessor.accessType == DataAccessor.AccessTypes.Scalar)
-                return (V)this.getValueScalar();
-            else
-                throw new InvalidOperationException($"Cannot acceess {this.GetType()} as {accessor.accessType}.");
+            {
+                if (this.scalar.TryAssignableCast<V>(out V casted))
+                    return casted;
+                throw new InvalidOperationException($"Cannot resolve {typeof(T)} to {typeof(V)}");
+            }
+            throw new InvalidOperationException($"Cannot resolve {accessor.accessType} on {this.GetType()}");
         }
-
-        // ToDo: Convert below assign methods with accessor arg to use a shared base method like assign<V>(V) to include automatic casting and assignment check
-        //          base assign implementation can check if V is IResolver and try to assign resolved value instead (this would allow assign int to index accessed list data
-        // ToDo: Transfer results to IndexedData and NamedData types
         public void assign<V>(V value) => this.assign<V>(DataAccessor.Scalar, value);
         public void assign<V>(DataAccessor accessor, V value)
         {
             if (accessor.accessType == DataAccessor.AccessTypes.Scalar)
             {
-                if(CoreExtensions.TryCastOrResolve<T, V>(out T casted, value))
+                if (CoreExtensions.TryCastOrResolve<T, V>(out T casted, value))
                 {
                     this.scalar = casted;
                     return;

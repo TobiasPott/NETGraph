@@ -20,13 +20,21 @@ namespace NETGraph.Core.Meta
             this.list = new List<T>();
         }
 
-
         internal T this[int index]
         {
             get => list[index];
             set => list[index] = value;
         }
 
+        public void initializeWith(IEnumerable<T> values)
+        {
+            if (this.list.Count == 0)
+            {
+                this.list.AddRange(values);
+            }
+            else
+                throw new InvalidOperationException("Cannot initialise data again. Consider to clear the data or create a new instance.");
+        }
 
 
         internal object getValueAt(int index) => this[index];
@@ -36,19 +44,18 @@ namespace NETGraph.Core.Meta
         {
             if (accessor.accessType == DataAccessor.AccessTypes.Index)
             {
-                if (CoreExtensions.IsAssignableFrom<V, T>() && this.getValueAt(accessor.index).TryCast<V>(out V casted))
+                if (this.getValueAt(accessor.index).TryAssignableCast<V>(out V casted))
                     return casted;
                 throw new InvalidOperationException($"Cannot resolve [{accessor.index}] of {typeof(T)} to {typeof(V)}");
             }
             else if (accessor.accessType == DataAccessor.AccessTypes.Scalar)
             {
-                if (CoreExtensions.IsAssignableFrom<V, List<T>>() && this.list.TryCast<V>(out V casted))
+                if (this.list.TryAssignableCast<V>(out V casted))
                     return casted;
+                throw new InvalidOperationException($"Cannot resolve {typeof(List<T>)} to {typeof(V)}");
             }
-            throw new InvalidOperationException($"Cannot resolve {accessor.accessType} on {this.GetType().Name}");
+            throw new InvalidOperationException($"Cannot resolve {accessor.accessType} on {this.GetType()}");
         }
-
-
 
         public void assign<V>(V value) => this.assign<V>(DataAccessor.Scalar, value);
         public void assign<V>(DataAccessor accessor, V value)

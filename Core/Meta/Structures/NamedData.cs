@@ -7,6 +7,7 @@ namespace NETGraph.Core.Meta
     //      class based IData implementations (builtin) allow for data persistence and mutation, struct based can only carry local changes
     public class NamedData<T> : IData
     {
+
         public Options options { get; private set; }
         public int typeIndex { get; private set; }
 
@@ -22,14 +23,6 @@ namespace NETGraph.Core.Meta
             this.dict = new Dictionary<string, T>();
         }
 
-        protected void initializeNames(string[] names)
-        {
-            if (this.dict.Count == 0 && names.Length > 0)
-                foreach (string name in names)
-                    this.dict.Add(name, default);
-        }
-
-
         internal T this[string name]
         {
             get => dict[name];
@@ -42,21 +35,36 @@ namespace NETGraph.Core.Meta
             }
         }
 
+        public void initializeWith(string[] names)
+        {
+            if (this.dict.Count == 0 && names.Length > 0)
+            {
+                foreach (string name in names)
+                    this.dict.Add(name, default);
+            }
+            else
+                throw new InvalidOperationException("Cannot initialise data again. Consider to clear the data or create a new instance.");
+        }
+
 
         internal object getValueAt(string name) => this[name];
 
-        public V resolve<V>()
-        {
-            if (CoreExtensions.IsAssignableFrom<V, Dictionary<string, T>>() && this.dict.TryCast<V>(out V casted))
-                return casted;
-            throw new InvalidOperationException($"Cannot resolve {typeof(Dictionary<string, T>)} to {typeof(V)}");
-        }
+        public V resolve<V>() => resolve<V>(DataAccessor.Scalar);
         public virtual V resolve<V>(DataAccessor accessor)
         {
             if (accessor.accessType == DataAccessor.AccessTypes.Key)
-                return (V)this.getValueAt(accessor.key);
-            else
-                throw new InvalidOperationException($"Cannot acceess {this.GetType()} as {accessor.accessType}.");
+            {
+                if (CoreExtensions.IsAssignableFrom<V, Dictionary<string, T>>() && this.dict.TryCast<V>(out V casted))
+                    return casted;
+                throw new InvalidOperationException($"Cannot resolve [{accessor.key}] of {typeof(T)} to {typeof(V)}");
+            }
+            else if (accessor.accessType == DataAccessor.AccessTypes.Scalar)
+            {
+                if (this.dict.TryAssignableCast<V>(out V casted))
+                    return casted;
+                throw new InvalidOperationException($"Cannot resolve {typeof(Dictionary<string, T>)} to {typeof(V)}");
+            }
+            throw new InvalidOperationException($"Cannot resolve {accessor.accessType} on {this.GetType()}");
 
         }
 

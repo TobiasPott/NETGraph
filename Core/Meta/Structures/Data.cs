@@ -39,6 +39,26 @@ namespace NETGraph.Core.Meta
         public static bool IsAssignableFrom<From>(this Type to) => to.IsAssignableFrom(typeof(From));
         public static bool IsAssignableFrom<To, From>() => typeof(To).IsAssignableFrom(typeof(From));
 
+        public static bool TryCast<To>(this object obj, out To casted)
+        {
+            if (obj is To)
+            {
+                casted = (To)obj;
+                return true;
+            }
+
+            casted = default(To);
+            return false;
+
+        }
+        public static bool TryAssignableCast<To>(this object obj, out To casted)
+        {
+            if (obj.GetType().IsAssignableFrom<To>())
+                return TryCast<To>(obj, out casted);
+
+            casted = default(To);
+            return false;
+        }
         public static bool TryCastOrResolve<To, From>(out To casted, From value)
         {
             if (CoreExtensions.IsAssignableFrom<To, From>() && value.TryCast<To>(out casted))
@@ -64,18 +84,6 @@ namespace NETGraph.Core.Meta
         public static bool matchStructure(IData lh, IData rh) => lh.typeIndex == rh.typeIndex && lh.options == rh.options;
 
 
-        public static bool TryCast<T>(this object obj, out T result)
-        {
-            if (obj is T)
-            {
-                result = (T)obj;
-                return true;
-            }
-
-            result = default(T);
-            return false;
-
-        }
     }
 
     public interface IData : IResolver

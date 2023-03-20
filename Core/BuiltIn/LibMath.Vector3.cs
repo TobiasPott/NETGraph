@@ -12,7 +12,7 @@ namespace NETGraph.Core.BuiltIn
 
         public Vector3(T x, T y, T z) : base(typeof(T), Options.Named)
         {
-            this.initializeNames(keys);
+            this.initializeWith(keys);
             this.assign(keys[0], x);
             this.assign(keys[1], y);
         }
