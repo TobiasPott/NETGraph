@@ -48,11 +48,9 @@ namespace NETGraph.Core.Meta
 
         public V resolve<V>()
         {
-            Type vType = typeof(V);
-            Type dType = typeof(Dictionary<string, T>);
-            if (vType.IsAssignableFrom(dType))
-                return (V)(object)this.dict;
-            throw new InvalidOperationException($"Cannot resolve {dType} to {vType}");
+            if (CoreExtensions.IsAssignableFrom<V, Dictionary<string, T>>() && this.dict.TryCast<V>(out V casted))
+                return casted;
+            throw new InvalidOperationException($"Cannot resolve {typeof(Dictionary<string, T>)} to {typeof(V)}");
         }
         public virtual V resolve<V>(DataAccessor accessor)
         {
@@ -65,17 +63,12 @@ namespace NETGraph.Core.Meta
 
         public void assign<V>(V value)
         {
-            Type vType = typeof(V);
-            Type dType = typeof(Dictionary<string, T>);
-            if (dType.IsAssignableFrom(vType))
+            if (CoreExtensions.IsAssignableFrom<V, T>() && value.TryCast<Dictionary<string, T>>(out Dictionary<string, T> dict))
             {
-                if (value.TryCast<Dictionary<string, T>>(out Dictionary<string, T> dict))
-                {
-                    this.dict = dict;
-                    return;
-                }
+                this.dict = dict;
+                return;
             }
-            throw new InvalidOperationException($"Cannot assign {dType} to {vType}");
+            throw new InvalidOperationException($"Cannot assign {typeof(Dictionary<string, T>)} to {typeof(V)}");
         }
         public void assign<V>(DataAccessor accessor, V value) => assign(accessor, (object)value);
         public virtual void assign(DataAccessor accessor, object value)

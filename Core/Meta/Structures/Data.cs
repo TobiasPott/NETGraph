@@ -34,6 +34,13 @@ namespace NETGraph.Core.Meta
         IData,
     }
 
+    public static class CoreExtensions
+    {
+        public static bool IsAssignableFrom<From>(this Type to) => to.IsAssignableFrom(typeof(From));
+        public static bool IsAssignableFrom<To, From>() => typeof(To).IsAssignableFrom(typeof(From));
+
+    }
+
     public static class IDataExtensions
     {
         public static void assign<V>(this IData data, string accessor, V value) => data.assign(new DataAccessor(accessor), value);
@@ -53,6 +60,7 @@ namespace NETGraph.Core.Meta
 
             result = default(T);
             return false;
+
         }
     }
 

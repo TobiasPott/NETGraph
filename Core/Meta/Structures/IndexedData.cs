@@ -33,11 +33,10 @@ namespace NETGraph.Core.Meta
 
         public V resolve<V>()
         {
-            Type vType = typeof(V);
-            Type dType = typeof(List<T>);
-            if (vType.IsAssignableFrom(dType))
-                return (V)(object)this.list;
-            throw new InvalidOperationException($"Cannot resolve {dType} to {vType}");
+            // ToDo: Add TryCast to IndexedData and NamedData
+            if (CoreExtensions.IsAssignableFrom<V, List<T>>() && this.list.TryCast<V>(out V casted))
+                return casted;
+            throw new InvalidOperationException($"Cannot resolve {typeof(List<T>)} to {typeof(V)}");
         }
         public virtual V resolve<V>(DataAccessor accessor)
         {
@@ -54,17 +53,12 @@ namespace NETGraph.Core.Meta
 
         public void assign<V>(V value)
         {
-            Type vType = typeof(V);
-            Type dType = typeof(List<T>);
-            if (dType.IsAssignableFrom(vType))
+            if (CoreExtensions.IsAssignableFrom<V, List<T>>() && value.TryCast<List<T>>(out List<T> list))
             {
-                if (value.TryCast<List<T>>(out List<T> list))
-                {
-                    this.list = list;
-                    return;
-                }
+                this.list = list;
+                return;
             }
-            throw new InvalidOperationException($"Cannot assign {dType} to {vType}");
+            throw new InvalidOperationException($"Cannot assign {typeof(List<T>)} to {typeof(V)}");
         }
         public void assign<V>(DataAccessor accessor, V value) => assign(accessor, (object)value);
         public virtual void assign(DataAccessor accessor, object value)
