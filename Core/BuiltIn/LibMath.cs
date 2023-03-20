@@ -46,40 +46,46 @@ namespace NETGraph.Core.BuiltIn
             MetaTypeRegistry.Register(new MetaType((int)DataTypes.Vector4b, typeof(Vector4b)));
             MetaTypeRegistry.Register(new MetaType((int)DataTypes.Vector4i, typeof(Vector4i)));
 
-            methods.Add("add", new Call(Add, null));
-            methods.Add("subtract", new Call(Subtract, null));
-            methods.Add("multiply", new Call(Multiply, null));
-            methods.Add("divide", new Call(Divide, null));
+            methods.Add("add", Add);
+            //methods.Add("subtract", Subtract);
+            //methods.Add("multiply", Multiply);
+            //methods.Add("divide", Divide);
         }
 
-
-        private void Add(IResolver reference, IResolver assignTo, IEnumerable<IResolver> inputs)
+        private IResolver Add(IResolver reference, IEnumerable<IResolver> inputs)
         {
             int sum = inputs.Sum(q => q.resolve<int>());
             // check if reference is given and add it's value to sum;
             if (reference != null)
-                sum += reference.resolve<int>();
-            assignTo.assign<int>(sum);
+            {
+                reference.assign(sum + reference.resolve<int>());
+                return reference;
+            }
+            else
+            {
+                IData result = new ValueData<int>(sum);
+                return result;
+            }                
         }
-        private void Subtract(IResolver reference, IResolver assignTo, IEnumerable<IResolver> inputs)
-        {
-            int subtrahends = inputs.Sum(q => q.resolve<int>());
-            assignTo.assign<int>(assignTo.resolve<int>() - subtrahends);
-        }
-        private void Multiply(IResolver reference, IResolver assignTo, IEnumerable<IResolver> inputs)
-        {
-            int product = 1;
-            foreach (IResolver input in inputs)
-                product *= input.resolve<int>();
-            assignTo.assign<int>(product);
-        }
-        private void Divide(IResolver reference, IResolver assignTo, IEnumerable<IResolver> inputs)
-        {
-            int dividend = inputs.First().resolve<int>();
-            foreach (IResolver input in inputs.Skip(1))
-                dividend /= input.resolve<int>();
-            assignTo.assign<int>(dividend);
-        }
+        //private IResolver Subtract(IResolver reference, IEnumerable<IResolver> inputs)
+        //{
+        //    int subtrahends = inputs.Sum(q => q.resolve<int>());
+        //    assignTo.assign<int>(assignTo.resolve<int>() - subtrahends);
+        //}
+        //private IResolver Multiply(IResolver reference, IEnumerable<IResolver> inputs)
+        //{
+        //    int product = 1;
+        //    foreach (IResolver input in inputs)
+        //        product *= input.resolve<int>();
+        //    assignTo.assign<int>(product);
+        //}
+        //private IResolver Divide(IResolver reference, IEnumerable<IResolver> inputs)
+        //{
+        //    int dividend = inputs.First().resolve<int>();
+        //    foreach (IResolver input in inputs.Skip(1))
+        //        dividend /= input.resolve<int>();
+        //    assignTo.assign<int>(dividend);
+        //}
 
     }
 

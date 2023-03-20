@@ -10,6 +10,23 @@ namespace NETGraph.Core.BuiltIn
         public static LibCore Instance { get; private set; } = new LibCore();
 
 
+        public enum DataTypes : int
+        {
+            Any = -1,
+            Void = 0,
+            Object,
+            Bool,
+            Byte, SByte,
+            Short, UShort,
+            Int, UInt, Char,
+            Long, ULong,
+            Float, Double, Decimal,
+            String,
+            // internal library types (e.g. node, data, method
+            IData,
+        }
+
+
         private LibCore()
         {
             MetaTypeRegistry.Register(new MetaType((int)DataTypes.Any, typeof(Any)));

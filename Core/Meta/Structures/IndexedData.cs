@@ -16,7 +16,7 @@ namespace NETGraph.Core.Meta
         internal IndexedData(int typeIndex, Options options)
         {
             this.typeIndex = typeIndex;
-            this.options = Options.List | options;
+            this.options = Options.Index | options;
             this.list = new List<T>();
         }
 
@@ -60,8 +60,6 @@ namespace NETGraph.Core.Meta
         public void assign<V>(V value) => this.assign<V>(DataAccessor.Scalar, value);
         public void assign<V>(DataAccessor accessor, V value)
         {
-            // ToDo: Ponder about a way to reduce IsAssignableFrom, TryCast and necessary IResolver.resolve<T> to single method
-            //      This should reduce code clutter and noise
             if (accessor.accessType == DataAccessor.AccessTypes.Index)
             {
                 if (CoreExtensions.TryCastOrResolve<T, V>(out T casted, value))
@@ -85,13 +83,8 @@ namespace NETGraph.Core.Meta
 
         public override string ToString()
         {
-            string toString = string.Empty;
-            if (this.options.HasFlag(Options.List))
-                toString = $"list = ({string.Join(", ", list)})";
-            else
-                toString = $"INVALID {this.GetType()}";
-
-            return $"ListData<{typeof(T).Name}> " + "{ " + string.Join(", ", toString, options) + " }";
+            string toString = $"list = ({string.Join(", ", list)})";
+            return $"ListData<{typeof(T)}> " + "{ " + string.Join(", ", toString, options) + " }";
         }
 
     }

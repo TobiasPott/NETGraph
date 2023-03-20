@@ -3,8 +3,6 @@ using System.Collections.Generic;
 
 namespace NETGraph.Core.Meta
 {
-    // ToDo: Implement base class for MutableData with generic type
-    //      class based IData implementations (builtin) allow for data persistence and mutation, struct based can only carry local changes
     public class NamedData<T> : IData
     {
 
@@ -93,13 +91,8 @@ namespace NETGraph.Core.Meta
 
         public override string ToString()
         {
-            string toString = string.Empty;
-            if (this.options.HasFlag(Options.Named))
-                toString = $"dict = ({string.Join(", ", dict)})";
-            else
-                toString = $"INVALID {this.GetType()}";
-
-            return $"DictData<{typeof(T).Name}> " + "{ " + string.Join(", ", toString, options) + " }";
+            string toString = $"dict = ({string.Join(", ", dict)})";
+            return $"DictData<{typeof(T)}> " + "{ " + string.Join(", ", toString, options) + " }";
         }
 
     }

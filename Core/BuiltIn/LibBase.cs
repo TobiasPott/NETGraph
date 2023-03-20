@@ -13,23 +13,13 @@ namespace NETGraph.Core.BuiltIn
     //      base class should hold a field for a library name (which can be used for global access or unique identification)
     public abstract class LibBase : IMethodProvider
     {
-        protected Dictionary<string, Call> methods = new Dictionary<string, Call>();
-
-
-        public void assign(string accessor, IResolver reference, IResolver assignTo, params IResolver[] inputs)
-        {
-            Call call = methods[accessor];
-            if (call.assign != null)
-                call.assign.Invoke(reference, assignTo, inputs);
-            else
-                throw new InvalidOperationException($"Assignment call for {accessor} is not supported.");
-        }
+        protected Dictionary<string, Invokation> methods = new Dictionary<string, Invokation>();
 
         public IResolver invoke(string accessor, IResolver reference, params IResolver[] inputs)
         {
-            Call call = methods[accessor];
-            if (call.invoke != null)
-                return call.invoke.Invoke(reference, inputs);
+            Invokation invokation = methods[accessor];
+            if (invokation != null)
+                return invokation.Invoke(reference, inputs);
             else
                 throw new InvalidOperationException($"Method call for {accessor} is not supported.");
         }

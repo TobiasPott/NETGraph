@@ -1,10 +1,8 @@
-﻿
-using System;
-using System.Collections.Generic;
+﻿using System;
 
 namespace NETGraph.Core.Meta
 {
-    public class ScalarData<T> : IData
+    public struct ValueData<T> : IData
     {
 
         public Options options { get; private set; }
@@ -13,13 +11,11 @@ namespace NETGraph.Core.Meta
         private T scalar { get; set; }
 
 
-        internal ScalarData(Type type, Options options) : this(MetaTypeRegistry.GetTypeIndex(type), options)
-        { }
-        internal ScalarData(int typeIndex, Options options)
+        internal ValueData(T value)
         {
-            this.typeIndex = typeIndex;
-            this.options = Options.Scalar | options;
-            this.scalar = default(T);
+            this.typeIndex = MetaTypeRegistry.GetTypeIndex(typeof(T));
+            this.options = Options.Scalar;
+            this.scalar = value;
         }
 
         internal object getValueScalar() => this.scalar;
@@ -58,4 +54,3 @@ namespace NETGraph.Core.Meta
         }
     }
 }
-

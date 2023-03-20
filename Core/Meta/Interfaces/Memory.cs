@@ -23,7 +23,7 @@ namespace NETGraph.Core.Meta
         public static IData Alloc<T>(Options options)
         {
             int typeIndex = MetaTypeRegistry.GetTypeIndex(typeof(T));
-            if (options.HasFlag(Options.List))
+            if (options.HasFlag(Options.Index))
                 return new IndexedData<T>(typeIndex, options);
             else if (options.HasFlag(Options.Named))
                 return new NamedData<T>(typeIndex, options);
@@ -42,7 +42,7 @@ namespace NETGraph.Core.Meta
             // Specify the type parameter of the A<> type
             iDataDenericTypeCache[0] = type;
             Type genericType;
-            if (options.HasFlag(Options.List))
+            if (options.HasFlag(Options.Index))
                 genericType = typeof(IndexedData<>).MakeGenericType(iDataDenericTypeCache);
             else if (options.HasFlag(Options.Named))
                 genericType = typeof(NamedData<>).MakeGenericType(iDataDenericTypeCache);

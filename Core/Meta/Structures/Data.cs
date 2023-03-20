@@ -12,27 +12,11 @@ namespace NETGraph.Core.Meta
     public enum Options : int
     {
         Scalar = 1,
-        List = 2,
+        Index = 2,
         Named = 4,
         Resizable = 8,
-
     }
 
-    public enum DataTypes : int
-    {
-        Any = -1,
-        Void = 0,
-        Object,
-        Bool,
-        Byte, SByte,
-        Short, UShort,
-        Int, UInt, Char,
-        Long, ULong,
-        Float, Double, Decimal,
-        String,
-        // internal library types (e.g. node, data, method
-        IData,
-    }
 
     public static class CoreExtensions
     {
@@ -82,8 +66,6 @@ namespace NETGraph.Core.Meta
 
         public static bool match(IData lh, IData rh) => lh.typeIndex == rh.typeIndex;
         public static bool matchStructure(IData lh, IData rh) => lh.typeIndex == rh.typeIndex && lh.options == rh.options;
-
-
     }
 
     public interface IData : IResolver
