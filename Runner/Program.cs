@@ -108,10 +108,14 @@ public class Program
 
         Memory.Assign("ints", Memory.Alloc(typeof(int), Options.List));
         IndexedData<int> intsList = (IndexedData<int>)Memory.Get("ints");
+        intsList.initializeWith(new int[] { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9});
         //Memory.Assign("a", Memory.Alloc(typeof(float), Options.Scalar));
         //ScalarData<float> aFloat = (ScalarData<float>)Memory.Get("a");
         //LibCore.assign(aFloat, xInt);
         //Console.WriteLine(aFloat);
+        intsList.assign(new DataAccessor("[0]"), wInt);
+        Console.WriteLine("list => " + intsList);
+
 
         Console.WriteLine();
     }
