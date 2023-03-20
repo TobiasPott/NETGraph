@@ -17,11 +17,10 @@ namespace NETGraph.Core.BuiltIn
 
         public IResolver invoke(string accessor, IResolver reference, params IResolver[] inputs)
         {
-            Invokation invokation = methods[accessor];
-            if (invokation != null)
+            if (methods.TryGetValue(accessor, out Invokation invokation))
                 return invokation.Invoke(reference, inputs);
             else
-                throw new InvalidOperationException($"Method call for {accessor} is not supported.");
+                throw new InvalidOperationException($"Method call for {accessor} was not found in {this.GetType()} .");
         }
     }
 
