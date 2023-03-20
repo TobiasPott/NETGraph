@@ -32,11 +32,7 @@ namespace NETGraph.Core.BuiltIn
             MetaTypeRegistry.Register(new MetaType((int)DataTypes.IData, typeof(IData)));
         }
 
-        public static void assign(IResolver lh, IResolver rh)
-        {
-            // ToDo: Resolve weird object resolve method, perhaps requires per-type conversion as it would allow resolving for known generic type
-            lh.assign(rh.resolve<object>());
-        }
+        public static void assign(IResolver lh, IResolver rh) => lh.assign(rh);
 
     }
 

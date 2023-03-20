@@ -31,42 +31,47 @@ namespace NETGraph.Core.Meta
 
         internal object getValueAt(int index) => this[index];
 
-        public V resolve<V>()
-        {
-            // ToDo: Add TryCast to IndexedData and NamedData
-            if (CoreExtensions.IsAssignableFrom<V, List<T>>() && this.list.TryCast<V>(out V casted))
-                return casted;
-            throw new InvalidOperationException($"Cannot resolve {typeof(List<T>)} to {typeof(V)}");
-        }
+        public V resolve<V>() => resolve<V>(DataAccessor.Scalar);
         public virtual V resolve<V>(DataAccessor accessor)
         {
             if (accessor.accessType == DataAccessor.AccessTypes.Index)
-                return (V)this.getValueAt(accessor.index);
-            else
             {
-                if (typeof(V).Equals(list.GetType()))
-                    return (V)(object)this.list; // ToDo: ponder about weird object cast solution (e.g. object typed backing field
-                else
-                    throw new InvalidOperationException($"Cannot acceess {this.GetType()} as {accessor.accessType}.");
+                if (CoreExtensions.IsAssignableFrom<V, T>() && this.getValueAt(accessor.index).TryCast<V>(out V casted))
+                    return casted;
+                throw new InvalidOperationException($"Cannot resolve [{accessor.index}] of {typeof(T)} to {typeof(V)}");
             }
+            else if (accessor.accessType == DataAccessor.AccessTypes.Scalar)
+            {
+                if (CoreExtensions.IsAssignableFrom<V, List<T>>() && this.list.TryCast<V>(out V casted))
+                    return casted;
+            }
+            throw new InvalidOperationException($"Cannot resolve {accessor.accessType} on {this.GetType().Name}");
         }
 
-        public void assign<V>(V value)
+
+
+        public void assign<V>(V value) => this.assign<V>(DataAccessor.Scalar, value);
+        public void assign<V>(DataAccessor accessor, V value)
         {
-            if (CoreExtensions.IsAssignableFrom<V, List<T>>() && value.TryCast<List<T>>(out List<T> list))
-            {
-                this.list = list;
-                return;
-            }
-            throw new InvalidOperationException($"Cannot assign {typeof(List<T>)} to {typeof(V)}");
-        }
-        public void assign<V>(DataAccessor accessor, V value) => assign(accessor, (object)value);
-        public virtual void assign(DataAccessor accessor, object value)
-        {
+            // ToDo: Ponder about a way to reduce IsAssignableFrom, TryCast and necessary IResolver.resolve<T> to single method
+            //      This should reduce code clutter and noise
             if (accessor.accessType == DataAccessor.AccessTypes.Index)
-                this[accessor.index] = (T)value;
-            else
-                throw new InvalidOperationException($"Cannot acceess {this.GetType()} as {accessor.accessType}.");
+            {
+                if (CoreExtensions.TryCastOrResolve<T, V>(out T casted, value))
+                {
+                    this[accessor.index] = casted;
+                    return;
+                }
+            }
+            else if (accessor.accessType == DataAccessor.AccessTypes.Scalar)
+            {
+                if (CoreExtensions.TryCastOrResolve<List<T>, V>(out List<T> casted, value))
+                {
+                    this.list = casted;
+                    return;
+                }
+            }
+            throw new InvalidOperationException($"Cannot assign {accessor.accessType} on {this.GetType().Name}");
         }
 
 

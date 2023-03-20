@@ -27,7 +27,6 @@ namespace NETGraph.Core.Meta
             if (this.dict.Count == 0 && names.Length > 0)
                 foreach (string name in names)
                     this.dict.Add(name, default);
-
         }
 
 
@@ -61,22 +60,26 @@ namespace NETGraph.Core.Meta
 
         }
 
-        public void assign<V>(V value)
+        public void assign<V>(V value) => this.assign<V>(DataAccessor.Scalar, value);
+        public void assign<V>(DataAccessor accessor, V value)
         {
-            if (CoreExtensions.IsAssignableFrom<V, T>() && value.TryCast<Dictionary<string, T>>(out Dictionary<string, T> dict))
+            if (accessor.accessType == DataAccessor.AccessTypes.Index)
             {
-                this.dict = dict;
-                return;
+                if (CoreExtensions.TryCastOrResolve<T, V>(out T casted, value))
+                {
+                    this[accessor.key] = casted;
+                    return;
+                }
             }
-            throw new InvalidOperationException($"Cannot assign {typeof(Dictionary<string, T>)} to {typeof(V)}");
-        }
-        public void assign<V>(DataAccessor accessor, V value) => assign(accessor, (object)value);
-        public virtual void assign(DataAccessor accessor, object value)
-        {
-            if (accessor.accessType == DataAccessor.AccessTypes.Key)
-                this[accessor.key] = (T)value;
-            else
-                throw new InvalidOperationException($"Cannot acceess {this.GetType()} as {accessor.accessType}.");
+            else if (accessor.accessType == DataAccessor.AccessTypes.Scalar)
+            {
+                if (CoreExtensions.TryCastOrResolve<Dictionary<string, T>, V>(out Dictionary<string, T> casted, value))
+                {
+                    this.dict = casted;
+                    return;
+                }
+            }
+            throw new InvalidOperationException($"Cannot assign {accessor.accessType} on {this.GetType().Name}");
         }
 
 

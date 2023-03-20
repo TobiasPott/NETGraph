@@ -41,29 +41,23 @@ namespace NETGraph.Core.Meta
                 throw new InvalidOperationException($"Cannot acceess {this.GetType()} as {accessor.accessType}.");
         }
 
-        public void assign<V>(V value)
-        {
-            // ToDo: add type check for IResolver and resolve them to target type
-            if (CoreExtensions.IsAssignableFrom<V, T>() && value.TryCast<T>(out T scalar))
-            {
-                this.scalar = scalar;
-                return;
-            }
-            throw new InvalidOperationException($"Cannot assign {typeof(T)} to {typeof(V)}");
-        }
         // ToDo: Convert below assign methods with accessor arg to use a shared base method like assign<V>(V) to include automatic casting and assignment check
+        //          base assign implementation can check if V is IResolver and try to assign resolved value instead (this would allow assign int to index accessed list data
         // ToDo: Transfer results to IndexedData and NamedData types
+        public void assign<V>(V value) => this.assign<V>(DataAccessor.Scalar, value);
         public void assign<V>(DataAccessor accessor, V value)
         {
-            assign(accessor, (object)value);
-        }
-        public void assign(DataAccessor accessor, object value)
-        {
             if (accessor.accessType == DataAccessor.AccessTypes.Scalar)
-                this.scalar = (T)value;
-            else
-                throw new InvalidOperationException($"Cannot acceess {this.GetType()} as {accessor.accessType}.");
+            {
+                if(CoreExtensions.TryCastOrResolve<T, V>(out T casted, value))
+                {
+                    this.scalar = casted;
+                    return;
+                }
+            }
+            throw new InvalidOperationException($"Cannot assign {this.GetType()} by {accessor.accessType}.");
         }
+
 
         public override string ToString()
         {

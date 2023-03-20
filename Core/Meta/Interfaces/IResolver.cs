@@ -9,7 +9,6 @@ namespace NETGraph.Core.Meta
 
         void assign<V>(V value);
         void assign<V>(DataAccessor accessor, V value);
-        void assign(DataAccessor accessor, object value);
     }
 }
 

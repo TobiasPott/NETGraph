@@ -39,6 +39,20 @@ namespace NETGraph.Core.Meta
         public static bool IsAssignableFrom<From>(this Type to) => to.IsAssignableFrom(typeof(From));
         public static bool IsAssignableFrom<To, From>() => typeof(To).IsAssignableFrom(typeof(From));
 
+        public static bool TryCastOrResolve<To, From>(out To casted, From value)
+        {
+            if (CoreExtensions.IsAssignableFrom<To, From>() && value.TryCast<To>(out casted))
+            {
+                return true;
+            }
+            if (typeof(IResolver).IsAssignableFrom(typeof(From)))
+            {
+                casted = (value as IResolver).resolve<To>();
+                return true;
+            }
+            casted = default(To);
+            return false;
+        }
     }
 
     public static class IDataExtensions
