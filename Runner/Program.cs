@@ -91,15 +91,23 @@ public class Program
         LibMath libMath = LibMath.Instance;
         libMath.assign("add", null, xInt, xInt, yInt); // execute method
 
-        Console.WriteLine(xInt);
+        Console.WriteLine("x => " + xInt);
+        Console.WriteLine("y => " + yInt);
 
 
         Memory.Assign("z", Memory.Alloc(typeof(int), Options.Scalar));
         ScalarData<int> zInt = (ScalarData<int>)Memory.Get("z");
         LibCore.assign(zInt, xInt);
-        Console.WriteLine(zInt);
+        Console.WriteLine("z => " + zInt);
 
 
+        Memory.Assign("w", Memory.Alloc(typeof(int), Options.Scalar));
+        ScalarData<int> wInt = (ScalarData<int>)Memory.Get("w");
+        wInt.assign(xInt as IResolver);
+        Console.WriteLine("w => " + wInt);
+
+        Memory.Assign("ints", Memory.Alloc(typeof(int), Options.List));
+        IndexedData<int> intsList = (IndexedData<int>)Memory.Get("ints");
         //Memory.Assign("a", Memory.Alloc(typeof(float), Options.Scalar));
         //ScalarData<float> aFloat = (ScalarData<float>)Memory.Get("a");
         //LibCore.assign(aFloat, xInt);
