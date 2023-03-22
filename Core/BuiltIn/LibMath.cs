@@ -7,8 +7,6 @@ namespace NETGraph.Core.BuiltIn
 {
     public class LibMath : LibBase
     {
-        public static LibMath Instance { get; private set; } = new LibMath();
-
         public enum DataTypes : int
         {
             // LibMath data types start at index 64
@@ -27,7 +25,7 @@ namespace NETGraph.Core.BuiltIn
         }
 
 
-        private LibMath()
+        public LibMath() : base(nameof(LibMath), "System")
         {
             // register LibMath types e.g. Vector3Data as additional types
             // 2 component vector type

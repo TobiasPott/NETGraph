@@ -7,9 +7,6 @@ namespace NETGraph.Core.BuiltIn
 {
     public class LibCore : LibBase
     {
-        public static LibCore Instance { get; private set; } = new LibCore();
-
-
         public enum DataTypes : int
         {
             Any = -1,
@@ -27,7 +24,7 @@ namespace NETGraph.Core.BuiltIn
         }
 
 
-        private LibCore()
+        public LibCore() : base(nameof(LibCore), "System")
         {
             MetaTypeRegistry.Register(new MetaType((int)DataTypes.Any, typeof(Any)));
             MetaTypeRegistry.Register(new MetaType((int)DataTypes.Void, typeof(void)));

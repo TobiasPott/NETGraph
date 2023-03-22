@@ -31,12 +31,6 @@ namespace NETGraph.Core.Meta
         public static Type GetType(int typeIndex) => builtInTypesMap.First(x => x.Key == typeIndex).Value;
 
 
-        public static void LoadBuiltInLibraries()
-        {
-            Console.WriteLine("Loaded: " + LibCore.Instance);
-            Console.WriteLine("Loaded: " + LibMath.Instance);
-            Console.WriteLine("Loaded: " + LibString.Instance);
-        }
     }
 }
 
