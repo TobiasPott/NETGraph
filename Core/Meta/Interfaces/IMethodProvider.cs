@@ -1,4 +1,6 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace NETGraph.Core.Meta
 {
@@ -27,5 +29,24 @@ namespace NETGraph.Core.Meta
     //  (int) x = v.magnitude();
     //  (int) x = y.offset(z);
 
+
+    public static class MethodParser
+    {
+        public static Action Parse(string code)
+        {
+
+            return null;
+        }
+        public static Action ParseAllocAndAssign(string code)
+        {
+            int curI = code.IndexOf("=");
+            string lh = code.Substring(0, curI).Trim();
+            bool isDeclaration = lh.Count(x => x == ' ') == 1 ? true : false;
+
+
+            return null;
+        }
+
+    }
 }
 

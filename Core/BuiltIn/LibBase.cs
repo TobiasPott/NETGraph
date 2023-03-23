@@ -32,7 +32,6 @@ namespace NETGraph.Core.BuiltIn
         }
 
     }
-    // ToDo: implement a library base type to allow inheriting the registration progress with the meta type system
     public abstract class LibBase : IMethodProvider, IComparable<LibBase>
     {
         protected bool loaded = false;

@@ -4,23 +4,45 @@ using System.Reflection;
 
 namespace NETGraph.Core.Meta
 {
-
-    public static class Memory
+    public interface IMemory
     {
-        // ToDo: Add memory frame/stack frame and data scope support to the memory class
-        //
-        private static Dictionary<string, IData> _data = new Dictionary<string, IData>();
+        void Store(string name, IData data);
+        IData Get(string name);
+        void Free(string name);
+        IData Alloc<T>(Options options);
+        IData Alloc(int typeIndex, Options options);
+        IData Alloc(Type type, Options options);
+    }
+
+    public class MemoryFrame : IMemory
+    {
+        // class whide cache variables
+        private static Type[] iDataDenericTypeCache = new Type[1];
+        private static Type[] iDataArgumentsTypeCache = new Type[] { typeof(int), typeof(Options) };
+        private static object[] iDataArgumentsCache = new object[2];
+
+        private Dictionary<string, IData> _data = new Dictionary<string, IData>();
 
 
-        public static void Assign(string name, IData data) => _data.Add(name, data);
-        public static IData Get(string name) => _data[name];
-        public static void Free(string name)
+        public MemoryFrame()
+        { }
+        public MemoryFrame(IMemory parent, params string[] keptData)
+        {
+            // copy named data references from parent
+            foreach (string dataName in keptData)
+                this._data.Add(dataName, parent.Get(dataName));
+        }
+
+
+
+        public void Store(string name, IData data) => _data.Add(name, data);
+        public IData Get(string name) => _data[name];
+        public void Free(string name)
         {
             if (_data.ContainsKey(name))
                 _data.Remove(name);
         }
-
-        public static IData Alloc<T>(Options options)
+        public IData Alloc<T>(Options options)
         {
             int typeIndex = MetaTypeRegistry.GetTypeIndex(typeof(T));
             if (options.HasFlag(Options.Index))
@@ -31,12 +53,9 @@ namespace NETGraph.Core.Meta
                 return new ScalarData<T>(typeIndex, options);
         }
 
-        private static Type[] iDataDenericTypeCache = new Type[1];
-        private static Type[] iDataArgumentsTypeCache = new Type[] { typeof(int), typeof(Options) };
-        private static object[] iDataArgumentsCache = new object[2];
+        public IData Alloc(int typeIndex, Options options) => Alloc(typeIndex, MetaTypeRegistry.GetType(typeIndex), options);
+        public IData Alloc(Type type, Options options) => Alloc(MetaTypeRegistry.GetTypeIndex(type), type, options);
 
-        public static IData Alloc(int typeIndex, Options options) => Alloc(typeIndex, MetaTypeRegistry.GetType(typeIndex), options);
-        public static IData Alloc(Type type, Options options) => Alloc(MetaTypeRegistry.GetTypeIndex(type), type, options);
         private static IData Alloc(int typeIndex, Type type, Options options)
         {
             // Specify the type parameter of the A<> type
@@ -55,6 +74,20 @@ namespace NETGraph.Core.Meta
             iDataArgumentsCache[1] = options;
             return (IData)ctor.Invoke(iDataArgumentsCache);
         }
+
+    }
+
+    public static class Memory
+    {
+        public static IMemory Global { get; private set; } = new MemoryFrame();
+
+        public static void Store(string name, IData data) => Global.Store(name, data);
+        public static IData Get(string name) => Global.Get(name);
+        public static void Free(string name) => Global.Free(name);
+
+        public static IData Alloc<T>(Options options) => Global.Alloc<T>(options);
+        public static IData Alloc(int typeIndex, Options options) => Global.Alloc(typeIndex, options);
+        public static IData Alloc(Type type, Options options) => Global.Alloc(type, options);
 
     }
 }
