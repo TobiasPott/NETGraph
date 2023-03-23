@@ -50,9 +50,9 @@ namespace NETGraph.Core.BuiltIn
             //methods.Add("divide", Divide);
         }
 
-        private IResolver Add(IResolver reference, IEnumerable<IResolver> inputs)
+        private IResolver Add(IResolver reference, params IResolver[] args)
         {
-            int sum = inputs.Sum(q => q.resolve<int>());
+            int sum = args.Sum(q => q.resolve<int>());
             // check if reference is given and add it's value to sum;
             if (reference != null)
             {
@@ -63,7 +63,7 @@ namespace NETGraph.Core.BuiltIn
             {
                 IData result = new ValueData<int>(sum);
                 return result;
-            }                
+            }
         }
         //private IResolver Subtract(IResolver reference, IEnumerable<IResolver> inputs)
         //{

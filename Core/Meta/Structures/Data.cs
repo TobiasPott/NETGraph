@@ -20,6 +20,7 @@ namespace NETGraph.Core.Meta
 
     public static class CoreExtensions
     {
+        public static ValueData<T> AsValueData<T>(this T value) => new ValueData<T>(value);
         public static bool IsAssignableFrom<From>(this Type to) => to.IsAssignableFrom(typeof(From));
         public static bool IsAssignableFrom<To, From>() => typeof(To).IsAssignableFrom(typeof(From));
 
