@@ -2,51 +2,22 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Reflection;
+using System.Text;
 using NETGraph;
 using NETGraph.Core;
 using NETGraph.Core.BuiltIn;
 using NETGraph.Core.Meta;
+using NETGraph.Core.Meta.CodeGen;
 using NETGraph.Graphs;
 
 
-public class Node : IEquatable<Node>
-{
-    string name = string.Empty;
-    List<object> data = new List<object>();
-
-    public Node(string name)
-    {
-        this.name = name;
-    }
-
-    bool IEquatable<Node>.Equals(Node other)
-    {
-        if (other != null)
-            return other.name.Equals(this.name);
-        return false;
-    }
-
-    public override string ToString()
-    {
-        return $"{name} ({data.Count})";
-    }
-}
-
-public static class IEnumerableExt
-{
-    public static IEnumerable<T> AsEnumerable<T>(this T item)
-    {
-        yield return item;
-    }
-}
 public class Program
 {
 
-    public static object GuidStringNode { get; private set; }
-
     public static void Main(string[] args)
     {
-        MetaTypeRegistry.LoadBuiltInLibraries();
+        Library.LoadBuiltInLibraries();
 
         /*
         Stopwatch sw = new Stopwatch();
@@ -88,8 +59,8 @@ public class Program
 
         Console.WriteLine(xInt);
 
-        LibMath libMath = LibMath.Instance;
-        IResolver addResult = libMath.invoke("add", null, xInt, yInt); // execute method
+        // ToDo: resolve wacky new LibMath() to create instance by looking up library by name/type
+        IResolver addResult = Library.Find<LibMath>().invoke("add", null, xInt, yInt); // execute method
         Console.WriteLine("add => " + addResult.resolve<int>());
 
         Console.WriteLine("x => " + xInt);
@@ -109,7 +80,7 @@ public class Program
 
         Memory.Assign("ints", Memory.Alloc(typeof(int), Options.Index));
         IndexedData<int> intsList = (IndexedData<int>)Memory.Get("ints");
-        intsList.initializeWith(new int[] { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9});
+        intsList.initializeWith(new int[] { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 });
         //Memory.Assign("a", Memory.Alloc(typeof(float), Options.Scalar));
         //ScalarData<float> aFloat = (ScalarData<float>)Memory.Get("a");
         //LibCore.assign(aFloat, xInt);
@@ -117,13 +88,19 @@ public class Program
         intsList.assign(new DataAccessor("[0]"), wInt);
         Console.WriteLine("list => " + intsList);
 
-
+        // ToDo: Complete a list of methods of the string type to extract code
+        //      include method name
+        //      binding (public + instance/static)
+        //      param type array (list of input types of method)
+        MethodExtraction.ExtractMethod<string>("Concat", BindingFlags.Static | BindingFlags.Public, typeof(string), typeof(string));
+        MethodExtraction.ExtractMethod<string>("Replace", BindingFlags.Instance | BindingFlags.Public, typeof(string), typeof(string));
+        MethodExtraction.ExtractMethod<string>("ToLowerInvariant", BindingFlags.Instance | BindingFlags.Public);
         Console.WriteLine();
     }
 
     public static void TimeStamp(Stopwatch sw, string additional)
     {
-        Console.WriteLine(sw.Elapsed.TotalMicroseconds.ToString("0000000") + ": " + additional);
+        Console.WriteLine(sw.Elapsed.Ticks.ToString("0000000") + ": " + additional);
 
     }
 
