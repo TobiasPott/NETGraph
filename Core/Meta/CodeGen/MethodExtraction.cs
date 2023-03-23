@@ -7,8 +7,9 @@ namespace NETGraph.Core.Meta.CodeGen
 {
     public class MethodExtraction
     {
-        public static void ExtractMethod<T>(string name, BindingFlags binding, params Type[] paramTypes) => ExtractMethod(typeof(T), name, binding, paramTypes);
-        public static void ExtractMethod(Type type, string name, BindingFlags binding, params Type[] paramTypes)
+
+        public static string ExtractMethod<T>(string name, BindingFlags binding, params Type[] paramTypes) => ExtractMethod(typeof(T), name, binding, paramTypes);
+        public static string ExtractMethod(Type type, string name, BindingFlags binding, params Type[] paramTypes)
         {
             MethodInfo mi;
             if (paramTypes.Length == 0)
@@ -43,12 +44,11 @@ namespace NETGraph.Core.Meta.CodeGen
                 sb.AppendLine($"\treturn result.AsValueData<{returnPi.ParameterType}>();");
                 sb.AppendLine("}");
 
-
-                Console.WriteLine(sb.ToString());
-
+                return sb.ToString();
             }
             else
                 Console.WriteLine($"// Method {name} on {type} not found.");
+            return string.Empty;
         }
 
 
