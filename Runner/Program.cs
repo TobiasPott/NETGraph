@@ -100,7 +100,8 @@ public class Program
         ParseAllocAndAssign("int32 x = 0;");
         ParseAllocAndAssign("x = 0;");
 
-        ParseAllocAndAssign("int x = LibMath::add(y, z)");
+        ParseAllocAndAssign("int x = LibMath::add(y, z, 'a', \"blubb\")");
+        ParseAllocAndAssign("int x = LibMath::add(1, z, 1.4)");
         //      (int) x = LibMath::add(y, z);
 
         Console.WriteLine();
@@ -137,30 +138,106 @@ public class Program
         Console.WriteLine($"Declare: {isDeclaration}; Data of {type} called '{name}'; {lh} {rh}");
 
         // ToDo: check for static method case ::
-        int classDelimIndex = rh.IndexOf("::");
-        if (classDelimIndex != -1)
+        //      can exchange :: with . delimiter to process method calls on references
+        // ToDo: Add index split by first '(' to capture more complex reference parts like position.x.ToString(.., ..) where only last . is method delimiter
+        //      the part in front can be library name, type name and member name combined (with lib name delimited by :: member names by .
+        int refDelimIndex = rh.IndexOf("::");
+        if (refDelimIndex != -1)
         {
-            string libName = rh.Substring(0, classDelimIndex);
-            string methodCall = rh.Substring(classDelimIndex + 2);
+            string refName = rh.Substring(0, refDelimIndex);
+            string methodCall = rh.Substring(refDelimIndex + 2);
             int leftPInd = methodCall.IndexOf("(");
             int rightPInd = methodCall.LastIndexOf(")");
 
             string methodName = methodCall.Substring(0, leftPInd);
-            Console.WriteLine($"\tCalls: '{methodName}' from {libName} with");
+            Console.WriteLine($"\tCalls: '{methodName}' from {refName} with");
 
             string args = methodCall.Substring(leftPInd + 1, rightPInd - leftPInd - 1).Trim();
             if (args.Length > 0)
             {
                 string[] argsSplit = args.Split(",", StringSplitOptions.RemoveEmptyEntries);
-                Console.WriteLine($"\t\t{string.Join(Environment.NewLine + "\t\t", argsSplit)}");
-                // ToDo: check args for direct data/value or variable name
-                //      check for initial numerical character, always direct value, may include . for floating values
-                //      check for "" or ''
-                //      IGNORE: special static value cases e.g. LibMath::PI (not existing but will definitely come later on
+                List<ValueOrRef> argsAsValueOrRefs = new List<ValueOrRef>();
+                foreach (string arg in argsSplit)
+                {
+                    argsAsValueOrRefs.Add(new ValueOrRef(arg));
+                }
+                Console.WriteLine($"\t\t{string.Join(Environment.NewLine + "\t\t", argsAsValueOrRefs)}");
             }
         }
 
         return null;
+    }
+
+    public struct ValueOrRef
+    {
+        public bool isValid;
+        public bool isValue;
+        public object value;
+
+        public ValueOrRef(string arg)
+        {
+            if (arg.Length == 0)
+                throw new ArgumentException($"{nameof(arg)} cannot be empty.", nameof(arg));
+
+
+            this.isValid = false;
+            this.isValue = true;
+
+            arg = arg.Trim();
+            if (char.IsDigit(arg[0]) || arg[0] == '-')
+            {
+                if (arg.Contains('.'))
+                {
+                    // float case
+                    try
+                    {
+                        this.value = float.Parse(arg);
+                        this.isValid = true;
+                    }
+                    catch (FormatException fex)
+                    {
+                        throw fex;
+                    }
+                }
+                else
+                {
+                    // int case
+                    try
+                    {
+                        this.value = int.Parse(arg);
+                        this.isValid = true;
+                    }
+                    catch (FormatException fex)
+                    {
+                        throw fex;
+                    }
+                }
+            }
+            else if (arg[0] == '"')
+            {
+                // string value
+                this.value = arg.Trim('"');
+                this.isValid = true;
+            }
+            else if (arg[0] == '\'' && arg.Length > 2)
+            {
+                this.value = arg[1];
+                this.isValid = true;
+            }
+            else
+            {
+                // reference/data name
+                this.isValue = false;
+                this.value = arg.Trim();
+                this.isValid = true;
+                // ToDo: Implement extraction of accessor
+                //      Also add identification of global data notation LibMath::PI
+            }
+        }
+        public override string ToString()
+        {
+            return $"Valid: {isValid}; {(isValue ? "Value" : "Reference")}: {this.value}";
+        }
     }
 
     public static void TimeStamp(Stopwatch sw, string additional)
