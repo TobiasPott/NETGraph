@@ -104,7 +104,10 @@ public class Program
         ParseAllocAndAssign("int x = myInt.add(y, myInt.add(y, 3), 10);");
         //      (int) x = LibMath::add(y, z);
         List<ArgInfo> argInfos = new List<ArgInfo>();
-        string code = "myInt.add(y, myInt2.add(y, 3, anotherInt.add(3, 4)),\"(in, parenthesis)\", 'c', 10, anotherInt.add(3, 4));";
+        string code = "myInt.add(y, myInt2.add(z, 3, anotherInt.add(4, 5)),\"(in, parenthesis)\", 'c', 10, anotherInt.add(6, 7));";
+        code = "myInt.add(y, myInt2.add(z, 3, anotherInt.add(4, 5)),\"(in, parenthesis)\", 'c', 10);";
+        //code = "myInt.add(\"(in, parenthesis)\", 'c');";
+        //code = "myInt.add(\"in, parenthesis\", 'c');";
         GetArgInfo(code, argInfos, ',', '(', ')');
         Console.WriteLine($"\t\t{string.Join(Environment.NewLine + "\t\t", argInfos)}");
 
@@ -139,20 +142,22 @@ public class Program
         int endIndex = input.LastIndexOf(rhDel);
 
         int fiStr = input.IndexOf('"');
-        if (fiStr == 0 && fiStr < startIndex)
+        if (input.StartsWith('"'))
         {
             arguments.Add(new ArgInfo(arguments.Count, depth, input));
             return;
         }
         fiStr = input.IndexOf('\'');
-        if (fiStr == 0 && fiStr < startIndex)
+        if (input.StartsWith('\''))
         {
             arguments.Add(new ArgInfo(arguments.Count, depth, input));
             return;
         }
 
-        // ToDo: Handle the case that thee input contains ( inside "" or '' blocks
+        //if (depth > 0)
+        //    return;
 
+        // ToDo: Handle the case that thee input contains ( inside "" or '' blocks
         if (startIndex != -1 && endIndex != -1)
         {
             string argList = input.Substring(startIndex, endIndex - startIndex);
@@ -160,12 +165,32 @@ public class Program
             int splitStart = 0;
             int splitIndex = -1;
 
+            char[] lhDelims = new char[] { '(' };
+            char[] rhDelims = new char[] { ')' };
             Console.WriteLine(argList);
 
             do
             {
-                splitIndex = IndexOf(argList, ',', '(', ')', splitStart + 1);
-                if (splitIndex != -1)
+                int strSplit = IndexOf(argList, '"', lhDelims, rhDelims, splitStart);
+                int charSplit = IndexOf(argList, '\'', lhDelims, rhDelims, splitStart);
+                splitIndex = IndexOf(argList, ',', lhDelims, rhDelims, splitStart);
+                if (strSplit != -1 && strSplit < splitIndex && strSplit < charSplit)
+                {
+                    // string is indicated before next arg
+                    splitIndex = argList.IndexOf('"', strSplit + 1) + 1;
+                    string subArg = argList.Substring(strSplit, splitIndex - strSplit).Trim();
+                    arguments.Add(new ArgInfo(arguments.Count, depth, subArg));
+                    splitStart = splitIndex + 1;
+                }
+                else if (charSplit != -1 && charSplit < splitIndex && charSplit < strSplit)
+                {
+                    // char is indicated before next arg
+                    splitIndex = argList.IndexOf('\'', charSplit + 1) + 1;
+                    string subArg = argList.Substring(charSplit, splitIndex - charSplit).Trim();
+                    arguments.Add(new ArgInfo(arguments.Count, depth, subArg));
+                    splitStart = splitIndex + 1;
+                }
+                else if (splitIndex != -1)
                 {
                     string subArg = argList.Substring(splitStart, splitIndex - splitStart).Trim();
                     if (!subArg.Contains(lhDel) && !subArg.Contains(rhDel))
@@ -173,7 +198,7 @@ public class Program
                     GetArgInfo(subArg, arguments, delim, lhDel, rhDel, depth + 1);
                     splitStart = splitIndex + 1;
                 }
-                else if (splitStart != 0)
+                else if (splitStart > 0)
                 {
                     string subArg = argList.Substring(splitStart).Trim();
                     if (!subArg.Contains(lhDel) && !subArg.Contains(rhDel))
@@ -184,7 +209,36 @@ public class Program
             while (splitIndex != -1);
         }
     }
-
+    public static int IndexOf(string input, char value, char[] lhDelims, char[] rhDelims, int startIndex = 0)
+    {
+        int depth = 0;
+        for (int i = startIndex; i < input.Length; i++)
+        {
+            char c = input[i];
+            if (c == value && depth == 0)
+                return i;
+            else if (lhDelims.Contains(c))
+                depth++;
+            else if (rhDelims.Contains(c))
+                depth--;
+        }
+        return -1;
+    }
+    public static int LastIndexOf(string input, char value, char[] lhDelims, char[] rhDelims, int startIndex = 0)
+    {
+        int depth = 0;
+        for (int i = input.Length - 1 - startIndex; i >= 0; i--)
+        {
+            char c = input[i];
+            if (c == value && depth == 0)
+                return i;
+            else if (lhDelims.Contains(c))
+                depth++;
+            else if (rhDelims.Contains(c))
+                depth--;
+        }
+        return -1;
+    }
     public static int IndexOf(string input, char value, char lhDelim, char rhDelim, int startIndex = 0)
     {
         int depth = 0;
