@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
 using System.Text;
@@ -100,12 +99,146 @@ public class Program
         ParseAllocAndAssign("int32 x = 0;");
         ParseAllocAndAssign("x = 0;");
 
-        ParseAllocAndAssign("int x = LibMath::add(y, z, 'a', \"blubb\")");
-        ParseAllocAndAssign("int x = LibMath::add(1, z, 1.4)");
+        ParseAllocAndAssign("int x = LibMath::add(y, 'a', \"blubb\", 1, 1.45);"); //, myInt.add(2, 2), 0)");
+        ParseAllocAndAssign("int x = myInt.add(y, 'a', \"blubb\", 1, 1.45);");
+        ParseAllocAndAssign("int x = myInt.add(y, myInt.add(y, 3), 10);");
         //      (int) x = LibMath::add(y, z);
+        List<ArgInfo> argInfos = new List<ArgInfo>();
+        string code = "myInt.add(y, myInt2.add(y, 3, anotherInt.add(3, 4)),\"(in, parenthesis)\", 'c', 10, anotherInt.add(3, 4));";
+        GetArgInfo(code, argInfos, ',', '(', ')');
+        Console.WriteLine($"\t\t{string.Join(Environment.NewLine + "\t\t", argInfos)}");
+
+
 
         Console.WriteLine();
         Console.WriteLine();
+    }
+
+    public struct ArgInfo
+    {
+        public int index;
+        public int depth;
+        public string arg;
+
+        public ArgInfo(int index, int depth, string arg)
+        {
+            this.index = index;
+            this.depth = depth;
+            this.arg = arg;
+        }
+
+        public override string ToString()
+        {
+            return $"Arg: {depth};{new string(' ', depth * 3)} #: {index}; [{this.arg}]";
+        }
+    }
+
+    public static void GetArgInfo(string input, List<ArgInfo> arguments, char delim = ',', char lhDel = '(', char rhDel = ')', int depth = 0)
+    {
+        int startIndex = input.IndexOf(lhDel) + 1;
+        int endIndex = input.LastIndexOf(rhDel);
+
+        int fiStr = input.IndexOf('"');
+        if (fiStr == 0 && fiStr < startIndex)
+        {
+            arguments.Add(new ArgInfo(arguments.Count, depth, input));
+            return;
+        }
+        fiStr = input.IndexOf('\'');
+        if (fiStr == 0 && fiStr < startIndex)
+        {
+            arguments.Add(new ArgInfo(arguments.Count, depth, input));
+            return;
+        }
+
+        // ToDo: Handle the case that thee input contains ( inside "" or '' blocks
+
+        if (startIndex != -1 && endIndex != -1)
+        {
+            string argList = input.Substring(startIndex, endIndex - startIndex);
+            //arguments.Add(new ArgInfo(arguments.Count, depth, argList));
+            int splitStart = 0;
+            int splitIndex = -1;
+
+            Console.WriteLine(argList);
+
+            do
+            {
+                splitIndex = IndexOf(argList, ',', '(', ')', splitStart + 1);
+                if (splitIndex != -1)
+                {
+                    string subArg = argList.Substring(splitStart, splitIndex - splitStart).Trim();
+                    if (!subArg.Contains(lhDel) && !subArg.Contains(rhDel))
+                        arguments.Add(new ArgInfo(arguments.Count, depth, subArg));
+                    GetArgInfo(subArg, arguments, delim, lhDel, rhDel, depth + 1);
+                    splitStart = splitIndex + 1;
+                }
+                else if (splitStart != 0)
+                {
+                    string subArg = argList.Substring(splitStart).Trim();
+                    if (!subArg.Contains(lhDel) && !subArg.Contains(rhDel))
+                        arguments.Add(new ArgInfo(arguments.Count, depth, subArg));
+                    GetArgInfo(subArg, arguments, delim, lhDel, rhDel, depth + 1);
+                }
+            }
+            while (splitIndex != -1);
+        }
+    }
+
+    public static int IndexOf(string input, char value, char lhDelim, char rhDelim, int startIndex = 0)
+    {
+        int depth = 0;
+        for (int i = startIndex; i < input.Length; i++)
+        {
+            char c = input[i];
+            if (c == value && depth == 0)
+                return i;
+            else if (c == lhDelim)
+                depth++;
+            else if (c == rhDelim)
+                depth--;
+        }
+        return -1;
+    }
+    public static int LastIndexOf(string input, char value, char lhDelim, char rhDelim, int startIndex = 0)
+    {
+        int depth = 0;
+        for (int i = input.Length - 1 - startIndex; i >= 0; i--)
+        {
+            char c = input[i];
+            if (c == value && depth == 0)
+                return i;
+            else if (c == lhDelim)
+                depth++;
+            else if (c == rhDelim)
+                depth--;
+        }
+        return -1;
+    }
+
+    public static List<ArgInfo> GetArgInfo2(string input, char lhDel, char rhDel)
+    {
+        List<ArgInfo> results = new List<ArgInfo>();
+        int argIndex = 0;
+        int argDepth = -1;
+        int startIndex = 0;
+        for (int i = 0; i < input.Length; i++)
+        {
+            if (input[i] == lhDel)
+            {
+                argDepth++;
+                startIndex = i + 1;
+                continue;
+            }
+            if (input[i] == rhDel)
+            {
+                argDepth--;
+                results.Add(new ArgInfo(argIndex, argDepth, input.Substring(startIndex, i - startIndex)));
+                argIndex++;
+                continue;
+            }
+        }
+        return results;
     }
 
     // ToDo: Build map of possible method calls and signatures (e.g. static, instance, operator, nested, assignment, result
@@ -142,27 +275,37 @@ public class Program
         // ToDo: Add index split by first '(' to capture more complex reference parts like position.x.ToString(.., ..) where only last . is method delimiter
         //      the part in front can be library name, type name and member name combined (with lib name delimited by :: member names by .
         int refDelimIndex = rh.IndexOf("::");
+        int refDelimIndexEnd = refDelimIndex + 2;
+        if (refDelimIndex == -1)
+        {
+            refDelimIndex = rh.IndexOf(".");
+            refDelimIndexEnd = refDelimIndex + 1;
+        }
         if (refDelimIndex != -1)
         {
             string refName = rh.Substring(0, refDelimIndex);
-            string methodCall = rh.Substring(refDelimIndex + 2);
+            string methodCall = rh.Substring(refDelimIndexEnd);
             int leftPInd = methodCall.IndexOf("(");
             int rightPInd = methodCall.LastIndexOf(")");
 
             string methodName = methodCall.Substring(0, leftPInd);
             Console.WriteLine($"\tCalls: '{methodName}' from {refName} with");
 
+            // ToDo: Implement nested method call extraction
             string args = methodCall.Substring(leftPInd + 1, rightPInd - leftPInd - 1).Trim();
-            if (args.Length > 0)
-            {
-                string[] argsSplit = args.Split(",", StringSplitOptions.RemoveEmptyEntries);
-                List<ValueOrRef> argsAsValueOrRefs = new List<ValueOrRef>();
-                foreach (string arg in argsSplit)
-                {
-                    argsAsValueOrRefs.Add(new ValueOrRef(arg));
-                }
-                Console.WriteLine($"\t\t{string.Join(Environment.NewLine + "\t\t", argsAsValueOrRefs)}");
-            }
+            // ToDo: Clean from nested method calls
+
+            //if (args.Length > 0)
+            //{
+            //    string[] argsSplit = args.Split(",", StringSplitOptions.RemoveEmptyEntries);
+            //    List<ValueOrRef> argsAsValueOrRefs = new List<ValueOrRef>();
+            //    foreach (string arg in argsSplit)
+            //    {
+            //        argsAsValueOrRefs.Add(new ValueOrRef(arg));
+            //    }
+            //    Console.WriteLine($"\t\t{string.Join(Environment.NewLine + "\t\t", argsAsValueOrRefs)}");
+            //}
+
         }
 
         return null;
@@ -238,12 +381,6 @@ public class Program
         {
             return $"Valid: {isValid}; {(isValue ? "Value" : "Reference")}: {this.value}";
         }
-    }
-
-    public static void TimeStamp(Stopwatch sw, string additional)
-    {
-        Console.WriteLine(sw.Elapsed.Ticks.ToString("0000000") + ": " + additional);
-
     }
 
 }
