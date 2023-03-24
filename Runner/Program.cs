@@ -105,7 +105,7 @@ public class Program
         //      (int) x = LibMath::add(y, z);
         List<ArgInfo> argInfos = new List<ArgInfo>();
         string code = "myInt.add(y, myInt2.add(z, 3, anotherInt.add(4, 5)),\"(in, parenthesis)\", 'c', 10, anotherInt.add(6, 7));";
-        code = "myInt.add(y, myInt2.add(z, 3, anotherInt.add(4, 5)),\"(in, parenthesis)\", 'c', 10);";
+        code = "myInt.add(\"(in parenthesis)\", 'c', 10, y, myInt2.add(z, 3, anotherInt.add(4, 5), w), v);";
         //code = "myInt.add(\"(in, parenthesis)\", 'c');";
         //code = "myInt.add(\"in, parenthesis\", 'c');";
         GetArgInfo(code, argInfos, ',', '(', ')');
@@ -169,34 +169,38 @@ public class Program
             char[] rhDelims = new char[] { ')' };
             Console.WriteLine(argList);
 
+
             do
             {
-                int strSplit = IndexOf(argList, '"', lhDelims, rhDelims, splitStart);
-                int charSplit = IndexOf(argList, '\'', lhDelims, rhDelims, splitStart);
                 splitIndex = IndexOf(argList, ',', lhDelims, rhDelims, splitStart);
-                if (strSplit != -1 && strSplit < splitIndex && strSplit < charSplit)
+                if (splitIndex != -1)
                 {
-                    // string is indicated before next arg
-                    splitIndex = argList.IndexOf('"', strSplit + 1) + 1;
-                    string subArg = argList.Substring(strSplit, splitIndex - strSplit).Trim();
-                    arguments.Add(new ArgInfo(arguments.Count, depth, subArg));
-                    splitStart = splitIndex + 1;
-                }
-                else if (charSplit != -1 && charSplit < splitIndex && charSplit < strSplit)
-                {
-                    // char is indicated before next arg
-                    splitIndex = argList.IndexOf('\'', charSplit + 1) + 1;
-                    string subArg = argList.Substring(charSplit, splitIndex - charSplit).Trim();
-                    arguments.Add(new ArgInfo(arguments.Count, depth, subArg));
-                    splitStart = splitIndex + 1;
-                }
-                else if (splitIndex != -1)
-                {
-                    string subArg = argList.Substring(splitStart, splitIndex - splitStart).Trim();
-                    if (!subArg.Contains(lhDel) && !subArg.Contains(rhDel))
+                    int strSplit = IndexOf(argList, '"', lhDelims, rhDelims, splitStart);
+                    int charSplit = IndexOf(argList, '\'', lhDelims, rhDelims, splitStart);
+                    if (strSplit != -1)
+                    {
+                        // string is indicated before next arg
+                        splitIndex = argList.IndexOf('"', strSplit + 1) + 1;
+                        string subArg = argList.Substring(strSplit, splitIndex - strSplit).Trim();
                         arguments.Add(new ArgInfo(arguments.Count, depth, subArg));
-                    GetArgInfo(subArg, arguments, delim, lhDel, rhDel, depth + 1);
-                    splitStart = splitIndex + 1;
+                        splitStart = splitIndex + 1;
+                    }
+                    else if (charSplit != -1)
+                    {
+                        // char is indicated before next arg
+                        splitIndex = argList.IndexOf('\'', charSplit + 1) + 1;
+                        string subArg = argList.Substring(charSplit, splitIndex - charSplit).Trim();
+                        arguments.Add(new ArgInfo(arguments.Count, depth, subArg));
+                        splitStart = splitIndex + 1;
+                    }
+                    else
+                    {
+                        string subArg = argList.Substring(splitStart, splitIndex - splitStart).Trim();
+                        if (!subArg.Contains(lhDel) && !subArg.Contains(rhDel))
+                            arguments.Add(new ArgInfo(arguments.Count, depth, subArg));
+                        GetArgInfo(subArg, arguments, delim, lhDel, rhDel, depth + 1);
+                        splitStart = splitIndex + 1;
+                    }
                 }
                 else if (splitStart > 0)
                 {
