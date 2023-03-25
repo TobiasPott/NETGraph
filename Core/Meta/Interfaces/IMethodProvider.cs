@@ -14,6 +14,11 @@ namespace NETGraph.Core.Meta
         IResolver invoke(string accessor, IResolver reference, params IResolver[] args);
     }
 
+    // ToDo: Complete a list of methods of the string type to extract code
+    //      include method name
+    //      binding (public + instance/static)
+    //      param type array (list of input types of method)
+
     // ToDo: Build map of possible method calls and signatures (e.g. static, instance, operator, nested, assignment, result
     //  Base rules:
     //      if contains '=' call is assignment to left hand side

@@ -58,7 +58,6 @@ public class Program
 
         Console.WriteLine(xInt);
 
-        // ToDo: resolve wacky new LibMath() to create instance by looking up library by name/type
         IResolver addResult = Library.Find<LibMath>().invoke("add", null, xInt, yInt); // execute method
         Console.WriteLine("add => " + addResult.resolve<int>());
 
@@ -87,29 +86,27 @@ public class Program
         intsList.assign(new DataAccessor("[0]"), wInt);
         Console.WriteLine("list => " + intsList);
 
-        // ToDo: Complete a list of methods of the string type to extract code
-        //      include method name
-        //      binding (public + instance/static)
-        //      param type array (list of input types of method)
         MethodExtraction.ExtractMethod<string>("Concat", BindingFlags.Static | BindingFlags.Public, typeof(string), typeof(string));
         MethodExtraction.ExtractMethod<string>("Replace", BindingFlags.Instance | BindingFlags.Public, typeof(string), typeof(string));
         MethodExtraction.ExtractMethod<string>("ToLowerInvariant", BindingFlags.Instance | BindingFlags.Public);
 
         Console.WriteLine();
-        ParseAllocAndAssign("int32 x = 0;");
-        ParseAllocAndAssign("x = 0;");
+        //ParseAllocAndAssign("int32 x = 0;");
+        //ParseAllocAndAssign("x = 0;");
 
-        ParseAllocAndAssign("int x = LibMath::add(y, 'a', \"blubb\", 1, 1.45);"); //, myInt.add(2, 2), 0)");
-        ParseAllocAndAssign("int x = myInt.add(y, 'a', \"blubb\", 1, 1.45);");
-        ParseAllocAndAssign("int x = myInt.add(y, myInt.add(y, 3), 10);");
+        //ParseAllocAndAssign("int x = LibMath::add(y, 'a', \"blubb\", 1, 1.45);"); //, myInt.add(2, 2), 0)");
+        //ParseAllocAndAssign("int x = myInt.add(y, 'a', \"blubb\", 1, 1.45);");
+        //ParseAllocAndAssign("int x = myInt.add(y, myInt.add(y, 3), 10);");
         //      (int) x = LibMath::add(y, z);
         List<ArgInfo> argInfos = new List<ArgInfo>();
-        string code = "myInt.add(\"Hello\", \"World!\");";
-        code = "myInt.add(\"sads\", y, myInt2.add(z, 3, anotherInt.add(4, 5)), \"(in, parenthesis)\", 'c', 10, anotherInt.add(6, 7));";
-        code = "myInt.add('t', \"(in, parenthesis\", 'c', 10, y, myInt2.add(z, 3, anotherInt.add(4, 5), w), v);";
+        string code = "int x = myInt.add(\"Hello\", \"World!\");";
+        code = "int x = myInt.add(\"sads\", y, myInt2.add(z, 3, anotherInt.add(4, 5)), \"(in, parenthesis)\", 'c', 10, anotherInt.add(6, 7));";
+        code = "int x = myInt.add('t', \"(in, parenthesis\", 'c', 10, y, myInt2.add(z, 3, anotherInt.add(4, 5), w), v);";
+        //code = "myInt.add('t', \"(in, parenthesis\", 'c', 10, y, myInt2.add(z, 3, anotherInt.add(4, 5), w), v);";
         //code = "myInt.add(\"(in, parenthesis)\", 'c');";
         //code = "myInt.add(\"in, parenthesis\", 'c');";
-        GetArgInfo(code, argInfos, ',', '(', ')');
+        //GetArgInfo(code, argInfos, ',', '(', ')');
+        ParseAllocAndAssign(code);
         Console.WriteLine($"\t\t{string.Join(Environment.NewLine + "\t\t", argInfos)}");
 
 
@@ -118,41 +115,68 @@ public class Program
         Console.WriteLine();
     }
 
+    public enum ArgInfoType
+    {
+        Unknown,
+        Value,
+        Ref,
+        Method
+    }
     public struct ArgInfo
     {
+
         public int index;
         public int depth;
         public string arg;
+        public ArgInfoType type;
 
         public ArgInfo(int index, int depth, string arg)
         {
             this.index = index;
             this.depth = depth;
+            this.type = GetArgInfoType(arg);
             this.arg = arg;
         }
 
         public override string ToString()
         {
-            return $"Arg: {depth};{new string(' ', depth * 3)} #: {index}; [{this.arg}]";
+            return $"Arg: {depth}::{type}\t;{new string(' ', depth * 3)} #: {index}; [{this.arg}]";
         }
     }
 
+    public static ArgInfoType GetArgInfoType(string arg)
+    {
+        if (arg.StartsWith('"') || arg.StartsWith('\'') || arg.StartsWith("-") || char.IsDigit(arg[0]))
+        {
+            return ArgInfoType.Value;
+        }
+        if (arg.EndsWith("("))
+        {
+            return ArgInfoType.Method;
+        }
+        if (char.IsAscii(arg[0]))
+        {
+            return ArgInfoType.Ref;
+        }
+        return ArgInfoType.Unknown;
+
+    }
     public static void GetArgInfo(string input, List<ArgInfo> arguments, char delim = ',', char lhDel = '(', char rhDel = ')', int depth = 0)
     {
         int startIndex = input.IndexOf(lhDel) + 1;
         int endIndex = input.LastIndexOf(rhDel);
 
-        int fiStr = input.IndexOf('"');
-        if (input.StartsWith('"'))
+        ArgInfoType argType = GetArgInfoType(input);
+        if (argType == ArgInfoType.Value)
         {
             arguments.Add(new ArgInfo(arguments.Count, depth, input));
             return;
         }
-        fiStr = input.IndexOf('\'');
-        if (input.StartsWith('\''))
+
+        if (startIndex > 0)
         {
-            arguments.Add(new ArgInfo(arguments.Count, depth, input));
-            return;
+            arguments.Add(new ArgInfo(arguments.Count, depth, input.Substring(0, startIndex)));
+            depth += 1;
         }
 
         if (startIndex != -1 && endIndex != -1)
@@ -192,7 +216,8 @@ public class Program
                         string subArg = argList.Substring(splitStart, splitIndex - splitStart).Trim();
                         if (!subArg.Contains(lhDel) && !subArg.Contains(rhDel))
                             arguments.Add(new ArgInfo(arguments.Count, depth, subArg));
-                        GetArgInfo(subArg, arguments, delim, lhDel, rhDel, depth + 1);
+                        else
+                            GetArgInfo(subArg, arguments, delim, lhDel, rhDel, depth + 1);
                         splitStart = splitIndex + 1;
                     }
                     else
@@ -200,43 +225,14 @@ public class Program
                         string subArg = argList.Substring(splitStart).Trim();
                         if (!subArg.Contains(lhDel) && !subArg.Contains(rhDel))
                             arguments.Add(new ArgInfo(arguments.Count, depth, subArg));
-                        GetArgInfo(subArg, arguments, delim, lhDel, rhDel, depth + 1);
+                        else
+                            GetArgInfo(subArg, arguments, delim, lhDel, rhDel, depth + 1);
                     }
                 }
 
             }
             while (splitIndex != -1);
         }
-    }
-    public static int IndexOf(string input, char value, char[] lhDelims, char[] rhDelims, int startIndex = 0)
-    {
-        int depth = 0;
-        for (int i = startIndex; i < input.Length; i++)
-        {
-            char c = input[i];
-            if (c == value && depth == 0)
-                return i;
-            else if (lhDelims.Contains(c))
-                depth++;
-            else if (rhDelims.Contains(c))
-                depth--;
-        }
-        return -1;
-    }
-    public static int LastIndexOf(string input, char value, char[] lhDelims, char[] rhDelims, int startIndex = 0)
-    {
-        int depth = 0;
-        for (int i = input.Length - 1 - startIndex; i >= 0; i--)
-        {
-            char c = input[i];
-            if (c == value && depth == 0)
-                return i;
-            else if (lhDelims.Contains(c))
-                depth++;
-            else if (rhDelims.Contains(c))
-                depth--;
-        }
-        return -1;
     }
     public static int IndexOf(string input, char value, char lhDelim, char rhDelim, int startIndex = 0)
     {
@@ -269,171 +265,40 @@ public class Program
         return -1;
     }
 
-    public static List<ArgInfo> GetArgInfo2(string input, char lhDel, char rhDel)
-    {
-        List<ArgInfo> results = new List<ArgInfo>();
-        int argIndex = 0;
-        int argDepth = -1;
-        int startIndex = 0;
-        for (int i = 0; i < input.Length; i++)
-        {
-            if (input[i] == lhDel)
-            {
-                argDepth++;
-                startIndex = i + 1;
-                continue;
-            }
-            if (input[i] == rhDel)
-            {
-                argDepth--;
-                results.Add(new ArgInfo(argIndex, argDepth, input.Substring(startIndex, i - startIndex)));
-                argIndex++;
-                continue;
-            }
-        }
-        return results;
-    }
-
-    // ToDo: Build map of possible method calls and signatures (e.g. static, instance, operator, nested, assignment, result
-    //  Base rules:
-    //      if contains '=' call is assignment to left hand side
-    //      if '=' is preceeded by two tokens, the call includes allocation of new data of result type which the call result is assigned to
-    //      if '=' is preceeded by one token, the call assigns to left hand
-    //
-    //  Samples: () enclose optional parts, numeric values represent const values, string/chars represent named data
-    //      int x; // ToDo; is special cas without = annd should be possible to prepend when other cased are implemented
-    //      (int) x = 0;
-    //      (int) x = LibMath::add(1, 1)
-    //      (int) x = LibMath::add(y, z);
-    //      (int) x = v.magnitude();
-    //      (int) x = y.offset(z);
-    //      (int) x = 1 + 1; // ToDo: operators are special case to parse and map (magic notation to cover up "arg = method(arg, arg)" underlying calls
 
     public static Action ParseAllocAndAssign(string code)
     {
         code = code.Trim();
         int curI = code.IndexOf("=");
-        string lh = code.Substring(0, curI).Trim();
-        string rh = code.Substring(curI).Trim();
+        string lh = string.Empty;
+        string rh = code;
+
+        if (curI != -1)
+        {
+            lh = code.Substring(0, curI).Trim();
+            rh = code.Substring(curI).Trim().Trim('=', ' ');
+        }
+        int depth = 0;
+        List<ArgInfo> argInfos = new List<ArgInfo>();
         bool isDeclaration = lh.Count(x => x == ' ') == 1 ? true : false;
-
-        int lhInd = lh.IndexOf(' ');
-        string name = isDeclaration ? lh.Substring(lhInd) : lh;
-        string type = isDeclaration ? lh.Substring(0, lhInd) : typeof(void).Name;
-
-        Console.WriteLine($"Declare: {isDeclaration}; Data of {type} called '{name}'; {lh} {rh}");
-
-        // ToDo: check for static method case ::
-        //      can exchange :: with . delimiter to process method calls on references
-        // ToDo: Add index split by first '(' to capture more complex reference parts like position.x.ToString(.., ..) where only last . is method delimiter
-        //      the part in front can be library name, type name and member name combined (with lib name delimited by :: member names by .
-        int refDelimIndex = rh.IndexOf("::");
-        int refDelimIndexEnd = refDelimIndex + 2;
-        if (refDelimIndex == -1)
+        if (isDeclaration)
         {
-            refDelimIndex = rh.IndexOf(".");
-            refDelimIndexEnd = refDelimIndex + 1;
-        }
-        if (refDelimIndex != -1)
-        {
-            string refName = rh.Substring(0, refDelimIndex);
-            string methodCall = rh.Substring(refDelimIndexEnd);
-            int leftPInd = methodCall.IndexOf("(");
-            int rightPInd = methodCall.LastIndexOf(")");
+            int lhInd = lh.IndexOf(' ');
+            string name = (isDeclaration ? lh.Substring(lhInd) : lh).Trim();
+            string type = (isDeclaration ? lh.Substring(0, lhInd) : typeof(void).Name).Trim();
+            Console.WriteLine($"Declare: {isDeclaration}; Data of {type} called '{name}'; {lh} {rh}");
 
-            string methodName = methodCall.Substring(0, leftPInd);
-            Console.WriteLine($"\tCalls: '{methodName}' from {refName} with");
-
-            // ToDo: Implement nested method call extraction
-            string args = methodCall.Substring(leftPInd + 1, rightPInd - leftPInd - 1).Trim();
-            // ToDo: Clean from nested method calls
-
-            //if (args.Length > 0)
-            //{
-            //    string[] argsSplit = args.Split(",", StringSplitOptions.RemoveEmptyEntries);
-            //    List<ValueOrRef> argsAsValueOrRefs = new List<ValueOrRef>();
-            //    foreach (string arg in argsSplit)
-            //    {
-            //        argsAsValueOrRefs.Add(new ValueOrRef(arg));
-            //    }
-            //    Console.WriteLine($"\t\t{string.Join(Environment.NewLine + "\t\t", argsAsValueOrRefs)}");
-            //}
+            // Check this ArgInfo list, need to create data and pass it as argument of Memory::Store
+            argInfos.Add(new ArgInfo(argInfos.Count, depth, $"LibCore::Alloc("));
+            argInfos.Add(new ArgInfo(argInfos.Count, depth + 1, $"\"{name}\""));
+            // ToDo: Covnert type to typeIndex to handle as integer value onward
+            argInfos.Add(new ArgInfo(argInfos.Count, depth + 1, $"\"{type}\""));
 
         }
+        GetArgInfo(rh, argInfos, ',', '(', ')', depth);
+        Console.WriteLine($"{string.Join(Environment.NewLine + "", argInfos)}");
 
         return null;
-    }
-
-    public struct ValueOrRef
-    {
-        public bool isValid;
-        public bool isValue;
-        public object value;
-
-        public ValueOrRef(string arg)
-        {
-            if (arg.Length == 0)
-                throw new ArgumentException($"{nameof(arg)} cannot be empty.", nameof(arg));
-
-
-            this.isValid = false;
-            this.isValue = true;
-
-            arg = arg.Trim();
-            if (char.IsDigit(arg[0]) || arg[0] == '-')
-            {
-                if (arg.Contains('.'))
-                {
-                    // float case
-                    try
-                    {
-                        this.value = float.Parse(arg);
-                        this.isValid = true;
-                    }
-                    catch (FormatException fex)
-                    {
-                        throw fex;
-                    }
-                }
-                else
-                {
-                    // int case
-                    try
-                    {
-                        this.value = int.Parse(arg);
-                        this.isValid = true;
-                    }
-                    catch (FormatException fex)
-                    {
-                        throw fex;
-                    }
-                }
-            }
-            else if (arg[0] == '"')
-            {
-                // string value
-                this.value = arg.Trim('"');
-                this.isValid = true;
-            }
-            else if (arg[0] == '\'' && arg.Length > 2)
-            {
-                this.value = arg[1];
-                this.isValid = true;
-            }
-            else
-            {
-                // reference/data name
-                this.isValue = false;
-                this.value = arg.Trim();
-                this.isValid = true;
-                // ToDo: Implement extraction of accessor
-                //      Also add identification of global data notation LibMath::PI
-            }
-        }
-        public override string ToString()
-        {
-            return $"Valid: {isValid}; {(isValue ? "Value" : "Reference")}: {this.value}";
-        }
     }
 
 }
