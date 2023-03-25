@@ -58,7 +58,8 @@ public class Program
 
         Console.WriteLine(xInt);
 
-        IResolver addResult = Library.Find<LibMath>().invoke("add", null, xInt, yInt); // execute method
+        LibMath math = Library.Find<LibMath>();
+        IResolver addResult = math.invoke("add", null, xInt, yInt); // execute method
         Console.WriteLine("add => " + addResult.resolve<int>());
 
         Console.WriteLine("x => " + xInt);
@@ -84,31 +85,27 @@ public class Program
         //LibCore.assign(aFloat, xInt);
         //Console.WriteLine(aFloat);
         intsList.assign(new DataAccessor("[0]"), wInt);
-        Console.WriteLine("list => " + intsList);
 
-        MethodExtraction.ExtractMethod<string>("Concat", BindingFlags.Static | BindingFlags.Public, typeof(string), typeof(string));
-        MethodExtraction.ExtractMethod<string>("Replace", BindingFlags.Instance | BindingFlags.Public, typeof(string), typeof(string));
-        MethodExtraction.ExtractMethod<string>("ToLowerInvariant", BindingFlags.Instance | BindingFlags.Public);
+        zInt.assign(math.invoke("add", null, xInt, yInt));
+        Console.WriteLine("add => " + zInt + " // " + xInt + " + " + yInt);
 
-        Console.WriteLine();
+        //MethodExtraction.ExtractMethod<string>("Concat", BindingFlags.Static | BindingFlags.Public, typeof(string), typeof(string));
+        //MethodExtraction.ExtractMethod<string>("Replace", BindingFlags.Instance | BindingFlags.Public, typeof(string), typeof(string));
+        //MethodExtraction.ExtractMethod<string>("ToLowerInvariant", BindingFlags.Instance | BindingFlags.Public);
+
         //ParseAllocAndAssign("int32 x = 0;");
         //ParseAllocAndAssign("x = 0;");
 
         //ParseAllocAndAssign("int x = LibMath::add(y, 'a', \"blubb\", 1, 1.45);"); //, myInt.add(2, 2), 0)");
         //ParseAllocAndAssign("int x = myInt.add(y, 'a', \"blubb\", 1, 1.45);");
         //ParseAllocAndAssign("int x = myInt.add(y, myInt.add(y, 3), 10);");
-        //      (int) x = LibMath::add(y, z);
-        List<ArgInfo> argInfos = new List<ArgInfo>();
-        string code = "int x = myInt.add(\"Hello\", \"World!\");";
-        code = "int x = myInt.add(\"sads\", y, myInt2.add(z, 3, anotherInt.add(4, 5)), \"(in, parenthesis)\", 'c', 10, anotherInt.add(6, 7));";
-        code = "int x = myInt.add('t', \"(in, parenthesis\", 'c', 10, y, myInt2.add(z, 3, anotherInt.add(4, 5), w), v);";
-        //code = "myInt.add('t', \"(in, parenthesis\", 'c', 10, y, myInt2.add(z, 3, anotherInt.add(4, 5), w), v);";
-        //code = "myInt.add(\"(in, parenthesis)\", 'c');";
-        //code = "myInt.add(\"in, parenthesis\", 'c');";
-        //GetArgInfo(code, argInfos, ',', '(', ')');
-        ParseAllocAndAssign(code);
-        Console.WriteLine($"\t\t{string.Join(Environment.NewLine + "\t\t", argInfos)}");
 
+        //List<ArgInfo> argInfos = new List<ArgInfo>();
+        //string code = "int x = myInt.add(\"Hello\", \"World!\");";
+        //code = "int x = myInt.add(\"sads\", y, myInt2.add(z, 3, anotherInt.add(4, 5)), \"(in, parenthesis)\", 'c', 10, anotherInt.add(6, 7));";
+        //code = "int x = myInt.add('t', \"(in, parenthesis\", 'c', 10, y, myInt2.add(z, 3, anotherInt.add(4, 5), w), v);";
+        //ParseAllocAndAssign(code);
+        //Console.WriteLine($"\t\t{string.Join(Environment.NewLine + "\t\t", argInfos)}");
 
 
         Console.WriteLine();
@@ -120,7 +117,8 @@ public class Program
         Unknown,
         Value,
         Ref,
-        Method
+        Method,
+
     }
     public struct ArgInfo
     {
@@ -140,7 +138,7 @@ public class Program
 
         public override string ToString()
         {
-            return $"Arg: {depth}::{type}\t;{new string(' ', depth * 3)} #: {index}; [{this.arg}]";
+            return $"[{type}]".PadRight(10) + $"{depth}".PadRight(3) + $"{index};".PadRight(4) + $"{new string(' ', depth * 3)} [{this.arg}]";
         }
     }
 
@@ -288,12 +286,19 @@ public class Program
             string type = (isDeclaration ? lh.Substring(0, lhInd) : typeof(void).Name).Trim();
             Console.WriteLine($"Declare: {isDeclaration}; Data of {type} called '{name}'; {lh} {rh}");
 
-            // Check this ArgInfo list, need to create data and pass it as argument of Memory::Store
-            argInfos.Add(new ArgInfo(argInfos.Count, depth, $"LibCore::Alloc("));
+            if (!type.Equals(typeof(void).Name))
+            {
+                // ToDo: Covnert type to typeIndex to handle as integer value onward
+                // Add alloc method call to create new data variable with given name of given type
+                argInfos.Add(new ArgInfo(argInfos.Count, depth, $"LibCore::Alloc("));
+                argInfos.Add(new ArgInfo(argInfos.Count, depth + 1, $"\"{name}\""));
+                argInfos.Add(new ArgInfo(argInfos.Count, depth + 1, $"\"{type}\""));
+                depth += 1;
+            }
+            // Add assign method call to store the rh call to the data variable with the given name
+            argInfos.Add(new ArgInfo(argInfos.Count, depth, $"LibCore::Assign("));
             argInfos.Add(new ArgInfo(argInfos.Count, depth + 1, $"\"{name}\""));
-            // ToDo: Covnert type to typeIndex to handle as integer value onward
-            argInfos.Add(new ArgInfo(argInfos.Count, depth + 1, $"\"{type}\""));
-
+            depth += 1;
         }
         GetArgInfo(rh, argInfos, ',', '(', ')', depth);
         Console.WriteLine($"{string.Join(Environment.NewLine + "", argInfos)}");
