@@ -63,7 +63,7 @@ namespace NETGraph.Core.BuiltIn
             // ToDo: ponder about doing self-check on registered libraries to avoid re-registering stuff
             return true;
         }
-        private IResolver Add(IResolver reference, params IResolver[] args)
+        private static IResolver Add(IResolver reference, params IResolver[] args)
         {
             int sum = args.Sum(q => q.resolve<int>());
             // check if reference is given and add it's value to sum;
