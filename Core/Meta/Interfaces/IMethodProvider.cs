@@ -4,7 +4,7 @@ using System.Linq;
 
 namespace NETGraph.Core.Meta
 {
-    public delegate IResolver Invokation(IResolver reference, params IResolver[] inputs);
+    public delegate IResolver MethodRef(IResolver reference, params IResolver[] inputs);
 
     public interface IMethodProvider
     {

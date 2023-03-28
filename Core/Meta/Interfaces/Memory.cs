@@ -6,7 +6,7 @@ namespace NETGraph.Core.Meta
 {
     public interface IMemory
     {
-        void Store(string name, IData data);
+        void Declare(string name, IData data);
         IData Get(string name);
         void Free(string name);
         IData Alloc<T>(Options options);
@@ -23,6 +23,7 @@ namespace NETGraph.Core.Meta
 
         private Dictionary<string, IData> _data = new Dictionary<string, IData>();
 
+        // ToDo: Ponder about pooling for temporary/non declared IData
 
         public MemoryFrame()
         { }
@@ -35,7 +36,7 @@ namespace NETGraph.Core.Meta
 
 
 
-        public void Store(string name, IData data) => _data.Add(name, data);
+        public void Declare(string name, IData data) => _data.Add(name, data);
         public IData Get(string name) => _data[name];
         public void Free(string name)
         {
@@ -81,7 +82,7 @@ namespace NETGraph.Core.Meta
     {
         public static IMemory Global { get; private set; } = new MemoryFrame();
 
-        public static void Store(string name, IData data) => Global.Store(name, data);
+        public static void Declare(string name, IData data) => Global.Declare(name, data);
         public static IData Get(string name) => Global.Get(name);
         public static void Free(string name) => Global.Free(name);
 

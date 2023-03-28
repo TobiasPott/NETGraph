@@ -48,36 +48,36 @@ public class Program
         // runner test code to create a new 'named' data of data type Int
 
 
-        Memory.Store("x", Memory.Alloc(typeof(int), Options.Scalar));
+        Memory.Declare("x", Memory.Alloc(typeof(int), Options.Scalar));
         ScalarData<int> xInt = (ScalarData<int>)Memory.Get("x");
         xInt.assign(1337);
 
-        Memory.Store("y", Memory.Alloc(typeof(int), Options.Scalar));
+        Memory.Declare("y", Memory.Alloc(typeof(int), Options.Scalar));
         ScalarData<int> yInt = (ScalarData<int>)Memory.Get("y");
         yInt.assign(7331);
 
         Console.WriteLine(xInt);
 
         LibMath math = Library.Find<LibMath>();
-        IResolver addResult = math.invoke("add", null, xInt, yInt); // execute method
+        IResolver addResult = math.invoke("Add", null, xInt, yInt); // execute method
         Console.WriteLine("add => " + addResult.resolve<int>());
 
         Console.WriteLine("x => " + xInt);
         Console.WriteLine("y => " + yInt);
 
 
-        Memory.Store("z", Memory.Alloc(typeof(int), Options.Scalar));
+        Memory.Declare("z", Memory.Alloc(typeof(int), Options.Scalar));
         ScalarData<int> zInt = (ScalarData<int>)Memory.Get("z");
         LibCore.assign(zInt, xInt);
         Console.WriteLine("z => " + zInt);
 
 
-        Memory.Store("w", Memory.Alloc(typeof(int), Options.Scalar));
+        Memory.Declare("w", Memory.Alloc(typeof(int), Options.Scalar));
         ScalarData<int> wInt = (ScalarData<int>)Memory.Get("w");
         wInt.assign(xInt as IResolver);
         Console.WriteLine("w => " + wInt);
 
-        Memory.Store("ints", Memory.Alloc(typeof(int), Options.Index));
+        Memory.Declare("ints", Memory.Alloc(typeof(int), Options.Index));
         IndexedData<int> intsList = (IndexedData<int>)Memory.Get("ints");
         intsList.initializeWith(new int[] { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 });
         //Memory.Assign("a", Memory.Alloc(typeof(float), Options.Scalar));

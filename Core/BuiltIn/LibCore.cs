@@ -46,6 +46,10 @@ namespace NETGraph.Core.BuiltIn
             MetaTypeRegistry.Register(new MetaType((int)DataTypes.IData, typeof(IData)));
         }
 
+        protected override bool LoadInternal()
+        {
+            return true;
+        }
         public static void assign(IResolver lh, IResolver rh) => lh.assign(rh);
 
     }

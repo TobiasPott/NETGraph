@@ -18,6 +18,11 @@ namespace NETGraph.Core.BuiltIn
             MetaTypeRegistry.Register(new MetaType((int)DataTypes.StringBuilder, typeof(StringBuilder)));
         }
 
+        protected override bool LoadInternal()
+        {
+            return true;
+        }
+
     }
 
 }

@@ -34,11 +34,11 @@ namespace NETGraph.Core.Meta.CodeGen
             return $"[{type}]".PadRight(10) + $"{depth}".PadRight(3) + $"{index};".PadRight(4) + $"{new string(' ', depth * 2)} [{this.arg}]";
         }
     }
-    public struct MethodHandle
-    {
-        // ToDo: Implement type which can resolve the method name from a code line
-        //      It should also resolve static method name paths and reference name paths (resolving some sort of TypeIndexMethodProvider or add a nested dictionary storing method references for typeIndex)
-    }
+    //public struct MethodHandle
+    //{
+    //    // ToDo: Implement type which can resolve the method name from a code line
+    //    //      It should also resolve static method name paths and reference name paths (resolving some sort of TypeIndexMethodProvider or add a nested dictionary storing method references for typeIndex)
+    //}
 
     public class JIT
     {
@@ -140,7 +140,6 @@ namespace NETGraph.Core.Meta.CodeGen
         {
             None = 0,
             Assign = 1, // includes assignent to variable
-            // ToDo: Rename LibCore and IMemory.Store method to Declare (declare means to make a variable name known to the memory system)
             Declare = 2, // inncludes allocation of named variable of type
             Call = 4, // includes a call which is executed
         }
@@ -174,7 +173,7 @@ namespace NETGraph.Core.Meta.CodeGen
                 declareType = (isDeclaration ? lh.Substring(0, lhInd) : typeof(void).Name).Trim();
                 //Console.WriteLine($"Declare: {isDeclaration}; Data of {type} called '{name}'; {lh} {rh}");
 
-                int depth = 0;
+                //int depth = 0;
                 //if (!type.Equals(typeof(void).Name))
                 //{
                 //    // ToDo: Covnert type to typeIndex to handle as integer value onward

@@ -2,10 +2,11 @@
 using NETGraph.Core.Meta;
 using System.Collections.Generic;
 using System.Linq;
+using NETGraph.Core.BuiltIn.Methods;
 
 namespace NETGraph.Core.BuiltIn
 {
-    public class LibMath : LibBase
+    public partial class LibMath : LibBase
     {
         public enum DataTypes : int
         {
@@ -44,12 +45,24 @@ namespace NETGraph.Core.BuiltIn
             MetaTypeRegistry.Register(new MetaType((int)DataTypes.Vector4b, typeof(Vector4b)));
             MetaTypeRegistry.Register(new MetaType((int)DataTypes.Vector4i, typeof(Vector4i)));
 
-            methods.Add("add", Add);
-            //methods.Add("subtract", Subtract);
-            //methods.Add("multiply", Multiply);
-            //methods.Add("divide", Divide);
+            // ToDo: Implement global lookup function to lookup method by name and context
+            //      context inludes IData reference or string name
+            // add methods to method list
+            MethodList intMethods = new MethodList(typeof(int).Name);
+            intMethods.Set(nameof(Int.Add), Int.Add);
+            intMethods.Set(nameof(Int.Subtract), Int.Subtract);
+            intMethods.Set(nameof(Int.Multiply), Int.Multiply);
+            intMethods.Set(nameof(Int.Divide), Int.Divide);
+
+            this.methods = new MethodList(nameof(LibMath), intMethods);
+            this.methods.Set(nameof(Add), Add);
         }
 
+        protected override bool LoadInternal()
+        {
+            // ToDo: ponder about doing self-check on registered libraries to avoid re-registering stuff
+            return true;
+        }
         private IResolver Add(IResolver reference, params IResolver[] args)
         {
             int sum = args.Sum(q => q.resolve<int>());

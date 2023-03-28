@@ -1,11 +1,9 @@
 ﻿using System;
+using System.Collections.Generic;
 
 namespace NETGraph.Core.Meta
 {
 
-    // ToDo: Implement full MetaType
-    //          add alias for type names
-    //          add serialization support (generic .NET to support different serializers)
     public struct MetaType
     {
         private static int _runningIndex = 1024;    // reserved 1024 indices for builtin/internal types
