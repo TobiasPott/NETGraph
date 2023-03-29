@@ -7,6 +7,7 @@ namespace NETGraph.Core.BuiltIn.Methods
 {
 
     using Type = System.Int32;
+    using DataInterface = IData;
     public static class Int_Static
     {
         public static MethodList Methods
@@ -22,29 +23,29 @@ namespace NETGraph.Core.BuiltIn.Methods
             }
         }
 
-        public static IResolver Add(IResolver reference, params IResolver[] args)
+        public static DataInterface Add(DataInterface reference, params DataInterface[] args)
         {
             // static implementation ignores reference argument
             Type sum = args.Sum(q => q.resolve<Type>());
             return new ValueData<Type>(sum);
         }
-        public static IResolver Subtract(IResolver reference, IEnumerable<IResolver> inputs)
+        public static DataInterface Subtract(DataInterface reference, IEnumerable<DataInterface> inputs)
         {
             Type miuend = inputs.First().resolve<Type>();
             Type subtrahends = inputs.Skip(1).Sum(q => q.resolve<Type>());
             return new ValueData<Type>(miuend - subtrahends);
         }
-        public static IResolver Multiply(IResolver reference, IEnumerable<IResolver> inputs)
+        public static DataInterface Multiply(DataInterface reference, IEnumerable<DataInterface> inputs)
         {
             Type product = 1;
-            foreach (IResolver input in inputs)
+            foreach (DataInterface input in inputs)
                 product *= input.resolve<Type>();
             return new ValueData<Type>(product);
         }
-        public static IResolver Divide(IResolver reference, IEnumerable<IResolver> inputs)
+        public static DataInterface Divide(DataInterface reference, IEnumerable<DataInterface> inputs)
         {
             Type dividend = inputs.First().resolve<Type>();
-            foreach (IResolver input in inputs.Skip(1))
+            foreach (DataInterface input in inputs.Skip(1))
                 dividend /= input.resolve<Type>();
             return new ValueData<Type>(dividend);
         }

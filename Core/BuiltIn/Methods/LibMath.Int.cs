@@ -6,6 +6,7 @@ namespace NETGraph.Core.BuiltIn.Methods
 {
 
     using Type = System.Int32;
+    using DataInterface = IData;
     public static class Int
     {
         public static MethodList Methods
@@ -21,7 +22,7 @@ namespace NETGraph.Core.BuiltIn.Methods
             }
         }
 
-        public static IResolver Add(IResolver reference, params IResolver[] args)
+        public static DataInterface Add(DataInterface reference, params DataInterface[] args)
         {
             // check if reference is given and add it's value to sum;
             if (reference != null)
@@ -32,7 +33,7 @@ namespace NETGraph.Core.BuiltIn.Methods
             }
             throw new ArgumentNullException(nameof(reference));
         }
-        public static IResolver Subtract(IResolver reference, params IResolver[] args)
+        public static DataInterface Subtract(DataInterface reference, params DataInterface[] args)
         {
             // check if reference is given and add it's value to sum;
             if (reference != null)
@@ -43,26 +44,26 @@ namespace NETGraph.Core.BuiltIn.Methods
             }
             throw new ArgumentNullException(nameof(reference));
         }
-        public static IResolver Multiply(IResolver reference, params IResolver[] args)
+        public static DataInterface Multiply(DataInterface reference, params DataInterface[] args)
         {
             // check if reference is given and add it's value to sum;
             if (reference != null)
             {
                 Type product = reference.resolve<int>();
-                foreach (IResolver arg in args)
+                foreach (DataInterface arg in args)
                     product *= arg.resolve<Type>();
                 reference.assign(product);
                 return reference;
             }
             throw new ArgumentNullException(nameof(reference));
         }
-        public static IResolver Divide(IResolver reference, params IResolver[] args)
+        public static DataInterface Divide(DataInterface reference, params DataInterface[] args)
         {
             // check if reference is given and add it's value to sum;
             if (reference != null)
             {
                 Type result = reference.resolve<int>();
-                foreach (IResolver arg in args)
+                foreach (DataInterface arg in args)
                     result /= arg.resolve<Type>();
                 reference.assign(result);
                 return reference;
