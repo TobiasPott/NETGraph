@@ -65,7 +65,7 @@ public class Program
         //Console.WriteLine("add => " + addResult.resolve<int>());
 
         // ToDo: Check why this returs null when trying to resolve nested method lists
-        Library.TryGet("LibMath::Int32::Add", out addMethod);
+        Library.TryGet("int::Add", out addMethod);
         addMethod.Invoke(xInt, yInt); // execute method
 
         Console.WriteLine("x => " + xInt);

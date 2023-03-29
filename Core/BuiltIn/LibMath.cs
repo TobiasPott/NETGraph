@@ -59,6 +59,13 @@ namespace NETGraph.Core.BuiltIn
             //intMethods.Set($"{nameof(Int.Multiply)}", Int.Multiply);
             //intMethods.Set($"{nameof(Int.Divide)}", Int.Divide);
 
+            // ToDo: Ponder abount a solution to register and lookup MethodRef with additional options
+            //      e.g.: BindingFlags to lookup static vs reference methods
+            //          This might allow solving aliases which can be enabled by flag (though might be suuuper slow as no mapping exists yet
+            //          This will most-likely require MethodNamedRef type to name and flag methodRefs inside the MethodList
+            //          
+
+            // ToDo: Add Subtract, Multiply and Divide methods as static references
 
             this.Methods.Nest(intMethods);
             this.Methods.Nest(mathMethods);
