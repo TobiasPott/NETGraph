@@ -6,13 +6,23 @@ using System.Linq;
 namespace NETGraph.Core.BuiltIn
 {
 
-    public abstract class LibBase : IComparable<LibBase>, IMethodList
+    public abstract class LibBase : IComparable<LibBase>
     {
         protected bool loaded = false;
         public string Name { get; protected set; }
         public string path { get; protected set; }
 
-        protected MethodList methods;
+        private MethodList methods;
+        protected MethodList Methods
+        {
+            get
+            {
+                if (methods == null)
+                    methods = new MethodList(Library.METHODS_LIBRARYROOT);
+                return methods;
+            }
+        }
+
 
         protected LibBase(string name, string path)
         {
@@ -32,32 +42,30 @@ namespace NETGraph.Core.BuiltIn
         {
             if (!loaded)
             {
-                loaded = LoadInternal();
+                bool intern = LoadInternal();
+                Library.LoadLibraryMethods(this.methods);
+                loaded = intern;
                 Console.WriteLine("Library loaded: " + this.GetType() + $"({(loaded ? "yes" : "no")})");
             }
             return loaded;
         }
 
-        public void AddMethod(string name, MethodRef method, bool overwrite = false)
-        {
-            if (methods == null)
-                methods = new MethodList(this.GetType().Name);
 
-            name = name.Replace(this.Name, string.Empty).Replace(this.path, string.Empty).Trim('.');
-            if (methods.Contains(name) || overwrite)
-                methods.Set(name, method);
-        }
+        /**
+         * IMethodList and related methods
+         **/
+        public MethodList GetMethods() => methods;
 
-        public bool Contains(string path, bool traverse = false)
-        {
-            return methods != null && methods.Contains(path, traverse);
-        }
+        //public bool Contains(string path, bool traverse = false)
+        //{
+        //    return methods != null && methods.Contains(path, traverse);
+        //}
 
-        public bool TryGet(string path, out MethodRef method)
-        {
-            method = null;
-            return methods != null && methods.TryGet(path, out method);
-        }
+        //public bool TryGet(string path, out MethodRef method)
+        //{
+        //    method = null;
+        //    return methods != null && methods.TryGet(path, out method);
+        //}
 
     }
 

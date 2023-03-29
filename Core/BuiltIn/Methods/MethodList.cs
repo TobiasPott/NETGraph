@@ -9,17 +9,17 @@ namespace NETGraph.Core.BuiltIn
     public interface IMethodList
     {
         string Name { get; }
-        // ToDo: Implement some sort of MethodRef lookup based on the typeIndex of an IData reference
-        //      This may require extension of the metatype of each type to include optional library references
         bool Contains(string path, bool traverse = false);
         bool TryGet(string path, out MethodRef method);
     }
 
     public static class IMethodListExtension
     {
+        public const string PATHSEPARATOR = "::";
+
         public static bool IsFirstPathSegment(this IMethodList methodList, string path, out string remainingPath)
         {
-            if (path.StartsWith(methodList.Name + "::"))
+            if (path.StartsWith(methodList.Name + PATHSEPARATOR))
             {
                 remainingPath = path.Remove(0, methodList.Name.Length + 2);
                 return true;
@@ -34,9 +34,14 @@ namespace NETGraph.Core.BuiltIn
         private string name = string.Empty;
         private Dictionary<string, MethodRef> methods = new Dictionary<string, MethodRef>();
         private List<MethodList> nestedMethods = new List<MethodList>();
-
+        private bool isRoot = false;
         public string Name { get => name; }
 
+        internal MethodList(string name)
+        {
+            this.name = name;
+            this.isRoot = true;
+        }
         public MethodList(string name, params MethodList[] nested)
         {
             this.name = name;
@@ -57,18 +62,57 @@ namespace NETGraph.Core.BuiltIn
         }
         public bool TryGet(string path, out MethodRef method)
         {
-            foreach (MethodList list in nestedMethods)
-                if (list.IsFirstPathSegment(path, out string remainingPath))
-                    if (list.TryGet(remainingPath, out method))
-                        return true;
+            if (path.Contains(IMethodListExtension.PATHSEPARATOR))
+                foreach (MethodList list in nestedMethods)
+                    if (list.IsFirstPathSegment(path, out string remainingPath))
+                        if (list.TryGet(remainingPath, out method))
+                            return true;
             return methods.TryGetValue(path, out method);
         }
         public void Set(string methodName, MethodRef method)
         {
-            if (!methods.ContainsKey(methodName))
-                methods.Add(methodName, method);
+            if (!isRoot)
+            {
+                if (!methods.ContainsKey(methodName))
+                    methods.Add(methodName, method);
+                else
+                    methods[methodName] = method;
+            }
             else
-                methods[methodName] = method;
+                throw new InvalidOperationException($"Cannot add {nameof(method)} to root list. Add to a nested list instead.");
+        }
+        public void Nest(MethodList methodList)
+        {
+            if (!nestedMethods.Contains(methodList))
+                nestedMethods.Add(methodList);
+        }
+        /// <summary>
+        /// Joins the given list with the current instance
+        /// </summary>
+        /// <param name="other"></param>
+        public void Join(MethodList other)
+        {
+            // ignore name when copying local
+            if (!this.isRoot)
+                foreach (KeyValuePair<string, MethodRef> kvPair in other?.methods)
+                    this.methods.TryAdd(kvPair.Key, kvPair.Value);
+
+            if (other != null && other.nestedMethods != null)
+                foreach (MethodList otherSubList in other.nestedMethods)
+                {
+                    bool found = false;
+                    foreach (MethodList subList in this.nestedMethods)
+                    {
+                        if (subList.Name.Equals(otherSubList.Name))
+                        {
+                            subList.Join(otherSubList);
+                            found = true;
+                            break;
+                        }
+                    }
+                    if (!found)
+                        this.nestedMethods.Add(otherSubList);
+                }
         }
     }
 }

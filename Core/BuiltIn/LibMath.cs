@@ -45,17 +45,23 @@ namespace NETGraph.Core.BuiltIn
             MetaTypeRegistry.Register(new MetaType((int)DataTypes.Vector4b, typeof(Vector4b)));
             MetaTypeRegistry.Register(new MetaType((int)DataTypes.Vector4i, typeof(Vector4i)));
 
-            // ToDo: Implement global lookup function to lookup method by name and context
-            //      context inludes IData reference or string name
             // add methods to method list
-            MethodList intMethods = new MethodList("int");
-            intMethods.Set($"{nameof(Int32)}.{nameof(Int.Add)}", Int.Add);
-            intMethods.Set($"{nameof(Int32)}.{nameof(Int.Subtract)}", Int.Subtract);
-            intMethods.Set($"{nameof(Int32)}.{nameof(Int.Multiply)}", Int.Multiply);
-            intMethods.Set($"{nameof(Int32)}.{nameof(Int.Divide)}", Int.Divide);
+            MethodList intMethods = new MethodList("int", null);
+            intMethods.Set($"{nameof(Int.Add)}", Int.Add);
+            intMethods.Set($"{nameof(Int.Subtract)}", Int.Subtract);
+            intMethods.Set($"{nameof(Int.Multiply)}", Int.Multiply);
+            intMethods.Set($"{nameof(Int.Divide)}", Int.Divide);
 
-            this.methods = new MethodList(nameof(LibMath), intMethods);
-            this.methods.Set(nameof(Add), Add);
+            // add methods for static calls in LibMath
+            MethodList mathMethods = new MethodList("LibMath", null);
+            mathMethods.Set($"{nameof(Add)}", Add);
+            //intMethods.Set($"{nameof(Int.Subtract)}", Int.Subtract);
+            //intMethods.Set($"{nameof(Int.Multiply)}", Int.Multiply);
+            //intMethods.Set($"{nameof(Int.Divide)}", Int.Divide);
+
+
+            this.Methods.Nest(intMethods);
+            this.Methods.Nest(mathMethods);
         }
 
         protected override bool LoadInternal()
