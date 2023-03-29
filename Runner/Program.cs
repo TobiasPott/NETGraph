@@ -60,7 +60,7 @@ public class Program
 
         LibMath math = Library.Find<LibMath>();
         MethodRef addMethod = null;
-        Library.TryGet("LibMath::Add", out addMethod);
+        Library.TryGet("LibMath::Add", out addMethod, MethodBindings.Static);
         IResolver addResult = addMethod.Invoke(null, xInt, yInt); // execute method
         //Console.WriteLine("add => " + addResult.resolve<int>());
 
@@ -74,7 +74,7 @@ public class Program
 
         Memory.Declare("z", Memory.Alloc(typeof(int), Options.Scalar));
         ScalarData<int> zInt = (ScalarData<int>)Memory.Get("z");
-        LibCore.assign(zInt, xInt);
+        Memory.Assign(zInt, xInt);
         Console.WriteLine("z => " + zInt);
 
 
