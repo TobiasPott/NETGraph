@@ -14,10 +14,10 @@ namespace NETGraph.Core.BuiltIn.Methods
             get
             {
                 MethodList methods = new MethodList("LibMath", null);
-                methods.Set(new MethodHandle($"{nameof(Add)}", Add, MethodBindings.Static));
-                methods.Set(new MethodHandle($"{nameof(Subtract)}", Subtract, MethodBindings.Static));
-                methods.Set(new MethodHandle($"{nameof(Multiply)}", Multiply, MethodBindings.Static));
-                methods.Set(new MethodHandle($"{nameof(Divide)}", Divide, MethodBindings.Static));
+                methods.Set(new MethodHandle($"{nameof(Add)}", MethodBindings.Static), Add);
+                methods.Set(new MethodHandle($"{nameof(Subtract)}", MethodBindings.Static), Subtract);
+                methods.Set(new MethodHandle($"{nameof(Multiply)}", MethodBindings.Static), Multiply);
+                methods.Set(new MethodHandle($"{nameof(Divide)}", MethodBindings.Static), Divide);
                 return methods;
             }
         }

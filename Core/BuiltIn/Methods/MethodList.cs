@@ -10,8 +10,8 @@ namespace NETGraph.Core.BuiltIn
     public interface IMethodList
     {
         string Name { get; }
-        bool Contains(string path, bool traverse = false);
-        bool TryGet(string path, out MethodRef method);
+        bool Contains(string path, MethodBindings bindings, bool traverse = false);
+        bool TryGet(string path, MethodBindings bindings, out MethodRef method);
     }
 
     public static class IMethodListExtension
@@ -43,12 +43,10 @@ namespace NETGraph.Core.BuiltIn
     {
         public string name { get; private set; }
         public MethodBindings binding { get; private set; }
-        public MethodRef method { get; private set; }
 
-        public MethodHandle(string name, MethodRef method, MethodBindings binding)
+        public MethodHandle(string name, MethodBindings binding)
         {
             this.name = name;
-            this.method = method;
             this.binding = binding;
         }
 
@@ -67,7 +65,7 @@ namespace NETGraph.Core.BuiltIn
     public class MethodList : IMethodList
     {
         private string name = string.Empty;
-        private Dictionary<string, MethodRef> methods = new Dictionary<string, MethodRef>();
+        private Dictionary<MethodHandle, MethodRef> methods = new Dictionary<MethodHandle, MethodRef>();
         private List<MethodList> nestedMethods = new List<MethodList>();
         private bool isRoot = false;
         public string Name { get => name; }
@@ -84,37 +82,37 @@ namespace NETGraph.Core.BuiltIn
                 nestedMethods.AddRange(nested);
         }
 
-        public bool Contains(string path, bool traverse = false)
+        public bool Contains(string path, MethodBindings bindings, bool traverse = false)
         {
             if (traverse)
             {
                 foreach (MethodList list in nestedMethods)
                     if (list.IsFirstPathSegment(path, out string remainingPath))
-                        if (list.Contains(remainingPath, traverse))
+                        if (list.Contains(remainingPath, bindings, traverse))
                             return true;
             }
-            return methods.ContainsKey(path);
+            return methods.ContainsKey(new MethodHandle(path, bindings));
         }
-        public bool TryGet(string path, out MethodRef method)
+        public bool TryGet(string path, MethodBindings bindings, out MethodRef method)
         {
             if (path.Contains(IMethodListExtension.PATHSEPARATOR))
                 foreach (MethodList list in nestedMethods)
                     if (list.IsFirstPathSegment(path, out string remainingPath))
-                        if (list.TryGet(remainingPath, out method))
+                        if (list.TryGet(remainingPath, bindings, out method))
                             return true;
-            return methods.TryGetValue(path, out method);
-            }
-        public void Set(MethodHandle handle)
+            return methods.TryGetValue(new MethodHandle(path, bindings), out method);
+        }
+        public void Set(MethodHandle handle, MethodRef method)
         {
             if (!isRoot)
             {
-                if (!methods.ContainsKey(handle.name))
-                    methods.Add(handle.name, handle.method);
+                if (!methods.ContainsKey(handle))
+                    methods.Add(handle, method);
                 else
-                    methods[handle.name] = handle.method;
+                    methods[handle] = method;
             }
             else
-                throw new InvalidOperationException($"Cannot add {handle.method} to root list. Add to a nested list instead.");
+                throw new InvalidOperationException($"Cannot add {method} to root list. Add to a nested list instead.");
         }
         public void Nest(MethodList methodList)
         {
@@ -129,7 +127,7 @@ namespace NETGraph.Core.BuiltIn
         {
             // ignore name when copying local
             if (!this.isRoot)
-                foreach (KeyValuePair<string, MethodRef> kvPair in other?.methods)
+                foreach (KeyValuePair<MethodHandle, MethodRef> kvPair in other?.methods)
                     this.methods.TryAdd(kvPair.Key, kvPair.Value);
 
             if (other != null && other.nestedMethods != null)

@@ -13,10 +13,10 @@ namespace NETGraph.Core.BuiltIn.Methods
             get
             {
                 MethodList methods = new MethodList("int", null);
-                methods.Set(new MethodHandle($"{nameof(Add)}", Add, MethodBindings.Instance));
-                methods.Set(new MethodHandle($"{nameof(Subtract)}", Subtract, MethodBindings.Instance));
-                methods.Set(new MethodHandle($"{nameof(Multiply)}", Multiply, MethodBindings.Instance));
-                methods.Set(new MethodHandle($"{nameof(Divide)}", Divide, MethodBindings.Instance));
+                methods.Set(new MethodHandle($"{nameof(Add)}", MethodBindings.Instance), Add);
+                methods.Set(new MethodHandle($"{nameof(Subtract)}", MethodBindings.Instance), Subtract);
+                methods.Set(new MethodHandle($"{nameof(Multiply)}", MethodBindings.Instance), Multiply);
+                methods.Set(new MethodHandle($"{nameof(Divide)}", MethodBindings.Instance), Divide);
                 return methods;
             }
         }

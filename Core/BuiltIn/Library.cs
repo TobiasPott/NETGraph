@@ -46,8 +46,8 @@ namespace NETGraph.Core.BuiltIn
         //      binding (public + instance/static)
         //      param type array (list of input types of method)
 
-        public static bool Contains(string path, bool traverse = false) => methods.Contains(path, traverse);
-        public static bool TryGet(string path, out MethodRef method) => methods.TryGet(path, out method);
+        public static bool Contains(string path, MethodBindings bindings = MethodBindings.Default, bool traverse = false) => methods.Contains(path, bindings, traverse);
+        public static bool TryGet(string path, out MethodRef method, MethodBindings bindings = MethodBindings.Default) => methods.TryGet(path, bindings, out method);
 
     }
 }
