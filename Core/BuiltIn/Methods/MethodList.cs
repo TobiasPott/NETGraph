@@ -9,6 +9,8 @@ namespace NETGraph.Core.BuiltIn
     public interface IMethodList
     {
         string Name { get; }
+        // ToDo: Implement some sort of MethodRef lookup based on the typeIndex of an IData reference
+        //      This may require extension of the metatype of each type to include optional library references
         bool Contains(string path, bool traverse = false);
         bool TryGet(string path, out MethodRef method);
     }
@@ -44,15 +46,12 @@ namespace NETGraph.Core.BuiltIn
 
         public bool Contains(string path, bool traverse = false)
         {
-            // ToDo: Check if Contains is performing same logic as TryGet(.., ..)
             if (traverse)
             {
-                if (this.IsFirstPathSegment(path, out string remaininngPath))
-                {
-                    foreach (MethodList list in nestedMethods)
-                        if (list.Contains(remaininngPath, traverse))
+                foreach (MethodList list in nestedMethods)
+                    if (list.IsFirstPathSegment(path, out string remainingPath))
+                        if (list.Contains(remainingPath, traverse))
                             return true;
-                }
             }
             return methods.ContainsKey(path);
         }

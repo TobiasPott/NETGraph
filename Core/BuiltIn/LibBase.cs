@@ -50,7 +50,7 @@ namespace NETGraph.Core.BuiltIn
 
         public bool Contains(string path, bool traverse = false)
         {
-            return methods.Contains(path, traverse);
+            return methods != null && methods.Contains(path, traverse);
         }
 
         public bool TryGet(string path, out MethodRef method)

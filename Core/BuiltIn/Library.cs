@@ -20,7 +20,6 @@ namespace NETGraph.Core.BuiltIn
         public static T Find<T>() where T : LibBase
         {
             return (T)libraries.FirstOrDefault(x => x.GetType().Equals(typeof(T)));
-            //.Get.FirstOrDefault<T>(  x => x.name.Equals(name) && x.path.Equals(path));
         }
 
         public static void LoadBuiltInLibraries()
