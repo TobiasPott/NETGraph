@@ -2,6 +2,7 @@
 using NETGraph.Core.Meta;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 
 namespace NETGraph.Core.BuiltIn
 {
@@ -25,6 +26,40 @@ namespace NETGraph.Core.BuiltIn
                 return true;
             }
             remainingPath = string.Empty;
+            return false;
+        }
+    }
+
+    [Flags()]
+    public enum MethodBindings
+    {
+        None = 0,
+        Default = Instance,
+        Instance = 1,
+        Static = 2,
+        Operator = 4, // special case for future magic methods
+    }
+    public struct MethodHandle
+    {
+        public string name { get; private set; }
+        public MethodBindings binding { get; private set; }
+        public MethodRef method { get; private set; }
+
+        public MethodHandle(string name, MethodRef method, MethodBindings binding)
+        {
+            this.name = name;
+            this.method = method;
+            this.binding = binding;
+        }
+
+        public bool Match(string name, MethodBindings bindings)
+        {
+            if (binding == MethodBindings.None)
+                return this.name.Equals(name);
+
+            // ToDo: Reconsider this comparison, might be better to do OR or reverse OR on argument to ensure easier search
+            if (this.binding == bindings)
+                return this.name.Equals(name);
             return false;
         }
     }
@@ -68,18 +103,18 @@ namespace NETGraph.Core.BuiltIn
                         if (list.TryGet(remainingPath, out method))
                             return true;
             return methods.TryGetValue(path, out method);
-        }
-        public void Set(string methodName, MethodRef method)
+            }
+        public void Set(MethodHandle handle)
         {
             if (!isRoot)
             {
-                if (!methods.ContainsKey(methodName))
-                    methods.Add(methodName, method);
+                if (!methods.ContainsKey(handle.name))
+                    methods.Add(handle.name, handle.method);
                 else
-                    methods[methodName] = method;
+                    methods[handle.name] = handle.method;
             }
             else
-                throw new InvalidOperationException($"Cannot add {nameof(method)} to root list. Add to a nested list instead.");
+                throw new InvalidOperationException($"Cannot add {handle.method} to root list. Add to a nested list instead.");
         }
         public void Nest(MethodList methodList)
         {
