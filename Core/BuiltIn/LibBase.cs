@@ -42,8 +42,11 @@ namespace NETGraph.Core.BuiltIn
         {
             if (!loaded)
             {
+                // call internal load to finish library setup if required, e.g. load external data
                 bool intern = LoadInternal();
+                // load library methods to global method library
                 Library.LoadLibraryMethods(this.methods);
+
                 loaded = intern;
                 Console.WriteLine("Library loaded: " + this.GetType() + $"({(loaded ? "yes" : "no")})");
             }

@@ -45,30 +45,14 @@ namespace NETGraph.Core.BuiltIn
             MetaTypeRegistry.Register(new MetaType((int)DataTypes.Vector4b, typeof(Vector4b)));
             MetaTypeRegistry.Register(new MetaType((int)DataTypes.Vector4i, typeof(Vector4i)));
 
-            // add methods to method list
-            MethodList intMethods = new MethodList("int", null);
-            intMethods.Set($"{nameof(Int.Add)}", Int.Add);
-            intMethods.Set($"{nameof(Int.Subtract)}", Int.Subtract);
-            intMethods.Set($"{nameof(Int.Multiply)}", Int.Multiply);
-            intMethods.Set($"{nameof(Int.Divide)}", Int.Divide);
-
-            // add methods for static calls in LibMath
-            MethodList mathMethods = new MethodList("LibMath", null);
-            mathMethods.Set($"{nameof(Add)}", Add);
-            //intMethods.Set($"{nameof(Int.Subtract)}", Int.Subtract);
-            //intMethods.Set($"{nameof(Int.Multiply)}", Int.Multiply);
-            //intMethods.Set($"{nameof(Int.Divide)}", Int.Divide);
-
             // ToDo: Ponder abount a solution to register and lookup MethodRef with additional options
             //      e.g.: BindingFlags to lookup static vs reference methods
             //          This might allow solving aliases which can be enabled by flag (though might be suuuper slow as no mapping exists yet
             //          This will most-likely require MethodNamedRef type to name and flag methodRefs inside the MethodList
             //          
 
-            // ToDo: Add Subtract, Multiply and Divide methods as static references
-
-            this.Methods.Nest(intMethods);
-            this.Methods.Nest(mathMethods);
+            this.Methods.Nest(Int.Methods);
+            this.Methods.Nest(Int_Static.Methods);
         }
 
         protected override bool LoadInternal()
@@ -76,40 +60,8 @@ namespace NETGraph.Core.BuiltIn
             // ToDo: ponder about doing self-check on registered libraries to avoid re-registering stuff
             return true;
         }
-        private static IResolver Add(IResolver reference, params IResolver[] args)
-        {
-            int sum = args.Sum(q => q.resolve<int>());
-            // check if reference is given and add it's value to sum;
-            if (reference != null)
-            {
-                reference.assign(sum + reference.resolve<int>());
-                return reference;
-            }
-            else
-            {
-                IData result = new ValueData<int>(sum);
-                return result;
-            }
-        }
-        //private IResolver Subtract(IResolver reference, IEnumerable<IResolver> inputs)
-        //{
-        //    int subtrahends = inputs.Sum(q => q.resolve<int>());
-        //    assignTo.assign<int>(assignTo.resolve<int>() - subtrahends);
-        //}
-        //private IResolver Multiply(IResolver reference, IEnumerable<IResolver> inputs)
-        //{
-        //    int product = 1;
-        //    foreach (IResolver input in inputs)
-        //        product *= input.resolve<int>();
-        //    assignTo.assign<int>(product);
-        //}
-        //private IResolver Divide(IResolver reference, IEnumerable<IResolver> inputs)
-        //{
-        //    int dividend = inputs.First().resolve<int>();
-        //    foreach (IResolver input in inputs.Skip(1))
-        //        dividend /= input.resolve<int>();
-        //    assignTo.assign<int>(dividend);
-        //}
+
+
 
     }
 

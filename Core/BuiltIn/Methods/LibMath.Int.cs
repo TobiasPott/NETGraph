@@ -8,6 +8,19 @@ namespace NETGraph.Core.BuiltIn.Methods
     using Type = System.Int32;
     public static class Int
     {
+        public static MethodList Methods
+        {
+            get
+            {
+                MethodList methods = new MethodList("int", null);
+                methods.Set(new MethodHandle($"{nameof(Add)}", Add, MethodBindings.Instance));
+                methods.Set(new MethodHandle($"{nameof(Subtract)}", Subtract, MethodBindings.Instance));
+                methods.Set(new MethodHandle($"{nameof(Multiply)}", Multiply, MethodBindings.Instance));
+                methods.Set(new MethodHandle($"{nameof(Divide)}", Divide, MethodBindings.Instance));
+                return methods;
+            }
+        }
+
         public static IResolver Add(IResolver reference, params IResolver[] args)
         {
             // check if reference is given and add it's value to sum;

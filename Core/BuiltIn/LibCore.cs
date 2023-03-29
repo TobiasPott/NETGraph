@@ -50,8 +50,6 @@ namespace NETGraph.Core.BuiltIn
         {
             return true;
         }
-        public static void assign(IResolver lh, IResolver rh) => lh.assign(rh);
-
     }
 
 }

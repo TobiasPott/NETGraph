@@ -41,29 +41,22 @@ namespace NETGraph.Core.BuiltIn
             methods.Join(libMethods);
         }
 
+        // ToDo: Complete a list of methods of the string type to extract code
+        //      include method name
+        //      binding (public + instance/static)
+        //      param type array (list of input types of method)
 
-        //public static bool Contains(string path, bool traverse = false)
-        //{
-        //    foreach (LibBase lib in libraries)
-        //    {
-        //        if (lib.IsFirstPathSegment(path, out string remainingPath))
-        //            return lib.Contains(remainingPath, traverse);
-        //    }
-        //    return false;
-        //}
-        public static bool TryGet(string path, out MethodRef method)
+        public static bool Contains(string path, bool traverse = false) => methods.Contains(path, traverse);
+        public static bool TryGet(string path, out MethodRef method, MethodBindings bindings = MethodBindings.Default)
         {
-            return methods.TryGet(path, out method);
+            if (methods.TryGet(path, out MethodHandle handle, bindings))
+            {
+                method = handle.method;
+                return true;
+            }
+            method = null;
+            return false;
         }
-        //{
-        //    foreach (LibBase lib in libraries)
-        //    {
-        //        if (lib.IsFirstPathSegment(path, out string remainingPath) && lib.TryGet(remainingPath, out method))
-        //            return true;
-        //    }
-        //    method = null;
-        //    return false;
-        //}
 
     }
 }

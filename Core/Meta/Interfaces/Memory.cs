@@ -90,6 +90,8 @@ namespace NETGraph.Core.Meta
         public static IData Alloc(int typeIndex, Options options) => Global.Alloc(typeIndex, options);
         public static IData Alloc(Type type, Options options) => Global.Alloc(type, options);
 
+        public static void Assign(IResolver lh, IResolver rh) => lh.assign(rh);
+
     }
 }
 
