@@ -35,6 +35,8 @@ namespace NETGraph.Core.Meta
     {
         public static string GetTypeName(this int typeIndex) => MetaTypeRegistry.typeRegistry[typeIndex].typeName;
         public static string GetTypeName(IData data) => MetaTypeRegistry. typeRegistry[data.typeIndex].typeName;
+        // ToDo: Add overloaded extension method for string to lookup typeIndex by typename
+        //      This will most-likely be extended to handle aliases or provide additional overload which does do (named: GetAliasedTypeIndex()
         public static int GetTypeIndex(this Type type) => (int)MetaTypeRegistry.underlyingTypesMap.First(x => x.Value.Equals(type)).Key;
     }
 

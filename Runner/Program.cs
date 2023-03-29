@@ -61,7 +61,7 @@ public class Program
         LibMath math = Library.Find<LibMath>();
         MethodRef addMethod = null;
         Library.TryGet("LibMath::Add", out addMethod, MethodBindings.Static);
-        IResolver addResult = addMethod.Invoke(null, xInt, yInt); // execute method
+        IData addResult = addMethod.Invoke(null, xInt, yInt); // execute method
         //Console.WriteLine("add => " + addResult.resolve<int>());
 
         // ToDo: Check why this returs null when trying to resolve nested method lists
