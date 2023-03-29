@@ -13,7 +13,7 @@ namespace NETGraph.Core.Meta
         private T scalar { get; set; }
 
 
-        internal ScalarData(Type type, Options options) : this(MetaTypeRegistry.GetTypeIndex(type), options)
+        internal ScalarData(Type type, Options options) : this(type.GetTypeIndex(), options)
         { }
         internal ScalarData(int typeIndex, Options options)
         {

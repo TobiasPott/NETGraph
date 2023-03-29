@@ -12,7 +12,7 @@ namespace NETGraph.Core.Meta
         private Dictionary<string, T> dict;
 
 
-        internal NamedData(Type type, Options options) : this(MetaTypeRegistry.GetTypeIndex(type), options)
+        internal NamedData(Type type, Options options) : this(type.GetTypeIndex(), options)
         { }
         internal NamedData(int typeIndex, Options options)
         {

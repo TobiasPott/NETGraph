@@ -45,7 +45,7 @@ namespace NETGraph.Core.Meta
         }
         public IData Alloc<T>(Options options)
         {
-            int typeIndex = MetaTypeRegistry.GetTypeIndex(typeof(T));
+            int typeIndex = typeof(T).GetTypeIndex();
             if (options.HasFlag(Options.Index))
                 return new IndexedData<T>(typeIndex, options);
             else if (options.HasFlag(Options.Named))
@@ -55,7 +55,7 @@ namespace NETGraph.Core.Meta
         }
 
         public IData Alloc(int typeIndex, Options options) => Alloc(typeIndex, MetaTypeRegistry.GetType(typeIndex), options);
-        public IData Alloc(Type type, Options options) => Alloc(MetaTypeRegistry.GetTypeIndex(type), type, options);
+        public IData Alloc(Type type, Options options) => Alloc(type.GetTypeIndex(), type, options);
 
         private static IData Alloc(int typeIndex, Type type, Options options)
         {

@@ -13,7 +13,7 @@ namespace NETGraph.Core.Meta
 
         internal ValueData(T value)
         {
-            this.typeIndex = MetaTypeRegistry.GetTypeIndex(typeof(T));
+            this.typeIndex = typeof(T).GetTypeIndex();
             this.options = Options.Scalar;
             this.scalar = value;
         }

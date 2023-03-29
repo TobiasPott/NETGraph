@@ -11,7 +11,7 @@ namespace NETGraph.Core.Meta
         private List<T> list;
 
 
-        internal IndexedData(Type type, Options options) : this(MetaTypeRegistry.GetTypeIndex(type), options)
+        internal IndexedData(Type type, Options options) : this(type.GetTypeIndex(), options)
         { }
         internal IndexedData(int typeIndex, Options options)
         {
