@@ -104,10 +104,10 @@ public class Program
         //ParseAllocAndAssign("int x = myInt.add(y, myInt.add(y, 3), 10);");
 
         List<CallInfo> argInfos = new List<CallInfo>();
-        string code = "int x = myInt.add(\"Hello\", \"World!\");";
-        code = "int x = myInt.add(\"sads\", y, myInt2.add(z, 3, anotherInt.add(4, 5)), \"(in, parenthesis)\", 'c', 10, anotherInt.add(6, 7));";
-        code = "int x = myInt.add('t', \"(in, parenthesis\", 'c', 10, y, myInt2.add(z, 3, anotherInt.add(4, 5), w), v);";
-        code = "int x = myInt.add(y, z, 1, 1.0);";
+        string code = "int x = myInt.Add(\"Hello\", \"World!\");";
+        code = "int x = myInt.Add(\"sads\", y, myInt2.add(z, 3, anotherInt.add(4, 5)), \"(in, parenthesis)\", 'c', 10, anotherInt.add(6, 7));";
+        code = "int x = myInt.Add('t', \"(in, parenthesis\", 'c', 10, y, myInt2.add(z, 3, anotherInt.add(4, 5), w), v);";
+        code = "int x = myInt.Add(y, z, 1, 1.0);";
         //code = "myInt.add(y, z);";
 
         JIT.Compile(code);
