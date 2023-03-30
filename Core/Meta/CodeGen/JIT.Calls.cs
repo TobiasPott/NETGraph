@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using NETGraph.Core.BuiltIn;
 
 namespace NETGraph.Core.Meta.CodeGen
 {
@@ -11,7 +12,6 @@ namespace NETGraph.Core.Meta.CodeGen
         Value,
         Ref,
         Method,
-
     }
     public struct CallInfo
     {
@@ -29,6 +29,60 @@ namespace NETGraph.Core.Meta.CodeGen
             this.arg = arg;
         }
 
+        // used to resolve CallInfo to value or reference
+        public bool resolve(out IData value)
+        {
+            if (type == CallInfoType.Value)
+            {
+                if (arg.StartsWith('"'))
+                {
+                    value = new ValueData<string>(arg.Trim('"'));
+                    return true;
+                }
+                if (arg.StartsWith('\''))
+                {
+                    value = new ValueData<char>(arg.Trim('\'')[0]);
+                    return true;
+                }
+                if (char.IsDigit(arg[0]) || arg.StartsWith("-"))
+                {
+                    if (arg.Contains('.'))
+                        value = new ValueData<float>(float.Parse(arg));
+                    else
+                        value = new ValueData<int>(int.Parse(arg));
+                    return true;
+                }
+            }
+            else if (type == CallInfoType.Ref)
+            {
+                // try to recieve the given reference from memory
+                value = Memory.Get(arg);
+                return true;
+            }
+            throw new InvalidOperationException($"Cannot resolve value or reference from {type} info.");
+        }
+        // used to resolve CallInfo to optional reference and method handle
+        public bool resolve(out MethodRef handle, out IData reference)
+        {
+            if (type == CallInfoType.Method)
+            {
+                if (arg.Contains(IMethodListExtension.PATHSEPARATOR))
+                {
+                    reference = null;
+                    return Library.TryGet(arg, out handle, MethodBindings.Instance);
+                }
+                else
+                {
+                    int splitIndex = arg.IndexOf('.');
+                    reference = Memory.Get(arg.Substring(0, splitIndex));
+                    string methodName = arg.Substring(splitIndex);
+                    string typeName = reference.typeIndex.GetTypeName();
+                    return Library.TryGet($"{typeName}::{methodName}", out handle, MethodBindings.Instance);
+                }
+            }
+            throw new InvalidOperationException($"Cannot resolve method from {type} info.");
+        }
+
         public override string ToString()
         {
             return $"[{type}]".PadRight(10) + $"{depth}".PadRight(3) + $"{index};".PadRight(4) + $"{new string(' ', depth * 2)} [{this.arg}]";
@@ -43,18 +97,20 @@ namespace NETGraph.Core.Meta.CodeGen
     public class JIT
     {
 
-
+        public static bool IsValueInfo(string arg) => (arg.StartsWith('"') || arg.StartsWith('\'') || arg.StartsWith("-") || char.IsDigit(arg[0]));
+        public static bool IsRefInfo(string arg) => (char.IsLetter(arg[0]));
+        public static bool IsMethodInfo(string arg) => (arg.EndsWith("("));
         public static CallInfoType GetCallInfoType(string arg)
         {
-            if (arg.StartsWith('"') || arg.StartsWith('\'') || arg.StartsWith("-") || char.IsDigit(arg[0]))
+            if (IsValueInfo(arg))
             {
                 return CallInfoType.Value;
             }
-            if (arg.EndsWith("("))
+            if (IsMethodInfo(arg))
             {
                 return CallInfoType.Method;
             }
-            if (char.IsLetter(arg[0]))
+            if (IsRefInfo(arg))
             {
                 return CallInfoType.Ref;
             }
