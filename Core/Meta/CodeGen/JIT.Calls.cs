@@ -12,6 +12,9 @@ namespace NETGraph.Core.Meta.CodeGen
         Value,
         Ref,
         Method,
+        Alloc,
+        Declare,
+        Assign
     }
     public struct CallInfo
     {
@@ -26,7 +29,19 @@ namespace NETGraph.Core.Meta.CodeGen
             this.index = index;
             this.depth = depth;
             this.type = JIT.GetCallInfoType(arg);
-            this.arg = arg;
+            this.arg = arg.TrimEnd('(');
+        }
+        public static CallInfo Declare(int index, int depth, string arg)
+        {
+            return new CallInfo(index, depth, arg) { type = CallInfoType.Declare };
+        }
+        public static CallInfo Alloc(int index, int depth, string arg)
+        {
+            return new CallInfo(index, depth, arg) { type = CallInfoType.Alloc };
+        }
+        public static CallInfo Assign(int index, int depth, string arg)
+        {
+            return new CallInfo(index, depth, arg) { type = CallInfoType.Assign };
         }
 
         // used to resolve CallInfo to value or reference
@@ -59,6 +74,10 @@ namespace NETGraph.Core.Meta.CodeGen
                 value = Memory.Get(arg);
                 return true;
             }
+            else if (type == CallInfoType.Alloc)
+            {
+                throw new NotImplementedException("Resolving allocation call to resulting IData reference is not implemented yet.");
+            }
             throw new InvalidOperationException($"Cannot resolve value or reference from {type} info.");
         }
         // used to resolve CallInfo to optional reference and method handle
@@ -79,6 +98,14 @@ namespace NETGraph.Core.Meta.CodeGen
                     string typeName = reference.typeIndex.GetTypeName();
                     return Library.TryGet($"{typeName}::{methodName}", out handle, MethodBindings.Instance);
                 }
+            }
+            else if (type == CallInfoType.Declare)
+            {
+                throw new NotImplementedException("Resolving declaration call to resulting MethodRef and IData reference is not implemented yet.");
+            }
+            else if (type == CallInfoType.Assign)
+            {
+                throw new NotImplementedException("Resolving assigmet call to resulting MethodRef reference is not implemented yet.");
             }
             throw new InvalidOperationException($"Cannot resolve method from {type} info.");
         }
@@ -116,6 +143,29 @@ namespace NETGraph.Core.Meta.CodeGen
             }
             return CallInfoType.Unknown;
 
+        }
+        public static void GetDeclareAndAssign(string input, List<CallInfo> callInfos, ref int depth)
+        {
+
+            bool isAssignment = input.EndsWith('=');
+            input = input.TrimEnd('=', ' ');
+            int whitespaceIndex = input.IndexOf(' ');
+            if (whitespaceIndex != -1)
+            {
+                // declaration exists and part in front of ' ' is type name
+                // requires alloc of IData of typeIndex (first part)
+                // requires declare said IData with name (second part)
+                callInfos.Add(CallInfo.Declare(callInfos.Count, depth, $"\"{input.Substring(whitespaceIndex + 1)}\""));
+                depth++;
+                callInfos.Add(CallInfo.Alloc(callInfos.Count, depth, $"\"{input.Substring(0, whitespaceIndex)}\""));
+                depth--;
+            }
+            if (isAssignment)
+            {
+                // assignment exists and needs to lookup a reference to assign to
+                callInfos.Add(CallInfo.Assign(callInfos.Count, depth, $"\"{input.Substring(whitespaceIndex + 1)}\""));
+                depth++;
+            }
         }
         public static void GetCallInfos(string input, List<CallInfo> callInfos, char delim = ',', char lhDel = '(', char rhDel = ')', int depth = 0)
         {
@@ -215,7 +265,7 @@ namespace NETGraph.Core.Meta.CodeGen
             {
                 // Add assignnment to flags
                 flags |= CompiledFlags.Assign;
-                lh = code.Substring(0, curI).Trim();
+                lh = code.Substring(0, curI + 1).Trim();
                 rh = code.Substring(curI).Trim().Trim('=', ' ');
             }
             List<CallInfo> argInfos = new List<CallInfo>();
@@ -244,7 +294,10 @@ namespace NETGraph.Core.Meta.CodeGen
                 //argInfos.Add(new CallInfo(argInfos.Count, depth + 1, $"\"{name}\""));
                 //depth += 1;
             }
-            JIT.GetCallInfos(rh, argInfos, ',', '(', ')', 0);
+            int depth = 0;
+            JIT.GetDeclareAndAssign(lh, argInfos, ref depth);
+            Console.WriteLine("LeftHand: " + lh);
+            JIT.GetCallInfos(rh, argInfos, ',', '(', ')', depth);
             if (argInfos.Count > 0)
                 flags |= CompiledFlags.Call;
             Console.WriteLine($"{flags}{Environment.NewLine}{assignName} as new {declareType}{Environment.NewLine}" +
