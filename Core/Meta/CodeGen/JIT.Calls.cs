@@ -12,6 +12,8 @@ namespace NETGraph.Core.Meta.CodeGen
         private static bool IsRefInfo(string arg) => (char.IsLetter(arg[0]));
         private static bool IsMethodInfo(string arg) => (arg.EndsWith("("));
         private static bool IsAssignInfo(string arg) => (arg.Contains("="));
+
+        // ToDo: Ponder about implementation to determine all existing options in arg, to reduce repeating checks
         public static CallInfoType GetCallInfoType(string arg)
         {
             if (IsValueInfo(arg))
@@ -60,7 +62,6 @@ namespace NETGraph.Core.Meta.CodeGen
                 callInfos.Add(new CallInfo(callInfos.Count, depth, input));
                 return;
             }
-
             if (startIndex > 0)
             {
                 callInfos.Add(new CallInfo(callInfos.Count, depth, input.Substring(0, startIndex)));
@@ -123,19 +124,9 @@ namespace NETGraph.Core.Meta.CodeGen
             }
         }
 
-        [Flags()]
-        public enum CompiledFlags
-        {
-            None = 0,
-            Assign = 1, // includes assignent to variable
-            Declare = 2, // inncludes allocation of named variable of type
-            Call = 4, // includes a call which is executed
-        }
-
         public static Action<IMemory> Compile(string code)
         {
             code = code.Trim();
-            CompiledFlags flags = CompiledFlags.None;
             string assignName = string.Empty;
             string declareType = string.Empty;
 
@@ -146,7 +137,6 @@ namespace NETGraph.Core.Meta.CodeGen
             if (curI != -1)
             {
                 // Add assignnment to flags
-                flags |= CompiledFlags.Assign;
                 lh = code.Substring(0, curI + 1).Trim();
                 rh = code.Substring(curI).Trim().Trim('=', ' ');
             }
@@ -154,12 +144,22 @@ namespace NETGraph.Core.Meta.CodeGen
             int depth = 0;
             List<CallInfo> argInfos = new List<CallInfo>();
             JIT.GetDeclareAndAssign(lh, argInfos, ref depth);
-            Console.WriteLine("LeftHand: " + lh);
             JIT.GetCallInfos(rh, argInfos, ',', '(', ')', depth);
-            if (argInfos.Count > 0)
-                flags |= CompiledFlags.Call;
-            Console.WriteLine($"{flags}{Environment.NewLine}{assignName} as new {declareType}{Environment.NewLine}" +
+
+            Console.WriteLine($"{code}{Environment.NewLine}" +
                 $"{string.Join(Environment.NewLine + "", argInfos)}");
+
+            // ToDo: iterate over call infos and gather constant values and generate their IData and store somewhere?!
+
+            // ToDo: Ponder about algorithm to iterate over the list of call infos
+            //      first call info should always translate to MethodRef (either declare, assign or method call)
+            //      if next info is higher depth, next infos are args until depth is equal or lower again
+            //          this repeats for nested calls based on their depth
+            //          
+            //      each subsequent info is considered parameter to the MethodRef
+            //          a sub info can be MethodRef itself
+            //          each subsequent info 
+
 
             return null;
         }
