@@ -79,8 +79,7 @@ namespace NETGraph.Core.Meta.CodeGen
             }
             else if (type == CallInfoType.Alloc)
             {
-                Console.WriteLine("CallInfo.resolve :: Alloc: " + arg);
-                if(arg.GetDataInfo(out int typeIndex, out Options options))
+                if (arg.GetAllocInfo(out int typeIndex, out Options options))
                 {
                     value = Memory.Alloc(typeIndex, options);
                     return true;
@@ -109,13 +108,20 @@ namespace NETGraph.Core.Meta.CodeGen
             }
             else if (type == CallInfoType.Declare)
             {
-                throw new NotImplementedException("Resolving declaration call to resulting MethodRef and IData reference is not implemented yet.");
+                if (arg.GetDeclareInfo(out int typeIndex, out string name, out Options options))
+                {
+                    handle = Memory.Declare(typeIndex, name, options);
+                    reference = null;
+                    return true;
+                }
             }
             else if (type == CallInfoType.Assign)
             {
-                throw new NotImplementedException("Resolving assigmet call to resulting MethodRef reference is not implemented yet.");
+                handle = Memory.Assign;
+                reference = Memory.Get(arg);
+                return reference != null;
             }
-            throw new InvalidOperationException($"Cannot resolve method from {type} info.");
+            throw new InvalidOperationException($"Cannot resolve method and/or reference from {type} info.");
         }
 
         public override string ToString()
@@ -157,21 +163,14 @@ namespace NETGraph.Core.Meta.CodeGen
 
             bool isAssignment = input.EndsWith('=');
             input = input.TrimEnd('=', ' ');
-            int whitespaceIndex = input.IndexOf(' ');
-            if (whitespaceIndex != -1)
-            {
-                // declaration exists and part in front of ' ' is type name
-                // requires alloc of IData of typeIndex (first part)
-                // requires declare said IData with name (second part)
-                callInfos.Add(CallInfo.Declare(callInfos.Count, depth, $"\"{input.Substring(whitespaceIndex + 1)}\""));
-                depth++;
-                callInfos.Add(CallInfo.Alloc(callInfos.Count, depth, $"\"{input.Substring(0, whitespaceIndex)}\""));
-                depth--;
-            }
+            int isDeclaration = input.LastIndexOf(' ');
+
+            if (isDeclaration != -1)
+                callInfos.Add(CallInfo.Declare(callInfos.Count, depth, $"{input}"));
             if (isAssignment)
             {
                 // assignment exists and needs to lookup a reference to assign to
-                callInfos.Add(CallInfo.Assign(callInfos.Count, depth, $"\"{input.Substring(whitespaceIndex + 1)}\""));
+                callInfos.Add(CallInfo.Assign(callInfos.Count, depth, $"{input.Substring(isDeclaration + 1)}"));
                 depth++;
             }
         }
@@ -276,33 +275,9 @@ namespace NETGraph.Core.Meta.CodeGen
                 lh = code.Substring(0, curI + 1).Trim();
                 rh = code.Substring(curI).Trim().Trim('=', ' ');
             }
-            List<CallInfo> argInfos = new List<CallInfo>();
-            bool isDeclaration = lh.Count(x => x == ' ') == 1 ? true : false;
-            if (isDeclaration)
-            {
-                // Add declaration to flags
-                flags |= CompiledFlags.Declare;
-                int lhInd = lh.IndexOf(' ');
-                assignName = (isDeclaration ? lh.Substring(lhInd) : lh).Trim();
-                declareType = (isDeclaration ? lh.Substring(0, lhInd) : typeof(void).Name).Trim();
-                //Console.WriteLine($"Declare: {isDeclaration}; Data of {type} called '{name}'; {lh} {rh}");
 
-                //int depth = 0;
-                //if (!type.Equals(typeof(void).Name))
-                //{
-                //    // ToDo: Covnert type to typeIndex to handle as integer value onward
-                //    // Add alloc method call to create new data variable with given name of given type
-                //    argInfos.Add(new CallInfo(argInfos.Count, depth, $"LibCore::Alloc("));
-                //    argInfos.Add(new CallInfo(argInfos.Count, depth + 1, $"\"{name}\""));
-                //    argInfos.Add(new CallInfo(argInfos.Count, depth + 1, $"\"{type}\""));
-                //    depth += 1;
-                //}
-                //// Add assign method call to store the rh call to the data variable with the given name
-                //argInfos.Add(new CallInfo(argInfos.Count, depth, $"LibCore::Assign("));
-                //argInfos.Add(new CallInfo(argInfos.Count, depth + 1, $"\"{name}\""));
-                //depth += 1;
-            }
             int depth = 0;
+            List<CallInfo> argInfos = new List<CallInfo>();
             JIT.GetDeclareAndAssign(lh, argInfos, ref depth);
             Console.WriteLine("LeftHand: " + lh);
             JIT.GetCallInfos(rh, argInfos, ',', '(', ')', depth);
