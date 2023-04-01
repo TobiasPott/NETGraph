@@ -41,11 +41,6 @@ namespace NETGraph.Core.BuiltIn
             methods.Join(libMethods);
         }
 
-        // ToDo: Complete a list of methods of the string type to extract code
-        //      include method name
-        //      binding (public + instance/static)
-        //      param type array (list of input types of method)
-
         public static bool Contains(string path, MethodBindings bindings = MethodBindings.Default, bool traverse = false) => methods.Contains(path, bindings, traverse);
         public static bool TryGet(string path, out MethodRef method, MethodBindings bindings = MethodBindings.Default) => methods.TryGet(path, bindings, out method);
 

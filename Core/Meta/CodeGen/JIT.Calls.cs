@@ -35,9 +35,8 @@ namespace NETGraph.Core.Meta.CodeGen
             return CallInfoType.Unknown;
 
         }
-        public static void GetDeclareAndAssign(string input, List<CallInfo> callInfos, ref int depth)
+        public static void GetDeclareOrAssign(string input, List<CallInfo> callInfos, ref int depth)
         {
-
             bool isAssignment = input.EndsWith('=');
             input = input.TrimEnd('=', ' ');
             int isDeclaration = input.LastIndexOf(' ');
@@ -57,6 +56,7 @@ namespace NETGraph.Core.Meta.CodeGen
             int endIndex = input.LastIndexOf(rhDel);
 
             CallInfoType argType = GetCallInfoType(input);
+            // ToDo: Ponder about including checking for 'Assign' typee within this method and make it non-internal
             if (argType == CallInfoType.Value)
             {
                 callInfos.Add(new CallInfo(callInfos.Count, depth, input));
@@ -67,7 +67,6 @@ namespace NETGraph.Core.Meta.CodeGen
                 callInfos.Add(new CallInfo(callInfos.Count, depth, input.Substring(0, startIndex)));
                 depth += 1;
             }
-
             if (startIndex != -1 && endIndex != -1)
             {
                 string argList = input.Substring(startIndex, endIndex - startIndex);
@@ -143,7 +142,7 @@ namespace NETGraph.Core.Meta.CodeGen
 
             int depth = 0;
             List<CallInfo> argInfos = new List<CallInfo>();
-            JIT.GetDeclareAndAssign(lh, argInfos, ref depth);
+            JIT.GetDeclareOrAssign(lh, argInfos, ref depth);
             JIT.GetCallInfos(rh, argInfos, ',', '(', ')', depth);
 
             Console.WriteLine($"{code}{Environment.NewLine}" +
