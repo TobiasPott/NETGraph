@@ -6,6 +6,8 @@ namespace NETGraph.Core.Meta
 
     public struct MetaType
     {
+
+        public static readonly MetaType Invalid = new MetaType();
         private static int _runningIndex = 1024;    // reserved 1024 indices for builtin/internal types
                                                     // may add additional reserved ranges for other purposes (e.g. Unity range)
 

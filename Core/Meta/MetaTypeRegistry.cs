@@ -33,8 +33,36 @@ namespace NETGraph.Core.Meta
 
     public static class MetaTypeExtension
     {
+        public static bool GetDataInfo(this string arg, out int typeIndex, out Options options)
+        {
+            options = Options.Scalar;
+            if (arg.EndsWith("[]"))
+            {
+                options = Options.Resizable | Options.Index;
+                arg = arg.TrimEnd('[', ']');
+            }
+            if (arg.EndsWith("<>"))
+            {
+                options = Options.Resizable | Options.Named;
+                arg = arg.TrimEnd('<', '>');
+            }
+            MetaType metaType = MetaTypeRegistry.typeRegistry.Values.FirstOrDefault(t => t.typeName.Equals(arg));
+            if (!metaType.Equals(MetaType.Invalid))
+            {
+                typeIndex = metaType.typeIndex;
+                return true;
+            }
+            throw new KeyNotFoundException($"Type '{arg}' was not found and does not exist in the registry.");
+        }
+        public static int GetTypeIndex(this string typeName)
+        {
+            MetaType type = MetaTypeRegistry.typeRegistry.Values.FirstOrDefault(t => t.typeName.Equals(typeName));
+            if (!type.Equals(MetaType.Invalid))
+                return type.typeIndex;
+            throw new KeyNotFoundException($"Type '{typeName}' was not found and does not exist in the registry.");
+        }
         public static string GetTypeName(this int typeIndex) => MetaTypeRegistry.typeRegistry[typeIndex].typeName;
-        public static string GetTypeName(IData data) => MetaTypeRegistry. typeRegistry[data.typeIndex].typeName;
+        public static string GetTypeName(IData data) => MetaTypeRegistry.typeRegistry[data.typeIndex].typeName;
         // ToDo: Add overloaded extension method for string to lookup typeIndex by typename
         //      This will most-likely be extended to handle aliases or provide additional overload which does do (named: GetAliasedTypeIndex()
         public static int GetTypeIndex(this Type type) => (int)MetaTypeRegistry.underlyingTypesMap.First(x => x.Value.Equals(type)).Key;

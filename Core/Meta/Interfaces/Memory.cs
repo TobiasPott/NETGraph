@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using System.Collections.Generic;
 using System.Reflection;
 
@@ -90,7 +91,25 @@ namespace NETGraph.Core.Meta
         public static IData Alloc(int typeIndex, Options options) => Global.Alloc(typeIndex, options);
         public static IData Alloc(Type type, Options options) => Global.Alloc(type, options);
 
-        public static void Assign(IResolver lh, IResolver rh) => lh.assign(rh);
+        public static void Assign(IData lh, IData rh) => lh.assign(rh);
+        public static IData Declare(IData reference, params IData[] args)
+        {
+            int typeIndex = args[0].resolve<int>();
+            string name = args[1].resolve<string>();
+            Options options = Options.Scalar;
+            if (args.Length > 2)
+                args[2].resolve<Options>();
+            IData data = Alloc(typeIndex, options);
+            Declare(name, data);
+            return data;
+        }
+        public static IData Assign(IData reference, params IData[] args)
+        {
+            if (reference != null)
+                reference.assign(args.First());
+            return reference;
+        }
+
 
     }
 }

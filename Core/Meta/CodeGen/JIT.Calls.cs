@@ -9,10 +9,10 @@ namespace NETGraph.Core.Meta.CodeGen
     public enum CallInfoType
     {
         Unknown,
-        Value,
-        Ref,
-        Method,
-        Alloc,
+        Value, // const data 
+        Ref, // ref to data variable in memory
+        Method, // info for method call (reference, static and name)
+        Alloc, // allocation of new data type of give type
         Declare,
         Assign
     }
@@ -33,14 +33,17 @@ namespace NETGraph.Core.Meta.CodeGen
         }
         public static CallInfo Declare(int index, int depth, string arg)
         {
+            // new declaration call info with the variable's name as argument
             return new CallInfo(index, depth, arg) { type = CallInfoType.Declare };
         }
         public static CallInfo Alloc(int index, int depth, string arg)
         {
+            // new allocation call info with the variable's type name as argument
             return new CallInfo(index, depth, arg) { type = CallInfoType.Alloc };
         }
         public static CallInfo Assign(int index, int depth, string arg)
         {
+            // new assignment call info with target variable's name as argument
             return new CallInfo(index, depth, arg) { type = CallInfoType.Assign };
         }
 
@@ -76,7 +79,12 @@ namespace NETGraph.Core.Meta.CodeGen
             }
             else if (type == CallInfoType.Alloc)
             {
-                throw new NotImplementedException("Resolving allocation call to resulting IData reference is not implemented yet.");
+                Console.WriteLine("CallInfo.resolve :: Alloc: " + arg);
+                if(arg.GetDataInfo(out int typeIndex, out Options options))
+                {
+                    value = Memory.Alloc(typeIndex, options);
+                    return true;
+                }
             }
             throw new InvalidOperationException($"Cannot resolve value or reference from {type} info.");
         }
