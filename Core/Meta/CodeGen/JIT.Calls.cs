@@ -6,141 +6,12 @@ using NETGraph.Core.BuiltIn;
 namespace NETGraph.Core.Meta.CodeGen
 {
 
-    public enum CallInfoType
-    {
-        Unknown,
-        Value, // const data 
-        Ref, // ref to data variable in memory
-        Method, // info for method call (reference, static and name)
-        Alloc, // allocation of new data type of give type
-        Declare,
-        Assign
-    }
-    public struct CallInfo
-    {
-
-        public int index;
-        public int depth;
-        public string arg;
-        public CallInfoType type;
-
-        public CallInfo(int index, int depth, string arg)
-        {
-            this.index = index;
-            this.depth = depth;
-            this.type = JIT.GetCallInfoType(arg);
-            this.arg = arg.TrimEnd('(');
-        }
-        public static CallInfo Declare(int index, int depth, string arg)
-        {
-            // new declaration call info with the variable's name as argument
-            return new CallInfo(index, depth, arg) { type = CallInfoType.Declare };
-        }
-        public static CallInfo Alloc(int index, int depth, string arg)
-        {
-            // new allocation call info with the variable's type name as argument
-            return new CallInfo(index, depth, arg) { type = CallInfoType.Alloc };
-        }
-        public static CallInfo Assign(int index, int depth, string arg)
-        {
-            // new assignment call info with target variable's name as argument
-            return new CallInfo(index, depth, arg) { type = CallInfoType.Assign };
-        }
-
-        // used to resolve CallInfo to value or reference
-        public bool resolve(out IData value)
-        {
-            if (type == CallInfoType.Value)
-            {
-                if (arg.StartsWith('"'))
-                {
-                    value = new ValueData<string>(arg.Trim('"'));
-                    return true;
-                }
-                if (arg.StartsWith('\''))
-                {
-                    value = new ValueData<char>(arg.Trim('\'')[0]);
-                    return true;
-                }
-                if (char.IsDigit(arg[0]) || arg.StartsWith("-"))
-                {
-                    if (arg.Contains('.'))
-                        value = new ValueData<float>(float.Parse(arg));
-                    else
-                        value = new ValueData<int>(int.Parse(arg));
-                    return true;
-                }
-            }
-            else if (type == CallInfoType.Ref)
-            {
-                // try to recieve the given reference from memory
-                value = Memory.Get(arg);
-                return true;
-            }
-            else if (type == CallInfoType.Alloc)
-            {
-                if (arg.GetAllocInfo(out int typeIndex, out Options options))
-                {
-                    value = Memory.Alloc(typeIndex, options);
-                    return true;
-                }
-            }
-            throw new InvalidOperationException($"Cannot resolve value or reference from {type} info.");
-        }
-        // used to resolve CallInfo to optional reference and method handle
-        public bool resolve(out MethodRef handle, out IData reference)
-        {
-            if (type == CallInfoType.Method)
-            {
-                if (arg.Contains(IMethodListExtension.PATHSEPARATOR))
-                {
-                    reference = null;
-                    return Library.TryGet(arg, out handle, MethodBindings.Instance);
-                }
-                else
-                {
-                    int splitIndex = arg.IndexOf('.');
-                    reference = Memory.Get(arg.Substring(0, splitIndex));
-                    string methodName = arg.Substring(splitIndex);
-                    string typeName = reference.typeIndex.GetTypeName();
-                    return Library.TryGet($"{typeName}::{methodName}", out handle, MethodBindings.Instance);
-                }
-            }
-            else if (type == CallInfoType.Declare)
-            {
-                if (arg.GetDeclareInfo(out int typeIndex, out string name, out Options options))
-                {
-                    handle = Memory.Declare(typeIndex, name, options);
-                    reference = null;
-                    return true;
-                }
-            }
-            else if (type == CallInfoType.Assign)
-            {
-                handle = Memory.Assign;
-                reference = Memory.Get(arg);
-                return reference != null;
-            }
-            throw new InvalidOperationException($"Cannot resolve method and/or reference from {type} info.");
-        }
-
-        public override string ToString()
-        {
-            return $"[{type}]".PadRight(10) + $"{depth}".PadRight(3) + $"{index};".PadRight(4) + $"{new string(' ', depth * 2)} [{this.arg}]";
-        }
-    }
-    //public struct MethodHandle
-    //{
-    //    // ToDo: Implement type which can resolve the method name from a code line
-    //    //      It should also resolve static method name paths and reference name paths (resolving some sort of TypeIndexMethodProvider or add a nested dictionary storing method references for typeIndex)
-    //}
-
     public class JIT
     {
-
-        public static bool IsValueInfo(string arg) => (arg.StartsWith('"') || arg.StartsWith('\'') || arg.StartsWith("-") || char.IsDigit(arg[0]));
-        public static bool IsRefInfo(string arg) => (char.IsLetter(arg[0]));
-        public static bool IsMethodInfo(string arg) => (arg.EndsWith("("));
+        private static bool IsValueInfo(string arg) => (arg.StartsWith('"') || arg.StartsWith('\'') || arg.StartsWith("-") || char.IsDigit(arg[0]));
+        private static bool IsRefInfo(string arg) => (char.IsLetter(arg[0]));
+        private static bool IsMethodInfo(string arg) => (arg.EndsWith("("));
+        private static bool IsAssignInfo(string arg) => (arg.Contains("="));
         public static CallInfoType GetCallInfoType(string arg)
         {
             if (IsValueInfo(arg))
@@ -154,6 +25,10 @@ namespace NETGraph.Core.Meta.CodeGen
             if (IsRefInfo(arg))
             {
                 return CallInfoType.Ref;
+            }
+            if (IsAssignInfo(arg))
+            {
+                return CallInfoType.Assign;
             }
             return CallInfoType.Unknown;
 
