@@ -92,6 +92,12 @@ namespace NETGraph.Core.Meta
         public static IData Alloc(Type type, Options options) => Global.Alloc(type, options);
 
         public static void Assign(IData lh, IData rh) => lh.assign(rh);
+
+        public static MethodRef Declare(int typeIndex, string name, Options options)
+        {
+            MethodRef method = new MethodRef((reference, args) => { return Declare(null, typeIndex.AsValueData(), name.AsValueData(), options.AsValueData()); });
+            return method;
+        }
         public static IData Declare(IData reference, params IData[] args)
         {
             int typeIndex = args[0].resolve<int>();

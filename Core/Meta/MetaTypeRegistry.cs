@@ -33,7 +33,19 @@ namespace NETGraph.Core.Meta
 
     public static class MetaTypeExtension
     {
-        public static bool GetDataInfo(this string arg, out int typeIndex, out Options options)
+        public static int GetTypeIndex(this Type type) => (int)MetaTypeRegistry.underlyingTypesMap.First(x => x.Value.Equals(type)).Key;
+        public static int GetTypeIndex(this string typeName)
+        {
+            MetaType type = MetaTypeRegistry.typeRegistry.Values.FirstOrDefault(t => t.typeName.Equals(typeName));
+            if (!type.Equals(MetaType.Invalid))
+                return type.typeIndex;
+            throw new KeyNotFoundException($"Type '{typeName}' was not found and does not exist in the registry.");
+        }
+
+        public static string GetTypeName(this int typeIndex) => MetaTypeRegistry.typeRegistry[typeIndex].typeName;
+        public static string GetTypeName(IData data) => MetaTypeRegistry.typeRegistry[data.typeIndex].typeName;
+
+        public static bool GetAllocInfo(this string arg, out int typeIndex, out Options options)
         {
             options = Options.Scalar;
             if (arg.EndsWith("[]"))
@@ -54,18 +66,33 @@ namespace NETGraph.Core.Meta
             }
             throw new KeyNotFoundException($"Type '{arg}' was not found and does not exist in the registry.");
         }
-        public static int GetTypeIndex(this string typeName)
+        public static bool GetDeclareInfo(this string arg, out int typeIndex, out string name, out Options options)
         {
-            MetaType type = MetaTypeRegistry.typeRegistry.Values.FirstOrDefault(t => t.typeName.Equals(typeName));
-            if (!type.Equals(MetaType.Invalid))
-                return type.typeIndex;
-            throw new KeyNotFoundException($"Type '{typeName}' was not found and does not exist in the registry.");
+            options = Options.Scalar;
+            int nameIndex = arg.LastIndexOf(' ');
+            if (nameIndex >= -1)
+                name = arg.Substring(nameIndex + 1);
+            else
+                name = string.Empty; // ToDo: Should missing name argument cause exceptionn
+
+            if (arg.EndsWith("[]"))
+            {
+                options = Options.Resizable | Options.Index;
+                arg = arg.TrimEnd('[', ']');
+            }
+            if (arg.EndsWith("<>"))
+            {
+                options = Options.Resizable | Options.Named;
+                arg = arg.TrimEnd('<', '>');
+            }
+            MetaType metaType = MetaTypeRegistry.typeRegistry.Values.FirstOrDefault(t => t.typeName.Equals(arg));
+            if (!metaType.Equals(MetaType.Invalid))
+            {
+                typeIndex = metaType.typeIndex;
+                return true;
+            }
+            throw new KeyNotFoundException($"Type '{arg}' was not found and does not exist in the registry.");
         }
-        public static string GetTypeName(this int typeIndex) => MetaTypeRegistry.typeRegistry[typeIndex].typeName;
-        public static string GetTypeName(IData data) => MetaTypeRegistry.typeRegistry[data.typeIndex].typeName;
-        // ToDo: Add overloaded extension method for string to lookup typeIndex by typename
-        //      This will most-likely be extended to handle aliases or provide additional overload which does do (named: GetAliasedTypeIndex()
-        public static int GetTypeIndex(this Type type) => (int)MetaTypeRegistry.underlyingTypesMap.First(x => x.Value.Equals(type)).Key;
     }
 
 }
