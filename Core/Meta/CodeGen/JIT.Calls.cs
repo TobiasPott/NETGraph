@@ -123,7 +123,7 @@ namespace NETGraph.Core.Meta.CodeGen
             }
         }
 
-        public static Action<IMemory> Compile(string code)
+        public static Action Compile(string code)
         {
             code = code.Trim();
             string assignName = string.Empty;
@@ -158,8 +158,54 @@ namespace NETGraph.Core.Meta.CodeGen
             //      each subsequent info is considered parameter to the MethodRef
             //          a sub info can be MethodRef itself
             //          each subsequent info 
+            Action call = null;
 
 
+            return null;
+        }
+
+        public static int FindArgsEnd(List<CallInfo> callInfos, int methodIndex)
+        {
+            CallInfo info = callInfos[methodIndex];
+            int depth = info.depth;
+            int endIndex = methodIndex;
+            for (int i = methodIndex + 1; i < callInfos.Count; i++)
+            {
+                CallInfo subInfo = callInfos[i];
+                if (subInfo.depth <= info.depth)
+                    return i - 1;
+
+            }
+            return methodIndex;
+        }
+        public static bool FindNextMethod(List<CallInfo> callInfos, int startIndex, out int nextIndex)
+        {
+            for (int i = startIndex + 1; i < callInfos.Count; i++)
+            {
+                CallInfo subInfo = callInfos[i];
+                if (subInfo.type == CallInfoType.Method)
+                {
+                    nextIndex = i;
+                    return true;
+                }
+            }
+            nextIndex = -1;
+            return false;
+        }
+
+        public static Func<IData> BuildMethod(List<CallInfo> callInfos, int methodIndex, int endIndex, int depth)
+        {
+            if (callInfos[methodIndex].resolve(out MethodRef handle, out IData reference))
+            {
+                for (int i = methodIndex + 1; i < endIndex; i++)
+                {
+                    CallInfo argInfo = callInfos[i];
+                    if (argInfo.type == CallInfoType.Method)
+                    {
+
+                    }
+                }
+            }
             return null;
         }
 

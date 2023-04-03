@@ -50,7 +50,6 @@ namespace NETGraph.Core.BuiltIn
             //          This might allow solving aliases which can be enabled by flag (though might be suuuper slow as no mapping exists yet
             //          This will most-likely require MethodNamedRef type to name and flag methodRefs inside the MethodList
             //          
-
             this.Methods.Nest(Int.Methods);
             this.Methods.Nest(Int_Static.Methods);
         }
