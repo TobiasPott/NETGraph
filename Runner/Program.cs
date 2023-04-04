@@ -101,15 +101,13 @@ public class Program
         //ParseAllocAndAssign("int x = myInt.add(y, 'a', \"blubb\", 1, 1.45);");
         //ParseAllocAndAssign("int x = myInt.add(y, myInt.add(y, 3), 10);");
 
-        List<CallInfo> argInfos = new List<CallInfo>();
-        string code = "int x = myInt.Add(\"Hello\", \"World!\");";
-        code = "int x = myInt.Add(\"sads\", y, myInt2.add(z, 3, anotherInt.add(4, 5)), \"(in, parenthesis)\", 'c', 10, anotherInt.add(6, 7));";
-        code = "int x = myInt.Add('t', \"(in, parenthesis\", 'c', 10, y, myInt2.add(z, 3, anotherInt.add(4, 5), w), v);";
-        code = "int x = myInt.Add(y, z, 1, 1.0);";
+        string code = "int32 x = myInt.Add(\"Hello\", \"World!\");";
+        code = "int32 x = myInt.Add(\"sads\", y, myInt2.add(z, 3, anotherInt.add(4, 5)), \"(in, parenthesis)\", 'c', 10, anotherInt.add(6, 7));";
+        code = "int32 x = myInt.Add('t', \"(in, parenthesis\", 'c', 10, y, myInt2.add(z, 3, anotherInt.add(4, 5), w), v);";
+        code = "int32 x = myInt.Add(y, z, 1, 1.0);";
         //code = "myInt.add(y, z);";
-
+        Memory.Declare("myInt", Memory.Alloc(typeof(int), Options.Scalar));
         JIT.Compile(code);
-        Console.WriteLine($"\t\t{string.Join(Environment.NewLine + "\t\t", argInfos)}");
 
         Console.WriteLine();
         Console.WriteLine();
