@@ -145,8 +145,18 @@ namespace NETGraph.Core.Meta.CodeGen
             JIT.GetDeclareOrAssign(lh, argInfos, ref depth);
             JIT.GetCallInfos(rh, argInfos, ',', '(', ')', depth);
 
-            Console.WriteLine($"{code}{Environment.NewLine}" +
-                $"{string.Join(Environment.NewLine + "", argInfos)}");
+
+            for(int i = 0; i < argInfos.Count; i++)
+            {
+                string resolved = string.Empty;
+                if (argInfos[i].resolve(out IData data))
+                    resolved = data.ToString();
+                else if (argInfos[i].resolve(out MethodRef method, out IData reference))
+                    resolved = method.ToString();
+                Console.WriteLine(argInfos[i] + "\t => " + resolved);
+            }
+            //Console.WriteLine($"{code}{Environment.NewLine}" +
+            //    $"{string.Join(Environment.NewLine + "", argInfos)}");
 
             // ToDo: iterate over call infos and gather constant values and generate their IData and store somewhere?!
 
@@ -157,9 +167,12 @@ namespace NETGraph.Core.Meta.CodeGen
             //          
             //      each subsequent info is considered parameter to the MethodRef
             //          a sub info can be MethodRef itself
-            //          each subsequent info 
-            Action call = null;
-
+            //          each subsequent info
+            if (FindNextMethod(argInfos, -1, out int nextIndex))
+            {
+                Func<IData> call = BuildMethod(argInfos, nextIndex, FindArgsEnd(argInfos, nextIndex), 0);
+                Console.WriteLine("Built method: " + call);
+            }
 
             return null;
         }
@@ -197,13 +210,41 @@ namespace NETGraph.Core.Meta.CodeGen
         {
             if (callInfos[methodIndex].resolve(out MethodRef handle, out IData reference))
             {
-                for (int i = methodIndex + 1; i < endIndex; i++)
+                int argCount = endIndex - methodIndex;
+                if (argCount > 0)
                 {
-                    CallInfo argInfo = callInfos[i];
-                    if (argInfo.type == CallInfoType.Method)
+                    Func<IData>[] argsCall = new Func<IData>[argCount];
+                    for (int i = methodIndex + 1; i < endIndex; i++)
                     {
-
+                        CallInfo argInfo = callInfos[i];
+                        if (argInfo.type == CallInfoType.Method)
+                        {
+                            int subEndIndex = FindArgsEnd(callInfos, i);
+                            argsCall[i] = BuildMethod(callInfos, i, subEndIndex, argInfo.depth);
+                        }
+                        if (argInfo.type == CallInfoType.Ref || argInfo.type == CallInfoType.Value)
+                        {
+                            if (argInfo.resolve(out IData value))
+                                argsCall[i] = () => value;
+                        }
                     }
+                    Func<IData> call = () =>
+                    {
+                        IData[] args = new IData[argsCall.Length];
+                        for (int i = 0; i < args.Length; i++)
+                            args[i] = argsCall[i].Invoke();
+                        return handle.Invoke(reference, args);
+
+                    };
+                    return call;
+                }
+                else
+                {
+                    Func<IData> call = () =>
+                    {
+                        return handle.Invoke(reference);
+                    };
+                    return call;
                 }
             }
             return null;

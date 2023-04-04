@@ -84,7 +84,10 @@ namespace NETGraph.Core.Meta.CodeGen
                     return true;
                 }
             }
-            throw new InvalidOperationException($"Cannot resolve value or reference from {type} info.");
+
+            value = null;
+            return false;
+            //throw new InvalidOperationException($"Cannot resolve value or reference from {type} info.");
         }
         // used to resolve CallInfo to optional reference and method handle
         public bool resolve(out MethodRef handle, out IData reference)

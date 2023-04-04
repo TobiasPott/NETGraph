@@ -75,6 +75,8 @@ namespace NETGraph.Core.Meta
             else
                 name = string.Empty; // ToDo: Should missing name argument cause exceptionn
 
+            // trim arg from name part
+            arg = arg.Substring(0, nameIndex);
             if (arg.EndsWith("[]"))
             {
                 options = Options.Resizable | Options.Index;
