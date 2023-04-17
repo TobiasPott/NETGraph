@@ -123,7 +123,7 @@ namespace NETGraph.Core.Meta.CodeGen
             }
         }
 
-        public static Action Compile(string code)
+        public static Func<IData> Compile(string code)
         {
             code = code.Trim();
             string assignName = string.Empty;
@@ -146,7 +146,7 @@ namespace NETGraph.Core.Meta.CodeGen
             JIT.GetCallInfos(rh, argInfos, ',', '(', ')', depth);
 
 
-            for(int i = 0; i < argInfos.Count; i++)
+            for (int i = 0; i < argInfos.Count; i++)
             {
                 string resolved = string.Empty;
                 if (argInfos[i].resolve(out IData data))
@@ -155,23 +155,13 @@ namespace NETGraph.Core.Meta.CodeGen
                     resolved = method.ToString();
                 Console.WriteLine(argInfos[i] + "\t => " + resolved);
             }
-            //Console.WriteLine($"{code}{Environment.NewLine}" +
-            //    $"{string.Join(Environment.NewLine + "", argInfos)}");
 
-            // ToDo: iterate over call infos and gather constant values and generate their IData and store somewhere?!
-
-            // ToDo: Ponder about algorithm to iterate over the list of call infos
-            //      first call info should always translate to MethodRef (either declare, assign or method call)
-            //      if next info is higher depth, next infos are args until depth is equal or lower again
-            //          this repeats for nested calls based on their depth
-            //          
-            //      each subsequent info is considered parameter to the MethodRef
-            //          a sub info can be MethodRef itself
-            //          each subsequent info
+            // ToDo: Implement Declare and Assign call info
+            //      Consider make it similar to the BuildMethod call
             if (FindNextMethod(argInfos, -1, out int nextIndex))
             {
                 Func<IData> call = BuildMethod(argInfos, nextIndex, FindArgsEnd(argInfos, nextIndex), 0);
-                Console.WriteLine("Built method: " + call);
+                return call;
             }
 
             return null;
@@ -189,7 +179,7 @@ namespace NETGraph.Core.Meta.CodeGen
                     return i - 1;
 
             }
-            return methodIndex;
+            return callInfos.Count - 1;
         }
         public static bool FindNextMethod(List<CallInfo> callInfos, int startIndex, out int nextIndex)
         {
@@ -214,13 +204,14 @@ namespace NETGraph.Core.Meta.CodeGen
                 if (argCount > 0)
                 {
                     Func<IData>[] argsCall = new Func<IData>[argCount];
-                    for (int i = methodIndex + 1; i < endIndex; i++)
+                    for (int i = 0; i < argCount; i++)
                     {
-                        CallInfo argInfo = callInfos[i];
+                        int infoIndex = methodIndex + 1 + i;
+                        CallInfo argInfo = callInfos[infoIndex];
                         if (argInfo.type == CallInfoType.Method)
                         {
-                            int subEndIndex = FindArgsEnd(callInfos, i);
-                            argsCall[i] = BuildMethod(callInfos, i, subEndIndex, argInfo.depth);
+                            int subEndIndex = FindArgsEnd(callInfos, infoIndex);
+                            argsCall[i] = BuildMethod(callInfos, infoIndex, subEndIndex, argInfo.depth);
                         }
                         if (argInfo.type == CallInfoType.Ref || argInfo.type == CallInfoType.Value)
                         {
@@ -232,9 +223,11 @@ namespace NETGraph.Core.Meta.CodeGen
                     {
                         IData[] args = new IData[argsCall.Length];
                         for (int i = 0; i < args.Length; i++)
+                        {
                             args[i] = argsCall[i].Invoke();
+                            Console.WriteLine("\tArg: " + i);
+                        }
                         return handle.Invoke(reference, args);
-
                     };
                     return call;
                 }
