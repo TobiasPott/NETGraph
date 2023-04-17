@@ -46,8 +46,7 @@ public class Program
         */
 
         // runner test code to create a new 'named' data of data type Int
-
-
+        /*
         Memory.Declare("x", Memory.Alloc(typeof(int), Options.Scalar));
         ScalarData<int> xInt = (ScalarData<int>)Memory.Get("x");
         xInt.assign(1337);
@@ -63,7 +62,7 @@ public class Program
         Library.TryGet("LibMath::Add", out addMethod, MethodBindings.Static);
         IData addResult = addMethod.Invoke(null, xInt, yInt); // execute method
 
-        Library.TryGet("int::Add", out addMethod);
+        Library.TryGet("Int32::Add", out addMethod);
         addMethod.Invoke(xInt, yInt); // execute method
 
         Console.WriteLine("x => " + xInt);
@@ -89,7 +88,7 @@ public class Program
         //LibCore.assign(aFloat, xInt);
         //Console.WriteLine(aFloat);
         intsList.assign(new DataAccessor("[0]"), wInt);
-
+        */
         //MethodExtraction.ExtractMethod<string>("Concat", BindingFlags.Static | BindingFlags.Public, typeof(string), typeof(string));
         //MethodExtraction.ExtractMethod<string>("Replace", BindingFlags.Instance | BindingFlags.Public, typeof(string), typeof(string));
         //MethodExtraction.ExtractMethod<string>("ToLowerInvariant", BindingFlags.Instance | BindingFlags.Public);
@@ -101,13 +100,20 @@ public class Program
         //ParseAllocAndAssign("int x = myInt.add(y, 'a', \"blubb\", 1, 1.45);");
         //ParseAllocAndAssign("int x = myInt.add(y, myInt.add(y, 3), 10);");
 
-        string code = "int32 x = myInt.Add(\"Hello\", \"World!\");";
-        code = "int32 x = myInt.Add(\"sads\", y, myInt2.add(z, 3, anotherInt.add(4, 5)), \"(in, parenthesis)\", 'c', 10, anotherInt.add(6, 7));";
-        code = "int32 x = myInt.Add('t', \"(in, parenthesis\", 'c', 10, y, myInt2.add(z, 3, anotherInt.add(4, 5), w), v);";
-        code = "int32 x = myInt.Add(y, z, 1, 1.0);";
+        string code = "Int32 x = myInt.Add(\"Hello\", \"World!\");";
+        code = "Int32 x = myInt.Add(\"sads\", y, myInt2.add(z, 3, anotherInt.add(4, 5)), \"(in, parenthesis)\", 'c', 10, anotherInt.add(6, 7));";
+        code = "Int32 x = myInt.Add('t', \"(in, parenthesis\", 'c', 10, y, myInt2.add(z, 3, anotherInt.add(4, 5), w), v);";
+        code = "Int32 tmp = myInt.Add(1, 1);";
+        code = "tmp = myInt.Add(1, 1);";
         //code = "myInt.add(y, z);";
+        Memory.Declare("tmp", Memory.Alloc(typeof(int), Options.Scalar));
         Memory.Declare("myInt", Memory.Alloc(typeof(int), Options.Scalar));
-        JIT.Compile(code);
+
+        Func<IData> codeCall = JIT.Compile(code);
+        codeCall.Invoke();
+        Console.WriteLine();
+        Console.WriteLine(Memory.Get("tmp"));
+        Console.WriteLine(Memory.Get("myInt"));
 
         Console.WriteLine();
         Console.WriteLine();
