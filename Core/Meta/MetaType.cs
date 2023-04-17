@@ -17,14 +17,14 @@ namespace NETGraph.Core.Meta
 
         public MetaType(int dataType, Type type) //, IGenerator<IData, IData.Options> generator)
         {
-            this.typeName = type.Name.ToLowerInvariant();
+            this.typeName = type.Name;
             this.typeIndex = (int)dataType;
             this.type = type;
         }
         public MetaType(Type type)
         {
             this.typeIndex = _runningIndex++;
-            this.typeName = type.Name.ToLowerInvariant();
+            this.typeName = type.Name;
             this.type = type;
         }
 
