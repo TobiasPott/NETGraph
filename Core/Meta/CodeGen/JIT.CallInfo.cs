@@ -103,7 +103,7 @@ namespace NETGraph.Core.Meta.CodeGen
                 {
                     int splitIndex = arg.IndexOf('.');
                     reference = Memory.Get(arg.Substring(0, splitIndex));
-                    string methodName = arg.Substring(splitIndex);
+                    string methodName = arg.Substring(splitIndex + 1);
                     string typeName = reference.typeIndex.GetTypeName();
                     return Library.TryGet($"{typeName}::{methodName}", out handle, MethodBindings.Instance);
                 }
