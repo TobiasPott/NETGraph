@@ -89,31 +89,22 @@ public class Program
         //Console.WriteLine(aFloat);
         intsList.assign(new DataAccessor("[0]"), wInt);
         */
+
+
         //MethodExtraction.ExtractMethod<string>("Concat", BindingFlags.Static | BindingFlags.Public, typeof(string), typeof(string));
         //MethodExtraction.ExtractMethod<string>("Replace", BindingFlags.Instance | BindingFlags.Public, typeof(string), typeof(string));
         //MethodExtraction.ExtractMethod<string>("ToLowerInvariant", BindingFlags.Instance | BindingFlags.Public);
-
-        //ParseAllocAndAssign("int32 x = 0;");
-        //ParseAllocAndAssign("x = 0;");
-
-        //ParseAllocAndAssign("int x = LibMath::add(y, 'a', \"blubb\", 1, 1.45);"); //, myInt.add(2, 2), 0)");
-        //ParseAllocAndAssign("int x = myInt.add(y, 'a', \"blubb\", 1, 1.45);");
-        //ParseAllocAndAssign("int x = myInt.add(y, myInt.add(y, 3), 10);");
 
         string code = "Int32 x = myInt.Add(\"Hello\", \"World!\");";
         code = "Int32 x = myInt.Add(\"sads\", y, myInt2.add(z, 3, anotherInt.add(4, 5)), \"(in, parenthesis)\", 'c', 10, anotherInt.add(6, 7));";
         code = "Int32 x = myInt.Add('t', \"(in, parenthesis\", 'c', 10, y, myInt2.add(z, 3, anotherInt.add(4, 5), w), v);";
         code = "Int32 tmp = myInt.Add(1, 1);";
-        code = "tmp = myInt.Add(1, 1);";
-        //code = "myInt.add(y, z);";
-        Memory.Declare("tmp", Memory.Alloc(typeof(int), Options.Scalar));
-        Memory.Declare("myInt", Memory.Alloc(typeof(int), Options.Scalar));
+        code = "Int32 tmp = LibMath::Add(1, -10);";
 
         Func<IData> codeCall = JIT.Compile(code);
         codeCall.Invoke();
         Console.WriteLine();
         Console.WriteLine(Memory.Get("tmp"));
-        Console.WriteLine(Memory.Get("myInt"));
 
         Console.WriteLine();
         Console.WriteLine();
