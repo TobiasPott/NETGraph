@@ -20,7 +20,7 @@ namespace NETGraph.Core.BuiltIn
             Float, Double, Decimal,
             String,
             // internal library types (e.g. node, data, method
-            IData,
+            IData, Options
         }
 
 
@@ -44,6 +44,7 @@ namespace NETGraph.Core.BuiltIn
             MetaTypeRegistry.Register(new MetaType((int)DataTypes.Decimal, typeof(decimal)));
             MetaTypeRegistry.Register(new MetaType((int)DataTypes.String, typeof(string)));
             MetaTypeRegistry.Register(new MetaType((int)DataTypes.IData, typeof(IData)));
+            MetaTypeRegistry.Register(new MetaType((int)DataTypes.Options, typeof(Options)));
         }
 
         protected override bool LoadInternal()
