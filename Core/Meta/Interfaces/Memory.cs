@@ -7,7 +7,7 @@ namespace NETGraph.Core.Meta
 {
     public interface IMemory
     {
-        void Declare(string name, IData data);
+        void Declare(string name, IData data, bool reassign);
         IData Get(string name);
         void Free(string name);
         IData Alloc<T>(Options options);
@@ -37,7 +37,18 @@ namespace NETGraph.Core.Meta
 
 
 
-        public void Declare(string name, IData data) => _data.Add(name, data);
+        public void Declare(string name, IData data, bool reassign)
+        {
+            if (!reassign)
+                _data.Add(name, data);
+            else
+            {
+                if (_data.ContainsKey(name))
+                    _data[name] = data;
+                else
+                    _data.Add(name, data);
+            }
+        }
         public IData Get(string name) => _data[name];
         public void Free(string name)
         {
@@ -83,7 +94,7 @@ namespace NETGraph.Core.Meta
     {
         public static IMemory Global { get; private set; } = new MemoryFrame();
 
-        public static void Declare(string name, IData data) => Global.Declare(name, data);
+        public static void Declare(string name, IData data, bool reassign) => Global.Declare(name, data, reassign);
         public static IData Get(string name) => Global.Get(name);
         public static void Free(string name) => Global.Free(name);
 
@@ -91,11 +102,16 @@ namespace NETGraph.Core.Meta
         public static IData Alloc(int typeIndex, Options options) => Global.Alloc(typeIndex, options);
         public static IData Alloc(Type type, Options options) => Global.Alloc(type, options);
 
-        public static void Assign(IData lh, IData rh) => lh.assign(rh);
+
 
         public static MethodRef Declare(int typeIndex, string name, Options options)
         {
             MethodRef method = new MethodRef((reference, args) => { return Declare(null, typeIndex.AsValueData(), name.AsValueData(), options.AsValueData()); });
+            return method;
+        }
+        public static MethodRef Assign(string name)
+        {
+            MethodRef method = new MethodRef((reference, args) => { Declare(name, reference, true); return reference; });
             return method;
         }
         public static IData Declare(IData reference, params IData[] args)
@@ -106,15 +122,15 @@ namespace NETGraph.Core.Meta
             if (args.Length > 2)
                 args[2].resolve<Options>();
             IData data = Alloc(typeIndex, options);
-            Declare(name, data);
+            Declare(name, data, true);
             return data;
         }
-        public static IData Assign(IData reference, params IData[] args)
-        {
-            if (reference != null)
-                reference.assign(args.First());
-            return reference;
-        }
+        //public static IData Assign(IData reference, params IData[] args)
+        //{
+        //    if (reference != null)
+        //        reference.assign(args.First());
+        //    return reference;
+        //}
 
 
     }
