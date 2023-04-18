@@ -151,20 +151,30 @@ namespace NETGraph.Core.Meta.CodeGen
                 string resolved = string.Empty;
                 if (argInfos[i].resolve(out IData data))
                     resolved = data.ToString();
-                else if (argInfos[i].resolve(out MethodRef method, out IData reference))
-                    resolved = method.ToString();
+                //else if (argInfos[i].resolve(out MethodRef m, out IData _))
+                //    resolved = m.ToString();
                 Console.WriteLine(argInfos[i] + "\t => " + resolved);
             }
 
-            // ToDo: Implement Declare and Assign call info
-            //      Consider make it similar to the BuildMethod call
-            if (FindNextMethod(argInfos, -1, out int nextIndex))
-            {
-                Func<IData> call = BuildMethod(argInfos, nextIndex, FindArgsEnd(argInfos, nextIndex), 0);
-                return call;
-            }
+            Func<IData> call = null;
+            MethodRef declaration = null;
+            if (argInfos[0].type == CallInfoType.Declare)
+                argInfos[0].resolve(out declaration, out IData _);
 
-            return null;
+            Func<IData> method = null;
+            if (FindNextMethod(argInfos, -1, out int nextIndex))
+                method = BuildMethod(argInfos, nextIndex, FindArgsEnd(argInfos, nextIndex), 0);
+
+            MethodRef assignment = null;
+            int declIndex = declaration == null ? 0 : 1;
+            if (argInfos[declIndex].type == CallInfoType.Assign)
+                argInfos[declIndex].resolve(out assignment, out _);
+
+            call = () => {
+                declaration.Invoke(null, null);
+                return assignment.Invoke(method.Invoke());
+            };
+            return call;
         }
 
         public static int FindArgsEnd(List<CallInfo> callInfos, int methodIndex)
