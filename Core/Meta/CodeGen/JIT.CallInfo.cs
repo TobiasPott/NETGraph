@@ -97,12 +97,13 @@ namespace NETGraph.Core.Meta.CodeGen
                 if (arg.Contains(IMethodListExtension.PATHSEPARATOR))
                 {
                     reference = null;
-                    return Library.TryGet(arg, out handle, MethodBindings.Instance);
+                    return Library.TryGet(arg, out handle, MethodBindings.Static);
                 }
                 else
                 {
                     int splitIndex = arg.IndexOf('.');
-                    reference = Memory.Get(arg.Substring(0, splitIndex));
+                    //reference = Memory.Get(arg.Substring(0, splitIndex));
+                    reference = null;
                     string methodName = arg.Substring(splitIndex + 1);
                     string typeName = reference.typeIndex.GetTypeName();
                     return Library.TryGet($"{typeName}::{methodName}", out handle, MethodBindings.Instance);
@@ -119,9 +120,9 @@ namespace NETGraph.Core.Meta.CodeGen
             }
             else if (type == CallInfoType.Assign)
             {
-                handle = Memory.Assign;
-                reference = Memory.Get(arg);
-                return reference != null;
+                handle = Memory.Assign(arg);
+                reference = null;
+                return handle != null;
             }
             throw new InvalidOperationException($"Cannot resolve method and/or reference from {type} info.");
         }
