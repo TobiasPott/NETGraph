@@ -123,8 +123,24 @@ namespace NETGraph.Core.Meta.CodeGen
             }
         }
 
+        private static List<CallInfo> compiledCalls = new List<CallInfo>();
+        public static string GetTypeName(string referenceName)
+        {
+            if (compiledCalls.Count > 0)
+            {
+                foreach (CallInfo call in compiledCalls.Where(x => x.type == CallInfoType.Declare))
+                {
+                    int splitIndex = call.arg.IndexOf(' ');
+                    string refName = call.arg.Substring(splitIndex).Trim();
+                    if (referenceName.Equals(refName))
+                        return call.arg.Substring(0, splitIndex).Trim();
+                }
+            }
+            return "System"; // 'Error' case which will point to system library and core functions
+        }
         public static Func<IData> Compile(string code)
         {
+
             code = code.Trim();
             string assignName = string.Empty;
             string declareType = string.Empty;
@@ -140,40 +156,48 @@ namespace NETGraph.Core.Meta.CodeGen
                 rh = code.Substring(curI).Trim().Trim('=', ' ');
             }
 
+            // clear compiler cache
+            compiledCalls.Clear();
+
             int depth = 0;
-            List<CallInfo> argInfos = new List<CallInfo>();
-            JIT.GetDeclareOrAssign(lh, argInfos, ref depth);
-            JIT.GetCallInfos(rh, argInfos, ',', '(', ')', depth);
+            JIT.GetDeclareOrAssign(lh, compiledCalls, ref depth);
+            JIT.GetCallInfos(rh, compiledCalls, ',', '(', ')', depth);
 
 
-            for (int i = 0; i < argInfos.Count; i++)
+            for (int i = 0; i < compiledCalls.Count; i++)
             {
                 string resolved = string.Empty;
-                if (argInfos[i].resolve(out IData data))
+                if (compiledCalls[i].resolve(out IData data))
                     resolved = data.ToString();
-                //else if (argInfos[i].resolve(out MethodRef m, out IData _))
-                //    resolved = m.ToString();
-                Console.WriteLine(argInfos[i] + "\t => " + resolved);
+                else if (compiledCalls[i].resolve(out MethodRef m, out IData _))
+                    resolved = m.ToString();
+                Console.WriteLine(compiledCalls[i] + "\t => " + resolved);
             }
 
             Func<IData> call = null;
             MethodRef declaration = null;
-            if (argInfos[0].type == CallInfoType.Declare)
-                argInfos[0].resolve(out declaration, out IData _);
+            if (compiledCalls[0].type == CallInfoType.Declare)
+                compiledCalls[0].resolve(out declaration, out IData _);
 
             Func<IData> method = null;
-            if (FindNextMethod(argInfos, -1, out int nextIndex))
-                method = BuildMethod(argInfos, nextIndex, FindArgsEnd(argInfos, nextIndex), 0);
+            if (FindNextMethod(compiledCalls, -1, out int nextIndex))
+            {
+                int argsEnd = FindArgsEnd(compiledCalls, nextIndex);
+                method = BuildMethod(compiledCalls, nextIndex, argsEnd, 0);
+            }
 
             MethodRef assignment = null;
             int declIndex = declaration == null ? 0 : 1;
-            if (argInfos[declIndex].type == CallInfoType.Assign)
-                argInfos[declIndex].resolve(out assignment, out _);
+            if (compiledCalls[declIndex].type == CallInfoType.Assign)
+                compiledCalls[declIndex].resolve(out assignment, out _);
 
-            call = () => {
+            call = () =>
+            {
                 declaration.Invoke(null, null);
                 return assignment.Invoke(method.Invoke());
             };
+
+            compiledCalls.Clear();
             return call;
         }
 

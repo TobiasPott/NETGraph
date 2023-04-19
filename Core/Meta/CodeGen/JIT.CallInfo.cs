@@ -101,11 +101,10 @@ namespace NETGraph.Core.Meta.CodeGen
                 }
                 else
                 {
-                    int splitIndex = arg.IndexOf('.');
-                    //reference = Memory.Get(arg.Substring(0, splitIndex));
                     reference = null;
+                    int splitIndex = arg.IndexOf('.');
                     string methodName = arg.Substring(splitIndex + 1);
-                    string typeName = reference.typeIndex.GetTypeName();
+                    string typeName = JIT.GetTypeName(arg.Substring(0, splitIndex));
                     return Library.TryGet($"{typeName}::{methodName}", out handle, MethodBindings.Instance);
                 }
             }
