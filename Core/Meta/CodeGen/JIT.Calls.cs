@@ -163,21 +163,14 @@ namespace NETGraph.Core.Meta.CodeGen
             JIT.GetDeclareOrAssign(lh, compiledCalls, ref depth);
             JIT.GetCallInfos(rh, compiledCalls, ',', '(', ')', depth);
 
-
+            // console output
             for (int i = 0; i < compiledCalls.Count; i++)
-            {
-                string resolved = string.Empty;
-                if (compiledCalls[i].resolve(out IData data))
-                    resolved = data.ToString();
-                else if (compiledCalls[i].resolve(out MethodRef m, out IData _))
-                    resolved = m.ToString();
-                Console.WriteLine(compiledCalls[i] + "\t => " + resolved);
-            }
+                Console.WriteLine(compiledCalls[i]);
 
-            Func<IData> call = null;
+            Func<IData> compiled = null;
             MethodRef declaration = null;
             if (compiledCalls[0].type == CallInfoType.Declare)
-                compiledCalls[0].resolve(out declaration, out IData _);
+                compiledCalls[0].resolve(out declaration);
 
             Func<IData> method = null;
             if (FindNextMethod(compiledCalls, -1, out int nextIndex))
@@ -189,16 +182,16 @@ namespace NETGraph.Core.Meta.CodeGen
             MethodRef assignment = null;
             int declIndex = declaration == null ? 0 : 1;
             if (compiledCalls[declIndex].type == CallInfoType.Assign)
-                compiledCalls[declIndex].resolve(out assignment, out _);
+                compiledCalls[declIndex].resolve(out assignment);
 
-            call = () =>
+            compiled = () =>
             {
                 declaration.Invoke(null, null);
                 return assignment.Invoke(method.Invoke());
             };
 
             compiledCalls.Clear();
-            return call;
+            return compiled;
         }
 
         public static int FindArgsEnd(List<CallInfo> callInfos, int methodIndex)
@@ -232,7 +225,7 @@ namespace NETGraph.Core.Meta.CodeGen
 
         public static Func<IData> BuildMethod(List<CallInfo> callInfos, int methodIndex, int endIndex, int depth)
         {
-            if (callInfos[methodIndex].resolve(out MethodRef handle, out IData reference))
+            if (callInfos[methodIndex].resolve(out MethodRef handle, out MethodRef refHandle))
             {
                 int argCount = endIndex - methodIndex;
                 if (argCount > 0)
@@ -261,7 +254,7 @@ namespace NETGraph.Core.Meta.CodeGen
                             args[i] = argsCall[i].Invoke();
                             Console.WriteLine("\tArg: " + i);
                         }
-                        return handle.Invoke(reference, args);
+                        return handle.Invoke(refHandle.Invoke(null, null), args);
                     };
                     return call;
                 }
@@ -269,7 +262,7 @@ namespace NETGraph.Core.Meta.CodeGen
                 {
                     Func<IData> call = () =>
                     {
-                        return handle.Invoke(reference);
+                        return handle.Invoke(refHandle.Invoke(null, null));
                     };
                     return call;
                 }

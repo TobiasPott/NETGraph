@@ -90,37 +90,40 @@ namespace NETGraph.Core.Meta.CodeGen
             //throw new InvalidOperationException($"Cannot resolve value or reference from {type} info.");
         }
         // used to resolve CallInfo to optional reference and method handle
-        public bool resolve(out MethodRef handle, out IData reference)
+        public bool resolve(out MethodRef handle, out MethodRef referenceHandle)
         {
             if (type == CallInfoType.Method)
             {
                 if (arg.Contains(IMethodListExtension.PATHSEPARATOR))
                 {
-                    reference = null;
+                    referenceHandle = null;
                     return Library.TryGet(arg, out handle, MethodBindings.Static);
                 }
                 else
                 {
-                    reference = null;
                     int splitIndex = arg.IndexOf('.');
                     string methodName = arg.Substring(splitIndex + 1);
                     string typeName = JIT.GetTypeName(arg.Substring(0, splitIndex));
+                    // ToDo: need extra resolve for MethodReef to retrieve the Reference
+                    referenceHandle = Memory.MethodRef_Get(arg.Substring(0, splitIndex));
                     return Library.TryGet($"{typeName}::{methodName}", out handle, MethodBindings.Instance);
                 }
             }
-            else if (type == CallInfoType.Declare)
+            throw new InvalidOperationException($"Cannot resolve method and/or reference from {type} info.");
+        }
+        public bool resolve(out MethodRef handle)
+        {
+            if (type == CallInfoType.Declare)
             {
                 if (arg.GetDeclareInfo(out int typeIndex, out string name, out Options options))
                 {
-                    handle = Memory.Declare(typeIndex, name, options);
-                    reference = null;
+                    handle = Memory.MethodRef_Declare(typeIndex, name, options);
                     return true;
                 }
             }
             else if (type == CallInfoType.Assign)
             {
-                handle = Memory.Assign(arg);
-                reference = null;
+                handle = Memory.MethodRef_Assign(arg);
                 return handle != null;
             }
             throw new InvalidOperationException($"Cannot resolve method and/or reference from {type} info.");
