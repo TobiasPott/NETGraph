@@ -123,12 +123,12 @@ namespace NETGraph.Core.Meta.CodeGen
             }
         }
 
-        private static List<CallInfo> compiledCalls = new List<CallInfo>();
+        private static List<CallInfo> callInfoCache = new List<CallInfo>();
         public static string GetTypeName(string referenceName)
         {
-            if (compiledCalls.Count > 0)
+            if (callInfoCache.Count > 0)
             {
-                foreach (CallInfo call in compiledCalls.Where(x => x.type == CallInfoType.Declare))
+                foreach (CallInfo call in callInfoCache.Where(x => x.type == CallInfoType.Declare))
                 {
                     int splitIndex = call.arg.IndexOf(' ');
                     string refName = call.arg.Substring(splitIndex).Trim();
@@ -138,60 +138,75 @@ namespace NETGraph.Core.Meta.CodeGen
             }
             return "System"; // 'Error' case which will point to system library and core functions
         }
-        public static Func<IData> Compile(string code)
-        {
 
-            code = code.Trim();
+        public static List<Action> CompileML(string code)
+        {
+            // clear compiler cache
+            callInfoCache.Clear();
+
+            List<Action> compiled = new List<Action>();
+            foreach (string line in code.Split(';', StringSplitOptions.RemoveEmptyEntries))
+                compiled.Add(Compile(line.Trim()));
+
+            return compiled;
+        }
+
+        public static Action Compile(string code)
+        {
+            int i = callInfoCache.Count;
+            string line = code.Trim();
             string assignName = string.Empty;
             string declareType = string.Empty;
 
-            int curI = code.IndexOf("=");
+            int curI = line.IndexOf("=");
             string lh = string.Empty;
-            string rh = code;
+            string rh = line;
 
             if (curI != -1)
             {
                 // Add assignnment to flags
-                lh = code.Substring(0, curI + 1).Trim();
-                rh = code.Substring(curI).Trim().Trim('=', ' ');
+                lh = line.Substring(0, curI + 1).Trim();
+                rh = line.Substring(curI).Trim().Trim('=', ' ');
             }
-
-            // clear compiler cache
-            compiledCalls.Clear();
 
             int depth = 0;
-            JIT.GetDeclareOrAssign(lh, compiledCalls, ref depth);
-            JIT.GetCallInfos(rh, compiledCalls, ',', '(', ')', depth);
+            JIT.GetDeclareOrAssign(lh, callInfoCache, ref depth);
+            JIT.GetCallInfos(rh, callInfoCache, ',', '(', ')', depth);
 
-            // console output
-            for (int i = 0; i < compiledCalls.Count; i++)
-                Console.WriteLine(compiledCalls[i]);
-
-            Func<IData> compiled = null;
             MethodRef declaration = null;
-            if (compiledCalls[0].type == CallInfoType.Declare)
-                compiledCalls[0].resolve(out declaration);
-
-            Func<IData> method = null;
-            if (FindNextMethod(compiledCalls, -1, out int nextIndex))
-            {
-                int argsEnd = FindArgsEnd(compiledCalls, nextIndex);
-                method = BuildMethod(compiledCalls, nextIndex, argsEnd, 0);
-            }
+            if (callInfoCache[i].type == CallInfoType.Declare)
+                callInfoCache[i].resolve(out declaration);
 
             MethodRef assignment = null;
-            int declIndex = declaration == null ? 0 : 1;
-            if (compiledCalls[declIndex].type == CallInfoType.Assign)
-                compiledCalls[declIndex].resolve(out assignment);
+            int declIndex = declaration == null ? i : i + 1;
+            if (callInfoCache[declIndex].type == CallInfoType.Assign)
+                callInfoCache[declIndex].resolve(out assignment);
 
-            compiled = () =>
+            Func<IData> method = null;
+            if (FindNextMethod(callInfoCache, i, out int nextIndex))
             {
-                declaration.Invoke(null, null);
-                return assignment.Invoke(method.Invoke());
+                int argsEnd = FindArgsEnd(callInfoCache, nextIndex);
+                method = BuildMethod(callInfoCache, nextIndex, argsEnd, 0);
+                i = argsEnd;
+            }
+
+            Action comp = () =>
+            {
+                // call declaration if present
+                declaration?.Invoke(null, null);
+                // call assignment with method as argument if present
+                if (assignment != null)
+                    assignment.Invoke(method.Invoke());
+                else
+                    // call only method otherwise
+                    method.Invoke();
             };
 
-            compiledCalls.Clear();
-            return compiled;
+            // console output
+            for (i = 0; i < callInfoCache.Count; i++)
+                Console.WriteLine(callInfoCache[i]);
+
+            return comp;
         }
 
         public static int FindArgsEnd(List<CallInfo> callInfos, int methodIndex)
@@ -235,12 +250,18 @@ namespace NETGraph.Core.Meta.CodeGen
                     {
                         int infoIndex = methodIndex + 1 + i;
                         CallInfo argInfo = callInfos[infoIndex];
+
                         if (argInfo.type == CallInfoType.Method)
                         {
                             int subEndIndex = FindArgsEnd(callInfos, infoIndex);
                             argsCall[i] = BuildMethod(callInfos, infoIndex, subEndIndex, argInfo.depth);
                         }
-                        if (argInfo.type == CallInfoType.Ref || argInfo.type == CallInfoType.Value)
+                        else if (argInfo.type == CallInfoType.Ref)
+                        {
+                            if (argInfo.resolve(out MethodRef argRefHandle))
+                                argsCall[i] = () => argRefHandle.Invoke();
+                        }
+                        else if (argInfo.type == CallInfoType.Value)
                         {
                             if (argInfo.resolve(out IData value))
                                 argsCall[i] = () => value;
@@ -254,7 +275,7 @@ namespace NETGraph.Core.Meta.CodeGen
                             args[i] = argsCall[i].Invoke();
                             Console.WriteLine("\tArg: " + i);
                         }
-                        return handle.Invoke(refHandle.Invoke(null, null), args);
+                        return handle.Invoke(refHandle?.Invoke(), args);
                     };
                     return call;
                 }
@@ -262,7 +283,7 @@ namespace NETGraph.Core.Meta.CodeGen
                 {
                     Func<IData> call = () =>
                     {
-                        return handle.Invoke(refHandle.Invoke(null, null));
+                        return handle.Invoke(refHandle?.Invoke());
                     };
                     return call;
                 }

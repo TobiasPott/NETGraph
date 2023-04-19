@@ -14,6 +14,8 @@ namespace NETGraph.Core.Meta.CodeGen
         Alloc, // allocation of new data type of give type
         Declare,
         Assign
+        // ToDo:    Add call info like scope (as first structure element)
+        //          Add call info for branch (req. scope first)
     }
     public struct CallInfo
     {
@@ -70,12 +72,6 @@ namespace NETGraph.Core.Meta.CodeGen
                     return true;
                 }
             }
-            else if (type == CallInfoType.Ref)
-            {
-                // try to recieve the given reference from memory
-                value = Memory.Get(arg);
-                return true;
-            }
             else if (type == CallInfoType.Alloc)
             {
                 if (arg.GetAllocInfo(out int typeIndex, out Options options))
@@ -87,7 +83,6 @@ namespace NETGraph.Core.Meta.CodeGen
 
             value = null;
             return false;
-            //throw new InvalidOperationException($"Cannot resolve value or reference from {type} info.");
         }
         // used to resolve CallInfo to optional reference and method handle
         public bool resolve(out MethodRef handle, out MethodRef referenceHandle)
@@ -113,7 +108,13 @@ namespace NETGraph.Core.Meta.CodeGen
         }
         public bool resolve(out MethodRef handle)
         {
-            if (type == CallInfoType.Declare)
+            if (type == CallInfoType.Ref)
+            {
+                // try to recieve the given reference from memory
+                handle = Memory.MethodRef_Get(arg);
+                return true;
+            }
+            else if (type == CallInfoType.Declare)
             {
                 if (arg.GetDeclareInfo(out int typeIndex, out string name, out Options options))
                 {
