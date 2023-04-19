@@ -100,16 +100,22 @@ public class Program
         code = "Int32 x = myInt.Add('t', \"(in, parenthesis\", 'c', 10, y, myInt2.add(z, 3, anotherInt.add(4, 5), w), v);";
         code = "Int32 tmp = myInt.Add(1, 1);";
         code = "Int32 tmp = LibMath::Add(1, -10);";
-        code = "Int32 tmp = tmp.Add(1, 3);";
+        code = "Int32 tmp = tmp.Add(1, 3);"
+                    + Environment.NewLine +
+            "Int32 tmp2 = LibMath::Add(tmp, 12);";
 
-        Func<IData> codeCall = JIT.Compile(code);
-        codeCall.Invoke();
+        List<Action> codeCall = JIT.CompileML(code);
+
+        foreach (Action a in codeCall)
+            a.Invoke();
+        Console.WriteLine(string.Join(", " + Environment.NewLine, codeCall));
         Console.WriteLine();
         Console.WriteLine(Memory.Get("tmp"));
+        Console.WriteLine(Memory.Get("tmp2"));
 
-        Console.WriteLine();
+        Console.WriteLine();    
         Console.WriteLine();
     }
-
+    
 
 }
