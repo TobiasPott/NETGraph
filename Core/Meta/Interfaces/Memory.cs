@@ -104,14 +104,19 @@ namespace NETGraph.Core.Meta
 
 
 
-        public static MethodRef Declare(int typeIndex, string name, Options options)
+        public static MethodRef MethodRef_Declare(int typeIndex, string name, Options options)
         {
             MethodRef method = new MethodRef((reference, args) => { return Declare(null, typeIndex.AsValueData(), name.AsValueData(), options.AsValueData()); });
             return method;
         }
-        public static MethodRef Assign(string name)
+        public static MethodRef MethodRef_Assign(string name)
         {
             MethodRef method = new MethodRef((reference, args) => { Declare(name, reference, true); return reference; });
+            return method;
+        }
+        public static MethodRef MethodRef_Get(string name)
+        {
+            MethodRef method = new MethodRef((reference, args) => { return Memory.Get(name); });
             return method;
         }
         public static IData Declare(IData reference, params IData[] args)
