@@ -11,6 +11,7 @@ namespace NETGraph.Core.Meta.CodeGen
         public static string ExtractMethod<T>(string name, BindingFlags binding, params Type[] paramTypes) => ExtractMethod(typeof(T), name, binding, paramTypes);
         public static string ExtractMethod(Type type, string name, BindingFlags binding, params Type[] paramTypes)
         {
+            const string TypeName = "IData";
             MethodInfo mi;
             if (paramTypes.Length == 0)
                 mi = type.GetMethod(name, binding);
@@ -26,7 +27,7 @@ namespace NETGraph.Core.Meta.CodeGen
                 string referencePart = binding.HasFlag(BindingFlags.Instance) ? $"reference.resolve<{returnPi.ParameterType}>()" : $"{type.FullName}";
 
                 int argsIndex = 0;
-                sb.AppendLine($"private IResolver {mi.Name}(IResolver reference, params IResolver[] args)");
+                sb.AppendLine($"private static {TypeName} {mi.Name}({TypeName} reference, params {TypeName}[] args)");
                 sb.AppendLine("{");
                 sb.AppendLine("\t// resolve arguments to individual unnderlying types");
                 if (parameters.Length == 0)
@@ -41,7 +42,12 @@ namespace NETGraph.Core.Meta.CodeGen
                 if (!returnPi.ParameterType.Equals(typeof(void)))
                     sb.Append($"\t{returnPi.ParameterType} result = ");
                 sb.AppendLine($"{referencePart}.{mi.Name}({string.Join(", ", parameters.Select(x => x.Name))});");
-                sb.AppendLine($"\treturn result.AsValueData<{returnPi.ParameterType}>();");
+                if (!returnPi.ParameterType.Equals(typeof(void)))
+                    sb.AppendLine($"\treturn result.AsValueData<{returnPi.ParameterType}>();");
+                // ToDo: Add internal static reference to Void data which will be returned for void methods
+                else
+                    sb.AppendLine($"\treturn Memory.Void;");
+
                 sb.AppendLine("}");
 
                 return sb.ToString();

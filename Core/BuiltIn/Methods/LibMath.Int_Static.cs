@@ -19,10 +19,19 @@ namespace NETGraph.Core.BuiltIn.Methods
                 methods.Set(new MethodHandle($"{nameof(Subtract)}", MethodBindings.Static), Subtract);
                 methods.Set(new MethodHandle($"{nameof(Multiply)}", MethodBindings.Static), Multiply);
                 methods.Set(new MethodHandle($"{nameof(Divide)}", MethodBindings.Static), Divide);
+                methods.Set(new MethodHandle($"{nameof(WriteLine)}", MethodBindings.Static), WriteLine);
                 return methods;
             }
         }
 
+        private static IData WriteLine(IData reference, params IData[] args)
+        {
+            // resolve arguments to individual unnderlying types
+            System.String value = args[0].resolve<System.String>();
+            // call method and optionally wrap result into ValueType<T>
+            System.Console.WriteLine(value);
+            return Memory.Void;
+        }
         public static DataInterface Add(DataInterface reference, params DataInterface[] args)
         {
             // static implementation ignores reference argument
