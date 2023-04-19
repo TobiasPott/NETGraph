@@ -271,10 +271,7 @@ namespace NETGraph.Core.Meta.CodeGen
                     {
                         IData[] args = new IData[argsCall.Length];
                         for (int i = 0; i < args.Length; i++)
-                        {
                             args[i] = argsCall[i].Invoke();
-                            Console.WriteLine("\tArg: " + i);
-                        }
                         return handle.Invoke(refHandle?.Invoke(), args);
                     };
                     return call;

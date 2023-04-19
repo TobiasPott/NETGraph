@@ -108,8 +108,8 @@ public class Program
 
         foreach (Action a in codeCall)
             a.Invoke();
-        Console.WriteLine(string.Join(", " + Environment.NewLine, codeCall));
         Console.WriteLine();
+
         Console.WriteLine(Memory.Get("tmp"));
         Console.WriteLine(Memory.Get("tmp2"));
 
