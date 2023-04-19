@@ -100,6 +100,7 @@ public class Program
         code = "Int32 x = myInt.Add('t', \"(in, parenthesis\", 'c', 10, y, myInt2.add(z, 3, anotherInt.add(4, 5), w), v);";
         code = "Int32 tmp = myInt.Add(1, 1);";
         code = "Int32 tmp = LibMath::Add(1, -10);";
+        code = "Int32 tmp = tmp.Add(1, 3);";
 
         Func<IData> codeCall = JIT.Compile(code);
         codeCall.Invoke();
