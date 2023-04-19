@@ -100,7 +100,7 @@ namespace NETGraph.Core.Meta.CodeGen
                     string methodName = arg.Substring(splitIndex + 1);
                     string typeName = JIT.GetTypeName(arg.Substring(0, splitIndex));
                     // ToDo: need extra resolve for MethodReef to retrieve the Reference
-                    referenceHandle = Memory.MethodRef_Get(arg.Substring(0, splitIndex));
+                    referenceHandle = MethodRefExtensions.Get(arg.Substring(0, splitIndex));
                     return Library.TryGet($"{typeName}::{methodName}", out handle, MethodBindings.Instance);
                 }
             }
@@ -111,20 +111,20 @@ namespace NETGraph.Core.Meta.CodeGen
             if (type == CallInfoType.Ref)
             {
                 // try to recieve the given reference from memory
-                handle = Memory.MethodRef_Get(arg);
+                handle = MethodRefExtensions.Get(arg);
                 return true;
             }
             else if (type == CallInfoType.Declare)
             {
                 if (arg.GetDeclareInfo(out int typeIndex, out string name, out Options options))
                 {
-                    handle = Memory.MethodRef_Declare(typeIndex, name, options);
+                    handle = MethodRefExtensions.Declare(typeIndex, name, options);
                     return true;
                 }
             }
             else if (type == CallInfoType.Assign)
             {
-                handle = Memory.MethodRef_Assign(arg);
+                handle = MethodRefExtensions.Assign(arg);
                 return handle != null;
             }
             throw new InvalidOperationException($"Cannot resolve method and/or reference from {type} info.");
