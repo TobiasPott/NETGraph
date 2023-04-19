@@ -8,8 +8,8 @@ namespace NETGraph.Core.Meta.CodeGen
 
     public class JIT
     {
-        private static bool IsValueInfo(string arg) => (arg.StartsWith('"') || arg.StartsWith('\'') || arg.StartsWith("-") || char.IsDigit(arg[0]));
-        private static bool IsRefInfo(string arg) => (char.IsLetter(arg[0]));
+        private static bool IsValueInfo(string arg) => (arg.StartsWith('"') || arg.StartsWith('\'') || arg.StartsWith("-") || (arg.Length > 0 && char.IsDigit(arg[0])));
+        private static bool IsRefInfo(string arg) => (arg.Length > 0 && char.IsLetter(arg[0]));
         private static bool IsMethodInfo(string arg) => (arg.EndsWith("("));
         private static bool IsAssignInfo(string arg) => (arg.Contains("="));
 
@@ -52,6 +52,9 @@ namespace NETGraph.Core.Meta.CodeGen
         }
         public static void GetCallInfos(string input, List<CallInfo> callInfos, char delim = ',', char lhDel = '(', char rhDel = ')', int depth = 0)
         {
+            if (string.IsNullOrWhiteSpace(input))
+                return;
+
             int startIndex = input.IndexOf(lhDel) + 1;
             int endIndex = input.LastIndexOf(rhDel);
 
@@ -79,6 +82,11 @@ namespace NETGraph.Core.Meta.CodeGen
                     int charSplit = argList.IndexOf('\'', '(', ')', splitStart);
                     splitIndex = argList.IndexOf(',', '(', ')', splitStart);
 
+                    // ToDo: There is an issue in splitting the argumments when there is only one string or char argument list
+                    //      The current methodd tries to split along , or one char after a possible " which would fail
+                    if (splitIndex == -1)
+                        splitIndex = argList.Length - 1;
+
                     if (strSplit != -1 && (splitIndex == -1 || splitIndex > strSplit)
                                         && (charSplit == -1 || charSplit > strSplit))
                     {
@@ -101,6 +109,11 @@ namespace NETGraph.Core.Meta.CodeGen
                     {
                         if (splitIndex != -1)
                         {
+                            // reached end of argList string
+                            if (splitIndex >= argList.Length
+                                || splitStart >= argList.Length)
+                                break;
+
                             string subArg = argList.Substring(splitStart, splitIndex - splitStart).Trim();
                             if (!subArg.Contains(lhDel) && !subArg.Contains(rhDel))
                                 callInfos.Add(new CallInfo(callInfos.Count, depth, subArg));
@@ -187,7 +200,6 @@ namespace NETGraph.Core.Meta.CodeGen
             {
                 int argsEnd = FindArgsEnd(callInfoCache, nextIndex);
                 method = BuildMethod(callInfoCache, nextIndex, argsEnd, 0);
-                i = argsEnd;
             }
 
             Action comp = () =>
@@ -225,7 +237,7 @@ namespace NETGraph.Core.Meta.CodeGen
         }
         public static bool FindNextMethod(List<CallInfo> callInfos, int startIndex, out int nextIndex)
         {
-            for (int i = startIndex + 1; i < callInfos.Count; i++)
+            for (int i = startIndex; i < callInfos.Count; i++)
             {
                 CallInfo subInfo = callInfos[i];
                 if (subInfo.type == CallInfoType.Method)
