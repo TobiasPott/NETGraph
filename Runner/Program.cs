@@ -90,12 +90,17 @@ public class Program
         intsList.assign(new DataAccessor("[0]"), wInt);
         */
 
+        string extraction = "";
+        // extraction = MethodExtraction.ExtractMethod<string>("Concat", BindingFlags.Static | BindingFlags.Public, typeof(string), typeof(string));
+        // extraction = MethodExtraction.ExtractMethod<string>("Replace", BindingFlags.Instance | BindingFlags.Public, typeof(string), typeof(string));
+        // extraction = MethodExtraction.ExtractMethod<string>("ToLowerInvariant", BindingFlags.Instance | BindingFlags.Public);
+        // extraction = MethodExtraction.ExtractMethod(typeof(Console), "WriteLine", BindingFlags.Static | BindingFlags.Public, typeof(string));
 
-        //MethodExtraction.ExtractMethod<string>("Concat", BindingFlags.Static | BindingFlags.Public, typeof(string), typeof(string));
-        //MethodExtraction.ExtractMethod<string>("Replace", BindingFlags.Instance | BindingFlags.Public, typeof(string), typeof(string));
-        //MethodExtraction.ExtractMethod<string>("ToLowerInvariant", BindingFlags.Instance | BindingFlags.Public);
-        //string extraction = MethodExtraction.ExtractMethod(typeof(Console), "WriteLine", BindingFlags.Static | BindingFlags.Public, typeof(string));
-        //Console.WriteLine(extraction);
+        //extraction = MethodExtraction.ExtractMethod(typeof(Console), "Write", BindingFlags.Static | BindingFlags.Public, typeof(string));
+        //extraction = MethodExtraction.ExtractMethod(typeof(Console), "Clear", BindingFlags.Static | BindingFlags.Public);
+        Console.WriteLine(extraction);
+
+
         /*
          * Console library methods:
          *  * WriteLine     
@@ -105,15 +110,19 @@ public class Program
 
 
         string code = "Int32 x = myInt.Add(\"Hello\", \"World!\");";
+        /*
         code = "Int32 x = myInt.Add(\"sads\", y, myInt2.add(z, 3, anotherInt.add(4, 5)), \"(in, parenthesis)\", 'c', 10, anotherInt.add(6, 7));";
         code = "Int32 x = myInt.Add('t', \"(in, parenthesis\", 'c', 10, y, myInt2.add(z, 3, anotherInt.add(4, 5), w), v);";
         code = "Int32 tmp = myInt.Add(1, 1);";
         code = "Int32 tmp = LibMath::Add(1, -10);";
         code = "Int32 tmp = tmp.Add(1, 3);"
-                    + Environment.NewLine +
             "Int32 tmp2 = LibMath::Add(tmp, 12);";
-
-        code = "LibMath::WriteLine(\"Hello World!\")";
+        */
+        code = "Console::WriteLine(\"Hello World!\");";
+        // ToDo: Issue with sequence of call infos generated, uncomment the code below!
+        //      The consecutive methods are running down in depth although they should not
+        code += "Console::Write(\"Hello\");";
+        code += "Console::Write(\" new World!\");";
 
         List<Action> codeCall = JIT.CompileML(code);
 
