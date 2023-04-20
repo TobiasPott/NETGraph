@@ -151,6 +151,19 @@ namespace NETGraph.Core.Meta.CodeGen
             }
             return "System"; // 'Error' case which will point to system library and core functions
         }
+        private static int GetLastScopeDepth(int callInfoIndex)
+        {
+            // ToDo: Refactor: This method should retrieve the last depth of an info and run from there up to the next scope level
+            for (int i = callInfoIndex - 1; i >= 0; i--)
+            {
+                CallInfo call = callInfoCache[i];
+                if (call.type == CallInfoType.Method
+                    || call.type == CallInfoType.Assign
+                    || call.type == CallInfoType.Declare)
+                    return call.depth;
+            }
+            return 0;
+        }
 
         public static List<Action> CompileML(string code)
         {
@@ -160,6 +173,10 @@ namespace NETGraph.Core.Meta.CodeGen
             List<Action> compiled = new List<Action>();
             foreach (string line in code.Split(';', StringSplitOptions.RemoveEmptyEntries))
                 compiled.Add(Compile(line.Trim()));
+
+            // console output
+            for (int i = 0; i < callInfoCache.Count; i++)
+                Console.WriteLine(callInfoCache[i]);
 
             return compiled;
         }
@@ -182,7 +199,8 @@ namespace NETGraph.Core.Meta.CodeGen
                 rh = line.Substring(curI).Trim().Trim('=', ' ');
             }
 
-            int depth = 0;
+            int depth = GetLastScopeDepth(i);
+            Console.WriteLine("Previous Depth: " + depth);
             JIT.GetDeclareOrAssign(lh, callInfoCache, ref depth);
             JIT.GetCallInfos(rh, callInfoCache, ',', '(', ')', depth);
 
@@ -213,10 +231,6 @@ namespace NETGraph.Core.Meta.CodeGen
                     // call only method otherwise
                     method.Invoke();
             };
-
-            // console output
-            for (i = 0; i < callInfoCache.Count; i++)
-                Console.WriteLine(callInfoCache[i]);
 
             return comp;
         }
