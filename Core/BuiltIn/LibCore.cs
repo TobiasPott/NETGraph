@@ -2,6 +2,7 @@
 using NETGraph.Core.Meta;
 using System.Collections.Generic;
 using System.Linq;
+using NETGraph.Core.BuiltIn.Methods;
 
 namespace NETGraph.Core.BuiltIn
 {
@@ -45,6 +46,8 @@ namespace NETGraph.Core.BuiltIn
             MetaTypeRegistry.Register(new MetaType((int)DataTypes.String, typeof(string)));
             MetaTypeRegistry.Register(new MetaType((int)DataTypes.IData, typeof(IData)));
             MetaTypeRegistry.Register(new MetaType((int)DataTypes.Options, typeof(Options)));
+
+            this.Methods.Nest(BuiltIn.Methods.Console.Methods);
         }
 
         protected override bool LoadInternal()
